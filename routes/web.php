@@ -1,0 +1,191 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SekolahController;
+use App\Http\Controllers\Admin\BidangController;
+use App\Http\Controllers\Admin\PegawaiController;
+use App\Http\Controllers\Admin\PengajuanPklmagangController;
+use App\Http\Controllers\Admin\PembimbingController;
+use App\Http\Controllers\Admin\PenempatanController;
+use App\Http\Controllers\Siswa\PengajuanSiswaController;
+
+/*
+|--------------------------------------------------------------------------
+| Public / Guest Route
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : view('welcome');
+})->name('welcome');
+
+
+/*
+|--------------------------------------------------------------------------
+| Auth (hanya untuk user yang belum login)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('forgot-password.form');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('forgot-password.send');
+
+Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('reset-password.form');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('reset-password.update');
+
+
+/*
+|--------------------------------------------------------------------------
+| Logout (khusus user login)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+
+/*
+|--------------------------------------------------------------------------
+| Universal Dashboard Redirect Based on Role
+| /dashboard akan otomatis pilih dashboard sesuai role
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->get('/dashboard', function () {
+    return match(auth()->user()->role_id) {
+        1 => redirect()->route('admin.dashboard'),
+        2 => redirect()->route('pembimbing.dashboard'),
+        default => redirect()->route('siswa.dashboard'),
+    };
+})->name('dashboard');
+
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard View per Role
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth','role:1'])->get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard');
+
+Route::middleware(['auth','role:2'])->get('/pembimbing/dashboard', function () {
+    return view('pembimbing.dashboard');
+})->name('pembimbing.dashboard');
+
+Route::middleware(['auth','role:3'])->get('/siswa/dashboard', function () {
+    return view('siswa.dashboard');
+})->name('siswa.dashboard');
+
+
+/*
+|--------------------------------------------------------------------------
+| Admin CRUD Module (Hanya role admin)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth','role:3'])->prefix('siswa/pengajuan')->name('siswa.pengajuan.')->group(function(){
+    Route::get('/', [PengajuanSiswaController::class,'index'])->name('index');            // status pengajuan
+    Route::get('/create', [PengajuanSiswaController::class,'create'])->name('create');    // form pengajuan
+    Route::post('/store', [PengajuanSiswaController::class,'store'])->name('store');      // simpan
+    Route::get('/{id}/edit', [PengajuanSiswaController::class,'edit'])->name('edit');     // edit draft
+    Route::put('/{id}', [PengajuanSiswaController::class,'update'])->name('update');      // update
+});
+
+Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(function() {
+
+    // USERS CRUD
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+    });
+
+    // ROLES CRUD
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])->name('index');
+        Route::get('/create', [RoleController::class, 'create'])->name('create');
+        Route::post('/', [RoleController::class, 'store'])->name('store');
+        Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
+        Route::put('/{role}', [RoleController::class, 'update'])->name('update');
+        Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
+    });
+
+     // SEKOLAH CRUD
+    Route::prefix('sekolah')->name('sekolah.')->group(function () {
+        Route::get('/', [SekolahController::class, 'index'])->name('index');
+        Route::get('/create', [SekolahController::class, 'create'])->name('create');
+        Route::post('/', [SekolahController::class, 'store'])->name('store');
+        Route::get('/{sekolah}/edit', [SekolahController::class, 'edit'])->name('edit');
+        Route::put('/{sekolah}', [SekolahController::class, 'update'])->name('update');
+        Route::delete('/{sekolah}', [SekolahController::class, 'destroy'])->name('destroy');
+        Route::get('/{sekolah}', [SekolahController::class, 'show'])->name('show');
+
+    });
+
+    // BIDANG CRUD
+    Route::prefix('bidang')->name('bidang.')->group(function () {
+        Route::get('/', [BidangController::class, 'index'])->name('index');
+        Route::get('/create', [BidangController::class, 'create'])->name('create');
+        Route::post('/', [BidangController::class, 'store'])->name('store');
+        Route::get('/{bidang}/edit', [BidangController::class, 'edit'])->name('edit');
+        Route::put('/{bidang}', [BidangController::class, 'update'])->name('update');
+        Route::delete('/{bidang}', [BidangController::class, 'destroy'])->name('destroy');
+    });
+
+    // PEGAWAI CRUD
+Route::prefix('pegawai')->name('pegawai.')->group(function () {
+    Route::get('/', [PegawaiController::class, 'index'])->name('index');
+    Route::get('/create', [PegawaiController::class, 'create'])->name('create');
+    Route::post('/', [PegawaiController::class, 'store'])->name('store');
+    Route::get('/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('edit');
+    Route::put('/{pegawai}', [PegawaiController::class, 'update'])->name('update');
+    Route::delete('/{pegawai}', [PegawaiController::class, 'destroy'])->name('destroy');
+    Route::get('/{pegawai}', [PegawaiController::class, 'show'])->name('show');
+});
+
+// PENGAJUAN PKL/MAGANG CRUD
+Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+    Route::get('/', [PengajuanPklmagangController::class, 'index'])->name('index');
+    Route::get('/create', [PengajuanPklmagangController::class, 'create'])->name('create');
+    Route::post('/', [PengajuanPklmagangController::class, 'store'])->name('store');
+    Route::get('/{pengajuan}/edit', [PengajuanPklmagangController::class, 'edit'])->name('edit');
+    Route::put('/{pengajuan}', [PengajuanPklmagangController::class, 'update'])->name('update');
+    Route::delete('/{pengajuan}', [PengajuanPklmagangController::class, 'destroy'])->name('destroy');
+});
+
+// PEMBIMBING CRUD
+
+Route::prefix('pembimbing')->name('pembimbing.')->group(function () {
+    Route::get('/', [PembimbingController::class,'index'])->name('index');
+    Route::get('/create', [PembimbingController::class,'create'])->name('create');
+    Route::post('/', [PembimbingController::class,'store'])->name('store');
+    Route::get('/{pembimbing}/edit', [PembimbingController::class,'edit'])->name('edit');
+    Route::put('/{pembimbing}', [PembimbingController::class,'update'])->name('update');
+    Route::delete('/{pembimbing}', [PembimbingController::class,'destroy'])->name('destroy');
+});
+
+// PENEMPATAN CRUD
+Route::prefix('penempatan')->name('penempatan.')->group(function () {
+    Route::get('/', [PenempatanController::class,'index'])->name('index');
+    Route::get('/create', [PenempatanController::class,'create'])->name('create');
+    Route::post('/', [PenempatanController::class,'store'])->name('store');
+    Route::get('/{penempatan}/edit', [PenempatanController::class,'edit'])->name('edit');
+    Route::put('/{penempatan}', [PenempatanController::class,'update'])->name('update');
+    Route::delete('/{penempatan}', [PenempatanController::class,'destroy'])->name('destroy');
+});
+
+
+});

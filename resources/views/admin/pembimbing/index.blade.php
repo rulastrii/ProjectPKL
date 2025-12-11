@@ -1,0 +1,128 @@
+@extends('layouts.app')
+@section('title','Pembimbing Management')
+@section('content')
+
+<div class="page-body">
+ <div class="container-xl">
+  <div class="row row-cards">
+   <div class="col-12">
+    <div class="card">
+
+     <div class="card-header d-flex align-items-center">
+      <h3 class="card-title">Pembimbing</h3>
+      <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalCreatePembimbing">
+        <i class="ti ti-plus me-1"></i> Add Pembimbing
+      </button>
+     </div>
+
+     <div class="card-body border-bottom py-3">
+      <form method="GET" class="d-flex w-100 gap-2">
+        {{-- Show entries --}}
+        <div class="d-flex align-items-center">
+          Show
+          <select name="per_page" class="form-select form-select-sm mx-2" onchange="this.form.submit()">
+            @foreach([5,10,25,50,100] as $size)
+              <option value="{{ $size }}" {{ request('per_page') == $size ? 'selected':'' }}>{{ $size }}</option>
+            @endforeach
+          </select>
+          entries
+
+          <select name="tahun" class="form-select form-select-sm w-auto mx-2" onchange="this.form.submit()">
+        <option value="">Semua Tahun</option>
+        @foreach($tahunList as $t)
+            <option value="{{ $t->tahun }}" {{ request('tahun') == $t->tahun ? 'selected' : '' }}>
+                {{ $t->tahun }}
+            </option>
+        @endforeach
+    </select>
+        </div>
+
+        {{-- Search --}}
+        <div class="ms-auto d-flex">
+          <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..." class="form-control form-control-sm">
+          <button class="btn btn-sm btn-primary ms-2">Search</button>
+        </div>
+      </form>
+     </div>
+
+     <div class="table-responsive">
+      <table class="table card-table table-vcenter text-nowrap">
+       <thead>
+        <tr>
+         <th>#</th>
+         <th>Pengajuan</th>
+         <th>Pembimbing</th>
+         <th>Tahun</th>
+         <th>Active</th>
+         <th>Created</th>
+         <th class="text-end">Actions</th>
+        </tr>
+       </thead>
+
+       <tbody>
+        @forelse($pembimbing as $index=>$b)
+        <tr>
+         <td>{{ $pembimbing->firstItem() + $index }}</td>
+         <td>{{ $b->pengajuan->no_surat ?? '-' }} - {{ $b->pengajuan->sekolah->nama ?? '-' }}</td>
+         <td>{{ $b->pegawai->nama ?? '-' }}</td>
+         <td>{{ $b->tahun ?? '-' }}</td>
+         <td>
+            {!! $b->is_active 
+                ? '<span class="badge bg-success-soft text-success">Active</span>' 
+                : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
+            !!}
+         </td>
+         <td>{{ $b->created_date? \Carbon\Carbon::parse($b->created_date)->format('d M Y'):'-' }}</td>
+         <td class="text-end">
+            <!-- Edit Button -->
+            <button type="button" class="btn btn-outline-warning btn-sm me-1" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#modalEditPembimbing-{{ $b->id }}">
+                <i class="ti ti-pencil"></i>
+            </button>
+
+            <!-- Delete Button -->
+            <form action="{{ route('admin.pembimbing.destroy',$b->id) }}" method="POST" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" onclick="return confirm('Delete pembimbing?')" class="btn btn-outline-danger btn-sm">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </form>
+         </td>
+        </tr>
+        @empty
+        <tr><td colspan="7" class="text-center">No pembimbing found</td></tr>
+        @endforelse
+       </tbody>
+      </table>
+     </div>
+
+     <div class="card-footer d-flex align-items-center">
+        <p class="m-0 text-secondary">
+            Showing <strong>{{ $pembimbing->firstItem() }}</strong> to <strong>{{ $pembimbing->lastItem() }}</strong> of <strong>{{ $pembimbing->total() }}</strong> entries
+        </p>
+        <ul class="pagination m-0 ms-auto">
+            <li class="page-item {{ $pembimbing->onFirstPage() ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ $pembimbing->previousPageUrl() ?? '#' }}">prev</a>
+            </li>
+            @foreach ($pembimbing->getUrlRange(1, $pembimbing->lastPage()) as $page => $url)
+                <li class="page-item {{ $page == $pembimbing->currentPage() ? 'active' : '' }}">
+                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                </li>
+            @endforeach
+            <li class="page-item {{ $pembimbing->hasMorePages() ? '' : 'disabled' }}">
+                <a class="page-link" href="{{ $pembimbing->nextPageUrl() ?? '#' }}">next</a>
+            </li>
+        </ul>
+     </div>
+
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+@include('admin.pembimbing.modal-create')
+@include('admin.pembimbing.modal-edit')
+@endsection
