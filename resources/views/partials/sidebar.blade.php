@@ -190,29 +190,21 @@
         // Cek apakah pengajuan sudah diterima
         $isApproved = $pengajuan && $pengajuan->status === 'diterima';
     @endphp
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('siswa.pengajuan.create') }}">
-                      <span class="nav-link-icon d-md-none d-lg-inline-block">
-                        <i class="ti ti-file-text"></i>
-                      </span>
-                      <span class="nav-link-title">Form Pengajuan PKL/Magang</span>
-                    </a>
-                  </li> 
                   <li class="nav-item">
                     <a class="nav-link" href="{{ route('siswa.pengajuan.index') }}">
                       <span class="nav-link-icon d-md-none d-lg-inline-block">
                         <i class="ti ti-list"></i>
                       </span>
-                      <span class="nav-link-title">Status Pengajuan</span>
+                      <span class="nav-link-title">Pengajuan PKL/Magang</span>
                     </a>
                   </li> 
                   
                 <li class="nav-item">
-                  <a class="nav-link" href="./form-elements.html">
+                  <a class="nav-link" href="{{ route('siswa.profile.index') }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                       <i class="ti ti-user"></i>
                     </span>
-                    <span class="nav-link-title"> Profil Siswa</span>
+                    <span class="nav-link-title"> Pengaturan Akun</span>
                   </a>
                 </li>  
                   {{-- Menu tambahan hanya muncul jika pengajuan diterima --}}

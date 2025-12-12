@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pegawai;
-use App\Models\User;
 use App\Models\Bidang;
 use Illuminate\Support\Facades\Auth;
 
 class PegawaiController extends Controller
 {
+    // ==========================
     // Tampilkan daftar pegawai
+    // ==========================
     public function index(Request $request)
     {
         $search    = $request->search;
@@ -20,9 +21,11 @@ class PegawaiController extends Controller
         $per_page  = $request->per_page ?? 10;
 
         $pegawais = Pegawai::whereNull('deleted_date')
-            ->when($search, fn($q) => $q->where('nama', 'like', "%$search%")
-                                        ->orWhere('nip', 'like', "%$search%")
-                                        ->orWhere('jabatan', 'like', "%$search%"))
+            ->when($search, fn($q) => $q->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%$search%")
+                  ->orWhere('nip', 'like', "%$search%")
+                  ->orWhere('jabatan', 'like', "%$search%");
+            }))
             ->when($bidang_id, fn($q) => $q->where('bidang_id', $bidang_id))
             ->when($is_active !== null, fn($q) => $q->where('is_active', $is_active))
             ->paginate($per_page)
@@ -33,21 +36,29 @@ class PegawaiController extends Controller
         return view('admin.pegawai.index', compact('pegawais', 'bidangs'));
     }
 
-    
-
-    // Form tambah pegawai
-    public function create()
+// Tampilkan detail pegawai
+    public function show($id)
     {
-        $users = User::active()->get();
-        $bidangs = Bidang::active()->get();
-        return view('admin.pegawai.create', compact('users', 'bidangs'));
+        $pegawai = Pegawai::with(['bidang', 'user'])->findOrFail($id);
+        return view('admin.pegawai.show', compact('pegawai'));
     }
 
+    // ==========================
+    // Form tambah pegawai
+    // ==========================
+    public function create()
+    {
+        $bidangs = Bidang::active()->get();
+        return view('admin.pegawai.create', compact('bidangs'));
+    }
+
+
+    // ==========================
     // Simpan pegawai baru
+    // ==========================
     public function store(Request $request)
     {
         $request->validate([
-            'user_id'   => 'nullable|exists:users,id',
             'nip'       => 'required|string|max:50|unique:pegawai,nip',
             'nama'      => 'required|string|max:100',
             'jabatan'   => 'nullable|string|max:100',
@@ -55,7 +66,7 @@ class PegawaiController extends Controller
         ]);
 
         Pegawai::create([
-            'user_id'      => $request->user_id,
+            'user_id'      => Auth::id(), // otomatis user yang login
             'nip'          => $request->nip,
             'nama'         => $request->nama,
             'jabatan'      => $request->jabatan,
@@ -68,23 +79,28 @@ class PegawaiController extends Controller
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
     }
 
+
+    // ==========================
     // Form edit pegawai
+    // ==========================
     public function edit($id)
     {
         $pegawai = Pegawai::findOrFail($id);
-        $users = User::active()->get();
         $bidangs = Bidang::active()->get();
-        return view('admin.pegawai.edit', compact('pegawai', 'users', 'bidangs'));
+
+        return view('admin.pegawai.edit', compact('pegawai', 'bidangs'));
     }
 
+
+    // ==========================
     // Update pegawai
+    // ==========================
     public function update(Request $request, $id)
     {
         $pegawai = Pegawai::findOrFail($id);
 
         $request->validate([
-            'user_id'   => 'nullable|exists:users,id',
-            'nip'       => 'required|string|max:50|unique:pegawai,nip,'.$pegawai->id,
+            'nip'       => 'required|string|max:50|unique:pegawai,nip,' . $pegawai->id,
             'nama'      => 'required|string|max:100',
             'jabatan'   => 'nullable|string|max:100',
             'bidang_id' => 'nullable|exists:bidang,id',
@@ -92,7 +108,6 @@ class PegawaiController extends Controller
         ]);
 
         $pegawai->update([
-            'user_id'      => $request->user_id,
             'nip'          => $request->nip,
             'nama'         => $request->nama,
             'jabatan'      => $request->jabatan,
@@ -105,14 +120,20 @@ class PegawaiController extends Controller
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil diperbarui.');
     }
 
-    // Hapus pegawai (soft delete)
+
+    // ==========================
+    // Soft delete pegawai
+    // ==========================
     public function destroy($id)
     {
         $pegawai = Pegawai::findOrFail($id);
-        $pegawai->deleted_date = now();
-        $pegawai->deleted_id = Auth::id();
-        $pegawai->save();
 
-        return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil dihapus.');
+        $pegawai->update([
+            'deleted_date' => now(),
+            'deleted_id'   => Auth::id(),
+        ]);
+
+        return redirect()->route('admin.pegawai.index')
+            ->with('success', 'Pegawai berhasil dihapus.');
     }
 }

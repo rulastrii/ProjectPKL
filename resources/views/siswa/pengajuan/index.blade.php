@@ -10,15 +10,28 @@
 
      {{-- Card Header --}}
      <div class="card-header d-flex align-items-center">
-      <h3 class="card-title">Status Pengajuan PKL/Magang</h3>
-      <a href="{{ route('siswa.pengajuan.create') }}" class="btn btn-primary ms-auto">
-        <i class="ti ti-plus me-1"></i> Ajukan PKL
+      <h3 class="card-title">Pengajuan PKL/Magang</h3>
+      @php
+    $hasPending = \App\Models\PengajuanPklmagang::where('created_id', auth()->id())
+                    ->whereIn('status', ['draft','diproses'])
+                    ->exists();
+      @endphp
+
+      <a 
+        href="{{ $hasPending ? '#' : route('siswa.pengajuan.create') }}" 
+        class="btn btn-primary ms-auto {{ $hasPending ? 'disabled' : '' }}"
+        style="{{ $hasPending ? 'pointer-events:none; opacity:0.6;' : '' }}"
+        title="{{ $hasPending ? 'Anda masih memiliki pengajuan yang belum selesai' : '' }}"
+      >
+          <i class="ti ti-plus me-1"></i> Ajukan PKL
       </a>
+
      </div>
 
-     {{-- Card Body: Search & Show Entries --}}
+     {{-- Card Body: Filter & Search --}}
      <div class="card-body border-bottom py-3">
-      <form method="GET" class="d-flex w-100 gap-2">
+      <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+
         {{-- Show entries --}}
         <div class="d-flex align-items-center">
           Show
@@ -30,11 +43,22 @@
           entries
         </div>
 
+        {{-- Status filter --}}
+        <select name="status" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+          <option value="">Semua Status</option>
+          @foreach(['draft','diproses','diterima','ditolak','selesai'] as $status)
+            <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>
+              {{ ucfirst($status) }}
+            </option>
+          @endforeach
+        </select>
+
         {{-- Search --}}
         <div class="ms-auto d-flex">
           <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..." class="form-control form-control-sm">
           <button class="btn btn-sm btn-primary ms-2">Search</button>
         </div>
+
       </form>
      </div>
 
@@ -43,7 +67,7 @@
       <table class="table card-table table-vcenter text-nowrap">
        <thead>
         <tr>
-         <th>#</th>
+         <th>No.</th>
          <th>No Surat</th>
          <th>Sekolah</th>
          <th>Periode</th>
@@ -54,45 +78,79 @@
        <tbody>
         @forelse($pengajuan as $index => $p)
         <tr>
-         <td>{{ $index + $pengajuan->firstItem() }}</td>
+         <td>{{ $pengajuan->firstItem() + $index }}</td>
          <td>{{ $p->no_surat ?? '-' }}</td>
          <td>{{ $p->sekolah->nama ?? '-' }}</td>
-         <td>{{ $p->periode_mulai }} s/d {{ $p->periode_selesai }}</td>
-         <td>{{ ucfirst($p->status) }}</td>
+         <td>
+            {{ \Carbon\Carbon::parse($p->periode_mulai)->format('d M Y') }} s/d 
+            {{ \Carbon\Carbon::parse($p->periode_selesai)->format('d M Y') }}
+         </td>
+         <td>
+
+            <span class="badge 
+              @if($p->status=='draft') bg-secondary
+              @elseif($p->status=='diproses') bg-warning
+              @elseif($p->status=='diterima') bg-success
+              @elseif($p->status=='ditolak') bg-danger
+              @elseif($p->status=='selesai') bg-primary
+              @endif text-white">
+              {{ ucfirst($p->status) }}
+            </span>
+         </td>
          <td class="text-end">
-            @if($p->status == 'draft')
-                <a href="{{ route('siswa.pengajuan.edit',$p->id) }}" class="btn btn-outline-warning btn-sm me-1" title="Edit Pengajuan">
-                    <i class="ti ti-pencil"></i> Edit
-                </a>
-            @endif
-            @if($p->file_surat_path)
-    <a href="{{ asset($p->file_surat_path) }}" target="_blank" class="btn btn-info btn-sm">🧾 Lihat Berkas</a>
-@endif
+          <a href="{{ route('siswa.pengajuan.detail', $p->id) }}" 
+   class="btn btn-outline-info btn-sm me-1" 
+   title="Lihat Detail Pengajuan">
+    <i class="ti ti-eye"></i>
+</a>
 
          </td>
         </tr>
         @empty
-        <tr>
-            <td colspan="6" class="text-center">Belum ada pengajuan</td>
-        </tr>
-        @endforelse
+<tr>
+    <td colspan="6" class="text-center">
+
+        @if(request('status') == null)
+            Belum ada pengajuan.
+
+        @elseif(request('status') == 'draft')
+            Belum ada pengajuan berstatus <strong>Draft</strong>.
+
+        @elseif(request('status') == 'diproses')
+            Tidak ada pengajuan yang sedang <strong>Diproses</strong>.
+
+        @elseif(request('status') == 'diterima')
+            Tidak ada pengajuan yang <strong>Diterima</strong>.
+
+        @elseif(request('status') == 'ditolak')
+            Tidak ada pengajuan yang <strong>Ditolak</strong>.
+
+        @elseif(request('status') == 'selesai')
+            Tidak ada pengajuan yang <strong>Selesai</strong>.
+
+        @else
+            Data tidak ditemukan.
+        @endif
+
+    </td>
+</tr>
+@endforelse
+
        </tbody>
       </table>
      </div>
 
      {{-- Card Footer: Pagination --}}
-     <div class="card-footer d-flex align-items-center">
-        <p class="m-0 text-secondary">
+     <div class="card-footer d-flex align-items-center flex-wrap">
+        <p class="m-0 text-secondary me-auto">
             Showing <strong>{{ $pengajuan->firstItem() ?? 0 }}</strong> to 
             <strong>{{ $pengajuan->lastItem() ?? 0 }}</strong> of 
             <strong>{{ $pengajuan->total() ?? 0 }}</strong> entries
         </p>
 
-        <ul class="pagination m-0 ms-auto">
+        <ul class="pagination m-0">
             <li class="page-item {{ $pengajuan->onFirstPage() ? 'disabled' : '' }}">
-                <a class="page-link" href="{{ $pengajuan->previousPageUrl() ?? '#' }}">
-                    prev
-                </a>
+                <a class="page-link" href="{{ $pengajuan->previousPageUrl() ?? '#' }}">Prev</a>
             </li>
 
             @foreach ($pengajuan->getUrlRange(1, $pengajuan->lastPage()) as $page => $url)
@@ -102,16 +160,39 @@
             @endforeach
 
             <li class="page-item {{ $pengajuan->hasMorePages() ? '' : 'disabled' }}">
-                <a class="page-link" href="{{ $pengajuan->nextPageUrl() ?? '#' }}">
-                    next
-                </a>
+                <a class="page-link" href="{{ $pengajuan->nextPageUrl() ?? '#' }}">Next</a>
             </li>
         </ul>
      </div>
-
     </div>
    </div>
   </div>
+  
+     @php
+    $pending = \App\Models\PengajuanPklmagang::where('created_id', auth()->id())
+                ->whereIn('status', ['draft', 'diproses'])
+                ->first();
+@endphp
+
+@if($pending)
+<div class="card border-warning my-3">
+    <div class="card-header bg-warning text-dark fw-bold">
+        <i class="ti ti-alert-triangle me-1"></i> Pemberitahuan
+    </div>
+
+    <div class="card-body">
+        <p class="mb-1">
+            Anda masih memiliki pengajuan PKL yang <strong>belum selesai</strong>.
+        </p>
+
+        <ul class="mb-2">
+            <li><strong>Status:</strong> {{ ucfirst($pending->status) }}</li>
+            <li><strong>Sekolah:</strong> {{ $pending->sekolah->nama }}</li>
+            <li><strong>Dibuat:</strong> {{ $pending->created_date->format('d M Y') }}</li>
+        </ul>
+    </div>
+</div>
+@endif
  </div>
 </div>
 @endsection

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -13,6 +14,8 @@ use App\Http\Controllers\Admin\PengajuanPklmagangController;
 use App\Http\Controllers\Admin\PembimbingController;
 use App\Http\Controllers\Admin\PenempatanController;
 use App\Http\Controllers\Siswa\PengajuanSiswaController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Siswa\SiswaProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +48,42 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode
 Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('reset-password.form');
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('reset-password.update');
 
+/*
+|--------------------------------------------------------------------------
+| Email Verification Routes
+|--------------------------------------------------------------------------
+*/
+
+// Halaman notifikasi verifikasi
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+// Klik link verifikasi
+Route::get('/email/verify/{id}/{hash}', function ($id, $hash) {
+    $user = User::findOrFail($id);
+
+    // Cek hash agar sesuai
+    if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+        abort(403);
+    }
+
+    // Sudah diverifikasi
+    if ($user->hasVerifiedEmail()) {
+        return redirect()->route('login')->with('success', 'Email sudah diverifikasi. Silakan login.');
+    }
+
+    // Tandai email sudah diverifikasi
+    $user->markEmailAsVerified();
+
+    return redirect()->route('login')->with('success', 'Email berhasil diverifikasi! Silakan login.');
+})->name('verification.verify');
+
+// Kirim ulang link verifikasi
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('success', 'Link verifikasi baru telah dikirim!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 /*
 |--------------------------------------------------------------------------
@@ -60,7 +99,7 @@ Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->
 | /dashboard akan otomatis pilih dashboard sesuai role
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->get('/dashboard', function () {
+Route::middleware(['auth','verified'])->get('/dashboard', function () {
     return match(auth()->user()->role_id) {
         1 => redirect()->route('admin.dashboard'),
         2 => redirect()->route('pembimbing.dashboard'),
@@ -69,14 +108,15 @@ Route::middleware('auth')->get('/dashboard', function () {
 })->name('dashboard');
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Dashboard View per Role
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth','role:1'])->get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard');
+
+Route::middleware(['auth','role:1'])->get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
 
 Route::middleware(['auth','role:2'])->get('/pembimbing/dashboard', function () {
     return view('pembimbing.dashboard');
@@ -92,14 +132,30 @@ Route::middleware(['auth','role:3'])->get('/siswa/dashboard', function () {
 | Admin CRUD Module (Hanya role admin)
 |--------------------------------------------------------------------------
 */
+Route::middleware(['auth','role:3'])->prefix('siswa')->name('siswa.')->group(function() {
 
-Route::middleware(['auth','role:3'])->prefix('siswa/pengajuan')->name('siswa.pengajuan.')->group(function(){
-    Route::get('/', [PengajuanSiswaController::class,'index'])->name('index');            // status pengajuan
-    Route::get('/create', [PengajuanSiswaController::class,'create'])->name('create');    // form pengajuan
-    Route::post('/store', [PengajuanSiswaController::class,'store'])->name('store');      // simpan
-    Route::get('/{id}/edit', [PengajuanSiswaController::class,'edit'])->name('edit');     // edit draft
-    Route::put('/{id}', [PengajuanSiswaController::class,'update'])->name('update');      // update
+    /**
+     * PENGAJUAN CRUD
+     */
+    Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+        Route::get('/', [PengajuanSiswaController::class,'index'])->name('index');           // status pengajuan
+        Route::get('/create', [PengajuanSiswaController::class,'create'])->name('create');   // form pengajuan
+        Route::post('/store', [PengajuanSiswaController::class,'store'])->name('store');     // simpan pengajuan
+        Route::get('/{id}/edit', [PengajuanSiswaController::class,'edit'])->name('edit');    // edit draft
+        Route::put('/{id}', [PengajuanSiswaController::class,'update'])->name('update');     // update pengajuan
+        Route::get('/{pengajuan}', [PengajuanSiswaController::class,'detail'])->name('detail'); // detail pengajuan
+    });
+
+    /**
+     * PROFILE SISWA (Pengaturan Akun)
+     */
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [SiswaProfileController::class,'index'])->name('index');        // tampilkan form create/update profile
+        Route::put('/update', [SiswaProfileController::class,'update'])->name('update'); // update data profile
+    });
+
 });
+
 
 Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(function() {
 
@@ -111,6 +167,8 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+
     });
 
     // ROLES CRUD
@@ -125,15 +183,14 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
 
      // SEKOLAH CRUD
     Route::prefix('sekolah')->name('sekolah.')->group(function () {
-        Route::get('/', [SekolahController::class, 'index'])->name('index');
-        Route::get('/create', [SekolahController::class, 'create'])->name('create');
-        Route::post('/', [SekolahController::class, 'store'])->name('store');
-        Route::get('/{sekolah}/edit', [SekolahController::class, 'edit'])->name('edit');
-        Route::put('/{sekolah}', [SekolahController::class, 'update'])->name('update');
-        Route::delete('/{sekolah}', [SekolahController::class, 'destroy'])->name('destroy');
-        Route::get('/{sekolah}', [SekolahController::class, 'show'])->name('show');
-
-    });
+    Route::get('/', [SekolahController::class, 'index'])->name('index');
+    Route::get('/create', [SekolahController::class, 'create'])->name('create');
+    Route::post('/', [SekolahController::class, 'store'])->name('store');
+    Route::get('/{sekolah}', [SekolahController::class, 'show'])->name('show');
+    Route::get('/{sekolah}/edit', [SekolahController::class, 'edit'])->name('edit');
+    Route::put('/{sekolah}', [SekolahController::class, 'update'])->name('update');
+    Route::delete('/{sekolah}', [SekolahController::class, 'destroy'])->name('destroy');
+});
 
     // BIDANG CRUD
     Route::prefix('bidang')->name('bidang.')->group(function () {
@@ -143,6 +200,8 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{bidang}/edit', [BidangController::class, 'edit'])->name('edit');
         Route::put('/{bidang}', [BidangController::class, 'update'])->name('update');
         Route::delete('/{bidang}', [BidangController::class, 'destroy'])->name('destroy');
+        
+    Route::get('/{bidang}', [BidangController::class, 'show'])->name('show');
     });
 
     // PEGAWAI CRUD
@@ -153,6 +212,7 @@ Route::prefix('pegawai')->name('pegawai.')->group(function () {
     Route::get('/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('edit');
     Route::put('/{pegawai}', [PegawaiController::class, 'update'])->name('update');
     Route::delete('/{pegawai}', [PegawaiController::class, 'destroy'])->name('destroy');
+    
     Route::get('/{pegawai}', [PegawaiController::class, 'show'])->name('show');
 });
 
@@ -164,6 +224,8 @@ Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
     Route::get('/{pengajuan}/edit', [PengajuanPklmagangController::class, 'edit'])->name('edit');
     Route::put('/{pengajuan}', [PengajuanPklmagangController::class, 'update'])->name('update');
     Route::delete('/{pengajuan}', [PengajuanPklmagangController::class, 'destroy'])->name('destroy');
+    Route::get('/{pengajuan}', [PengajuanPklmagangController::class, 'show'])->name('show');
+
 });
 
 // PEMBIMBING CRUD
@@ -175,6 +237,7 @@ Route::prefix('pembimbing')->name('pembimbing.')->group(function () {
     Route::get('/{pembimbing}/edit', [PembimbingController::class,'edit'])->name('edit');
     Route::put('/{pembimbing}', [PembimbingController::class,'update'])->name('update');
     Route::delete('/{pembimbing}', [PembimbingController::class,'destroy'])->name('destroy');
+    Route::get('/{pembimbing}', [PembimbingController::class, 'show'])->name('show');
 });
 
 // PENEMPATAN CRUD

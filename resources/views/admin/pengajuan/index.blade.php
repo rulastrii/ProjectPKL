@@ -91,6 +91,13 @@
          </td>
 
          <td class="text-end">
+          <a href="{{ route('admin.pengajuan.show', $p->id) }}" 
+   class="btn btn-outline-info btn-sm"
+   title="Lihat Detail Pengajuan">
+    <i class="ti ti-eye"></i>
+</a>
+
+
             <button class="btn btn-outline-warning btn-sm" 
                     data-bs-toggle="modal"
                     data-bs-target="#modalEditPengajuan-{{ $p->id }}">

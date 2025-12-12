@@ -41,4 +41,15 @@ class Bidang extends Model
     {
         return $query->where('is_active', true);
     }
+
+    public function creator()
+{
+    return $this->belongsTo(User::class, 'created_id');
+}
+
+public function updater()
+{
+    return $this->belongsTo(User::class, 'updated_id');
+}
+
 }

@@ -49,12 +49,11 @@
       <table class="table card-table table-vcenter text-nowrap">
        <thead>
         <tr>
-         <th>#</th>
+         <th>No.</th>
          <th>Pengajuan</th>
          <th>Pembimbing</th>
          <th>Tahun</th>
          <th>Active</th>
-         <th>Created</th>
          <th class="text-end">Actions</th>
         </tr>
        </thead>
@@ -72,9 +71,13 @@
                 : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
             !!}
          </td>
-         <td>{{ $b->created_date? \Carbon\Carbon::parse($b->created_date)->format('d M Y'):'-' }}</td>
          <td class="text-end">
-            <!-- Edit Button -->
+<!-- View Button -->
+        <a href="{{ route('admin.pembimbing.show', $b->id) }}" 
+           class="btn btn-outline-info btn-sm me-1" 
+           title="Lihat Detail">
+            <i class="ti ti-eye"></i>
+        </a>
             <button type="button" class="btn btn-outline-warning btn-sm me-1" 
                     data-bs-toggle="modal" 
                     data-bs-target="#modalEditPembimbing-{{ $b->id }}">

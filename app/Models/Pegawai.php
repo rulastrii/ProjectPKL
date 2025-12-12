@@ -31,6 +31,13 @@ class Pegawai extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    //user yang membuat/menginput data pegawai.
+    public function createdBy()
+{
+    return $this->belongsTo(User::class, 'created_id');
+}
+
+
     // Relasi ke Bidang
     public function bidang()
     {

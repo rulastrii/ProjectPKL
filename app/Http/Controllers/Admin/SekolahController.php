@@ -34,11 +34,13 @@ class SekolahController extends Controller
     }
 
     public function show($id)
-{
-    $sekolah = Sekolah::findOrFail($id);
-    return response()->json($sekolah);
-}
+    {
+        // Ambil data sekolah berdasarkan ID
+        $sekolah = Sekolah::findOrFail($id); // akan 404 jika tidak ditemukan
 
+        // Kirim data ke view
+        return view('admin.sekolah.show', compact('sekolah'));
+    }
 
     // Form tambah sekolah
     public function create()

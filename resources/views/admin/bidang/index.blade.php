@@ -50,11 +50,10 @@
       <table class="table card-table table-vcenter text-nowrap">
        <thead>
         <tr>
-         <th>#</th>
+         <th>No.</th>
          <th>Nama Bidang</th>
          <th>Kode</th>
-         <th>Active</th>
-         <th>Created</th>
+         <th>Status</th>
          <th class="text-end">Actions</th>
         </tr>
        </thead>
@@ -71,8 +70,13 @@
               : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
             !!}
          </td>
-         <td>{{ $bidang->created_date ? \Carbon\Carbon::parse($bidang->created_date)->format('d M Y') : '-' }}</td>
          <td class="text-end">
+<!-- View Button -->
+                                <a href="{{ route('admin.bidang.show', $bidang->id) }}" 
+                                   class="btn btn-outline-info btn-sm me-1" 
+                                   title="Lihat Detail">
+                                    <i class="ti ti-eye"></i>
+                                </a>
            <!-- Edit Button -->
            <button type="button" class="btn btn-outline-warning btn-sm me-1"
                    data-bs-toggle="modal"

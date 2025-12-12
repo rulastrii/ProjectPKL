@@ -50,13 +50,11 @@
       <table class="table card-table table-vcenter text-nowrap">
        <thead>
         <tr>
-         <th>#</th>
+         <th>No.</th>
          <th>Nama Sekolah</th>
          <th>NPSN</th>
          <th>Alamat</th>
-         <th>Kontak</th>
          <th>Active</th>
-         <th>Created</th>
          <th class="text-end">Actions</th>
         </tr>
        </thead>
@@ -68,24 +66,19 @@
          <td>{{ $sekolah->nama }}</td>
          <td>{{ $sekolah->npsn }}</td>
          <td>{{ $sekolah->alamat }}</td>
-         <td>{{ $sekolah->kontak }}</td>
          <td>
            {!! $sekolah->is_active 
              ? '<span class="badge bg-success-soft text-success">Active</span>' 
              : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
            !!}
          </td>
-         <td>{{ $sekolah->created_date ? \Carbon\Carbon::parse($sekolah->created_date)->format('d M Y') : '-' }}</td>
          <td class="text-end">
-          <!-- Show Button -->
-<button type="button" 
-        class="btn btn-outline-info btn-sm me-1"
-        data-bs-toggle="modal"
-        data-bs-target="#modalShowSekolah-{{ $sekolah->id }}"
-        title="Detail Sekolah">
-    <i class="ti ti-eye"></i>
-</button>
-
+            <!-- View Button -->
+                <a href="{{ route('admin.sekolah.show', $sekolah->id) }}" 
+                  class="btn btn-outline-info btn-sm me-1" 
+                  title="Lihat Detail Sekolah">
+                    <i class="ti ti-eye"></i>
+                </a>
            <!-- Edit Button Outline (Trigger Modal) -->
            <button type="button" class="btn btn-outline-warning btn-sm me-1" 
                    data-bs-toggle="modal" 
@@ -160,5 +153,4 @@
 
 @include('admin.sekolah.modal-create') {{-- Modal Create --}}
 @include('admin.sekolah.modal-edit') {{-- Modal Edit --}}
-@include('admin.sekolah.modal-show') 
 @endsection

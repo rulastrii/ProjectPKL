@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -37,7 +37,10 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-    'created_date' => 'datetime', // otomatis jadi Carbon
+    'created_date' => 'datetime',
+    'updated_date' => 'datetime',
+    'deleted_date' => 'datetime',
+    'is_active'    => 'boolean',
 ];
 
     /**
@@ -52,6 +55,22 @@ class User extends Authenticatable
 {
     return $this->hasOne(SiswaProfile::class,'user_id');
 }
+
+public function creator()
+{
+    return $this->belongsTo(User::class, 'created_id');
+}
+
+public function updater()
+{
+    return $this->belongsTo(User::class, 'updated_id');
+}
+
+public function deleter()
+{
+    return $this->belongsTo(User::class, 'deleted_id');
+}
+
 
 
     /**

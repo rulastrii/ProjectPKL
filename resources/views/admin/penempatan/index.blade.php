@@ -49,7 +49,7 @@
       <table class="table card-table table-vcenter text-nowrap">
        <thead>
         <tr>
-         <th>#</th>
+         <th>No.</th>
          <th>Nama Siswa</th>
          <th>Bidang</th>
          <th>Status</th>

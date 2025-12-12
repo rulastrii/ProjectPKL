@@ -34,6 +34,14 @@ class PengajuanPklmagangController extends Controller
         return view('admin.pengajuan.index', compact('pengajuan','sekolahs'));
     }
 
+    public function show($id)
+{
+    $pengajuan = PengajuanPklmagang::with('sekolah')->findOrFail($id);
+
+    return view('admin.pengajuan.show', compact('pengajuan'));
+}
+
+
     public function create()
     {
         // kalau ada view terpisah untuk create modal/page, kirim sekolah

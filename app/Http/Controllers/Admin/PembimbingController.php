@@ -44,6 +44,13 @@ public function index(Request $request)
     return view('admin.pembimbing.index', compact('pembimbing','pengajuan','pegawai','tahunList'));
 }
 
+// Tampilkan detail pembimbing
+    public function show($id)
+    {
+        $pembimbing = Pembimbing::with(['pegawai', 'pengajuan'])->findOrFail($id);
+        return view('admin.pembimbing.show', compact('pembimbing'));
+    }
+
 
     // FORM CREATE
     public function create()

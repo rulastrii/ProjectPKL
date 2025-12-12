@@ -59,7 +59,6 @@
          <th>Jabatan</th>
          <th>Bidang</th>
          <th>Active</th>
-         <th>Created</th>
          <th class="text-end">Actions</th>
         </tr>
        </thead>
@@ -78,17 +77,15 @@
         : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
     !!}
 </td>
-<td>{{ $pegawai->created_date? \Carbon\Carbon::parse($pegawai->created_date)->format('d M Y'):'-' }}</td>
          <td class="text-end">
 
-         <!-- Show Button -->
-<button type="button" 
-        class="btn btn-outline-info btn-sm me-1"
-        data-bs-toggle="modal"
-        data-bs-target="#modalShowPegawai-{{ $pegawai->id }}"
-        title="Detail Pegawai">
-    <i class="ti ti-eye"></i>
-</button>
+ <!-- View Button -->
+                                <a href="{{ route('admin.pegawai.show', $pegawai->id) }}" 
+                                   class="btn btn-outline-info btn-sm me-1" 
+                                   title="Lihat Detail">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+
     <!-- Edit Button Outline (Trigger Modal) -->
     <button type="button" class="btn btn-outline-warning btn-sm me-1" 
             data-bs-toggle="modal" 

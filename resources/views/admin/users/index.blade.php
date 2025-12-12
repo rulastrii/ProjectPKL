@@ -60,7 +60,6 @@
          <th>Email</th>
          <th>Role</th>
          <th>Active</th>
-         <th>Created</th>
          <th class="text-end">Actions</th>
         </tr>
        </thead>
@@ -78,8 +77,17 @@
         : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
     !!}
 </td>
-<td>{{ $user->created_date? \Carbon\Carbon::parse($user->created_date)->format('d M Y'):'-' }}</td>
          <td class="text-end">
+          <!-- Show Button -->
+<button 
+    type="button" 
+    class="btn btn-outline-info btn-sm me-1"
+    data-bs-toggle="modal"
+    data-bs-target="#modalShowUser-{{ $user->id }}"
+    title="View User">
+    <i class="ti ti-eye"></i>
+</button>
+
     <!-- Edit Button Outline (Trigger Modal) -->
     <button type="button" class="btn btn-outline-warning btn-sm me-1" 
             data-bs-toggle="modal" 
@@ -157,5 +165,6 @@
 
 @include('admin.users.modal-create') {{-- Modal Create --}}
 @include('admin.users.modal-edit') {{-- Modal Create --}}
+@include('admin.users.modal-show') {{-- Modal Create --}}
 @endsection
 

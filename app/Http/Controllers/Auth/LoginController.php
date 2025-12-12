@@ -29,17 +29,23 @@ class LoginController extends Controller
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->with('error', 'Email atau password salah.')->withInput();
-        }
+    return back()->with('error', 'Email atau password salah.')->withInput();
+}
 
-        Auth::login($user);
+// Cek verifikasi email
+if (!$user->hasVerifiedEmail()) {
+    return redirect()->route('login')->with('error', 'Silakan verifikasi email terlebih dahulu.');
+}
 
-        // Arahkan dashboard sesuai role
-        return match($user->role_id) {
-            1 => redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!'),
-            2 => redirect()->route('pembimbing.dashboard')->with('success', 'Selamat datang Pembimbing!'),
-            default => redirect()->route('siswa.dashboard')->with('success', 'Selamat datang Siswa!'),
-        };
+Auth::login($user);
+
+// Arahkan dashboard sesuai role
+return match($user->role_id) {
+    1 => redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!'),
+    2 => redirect()->route('pembimbing.dashboard')->with('success', 'Selamat datang Pembimbing!'),
+    default => redirect()->route('siswa.dashboard')->with('success', 'Selamat datang Siswa!'),
+};
+
     }
 
     // Logout

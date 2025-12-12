@@ -33,6 +33,12 @@ class UserController extends Controller
     return view('admin.users.index', compact('users','roles'));
 }
 
+public function show($id)
+{
+    $user = User::with(['role', 'creator.role', 'updater.role', 'deleter.role'])->findOrFail($id);
+    return response()->json($user);
+}
+
 
     // Form tambah user
     public function create()

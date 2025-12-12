@@ -26,6 +26,13 @@ class BidangController extends Controller
         return view('admin.bidang.index', compact('bidangs'));
     }
 
+    // Menampilkan detail bidang
+    public function show($id)
+    {
+        $bidang = Bidang::findOrFail($id);
+        return view('admin.bidang.show', compact('bidang'));
+    }
+
     // Form tambah bidang
     public function create()
     {

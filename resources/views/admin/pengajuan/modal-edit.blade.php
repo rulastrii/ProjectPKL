@@ -73,7 +73,7 @@
 
             <div class="mt-2">
               <a id="btnPreviewSurat{{ $item->id }}"
-                 href="{{ $item->file_surat_path ? asset('uploads/surat/'.$item->file_surat_path) : '#' }}"
+                href="{{ asset($item->file_surat_path) }}"
                  target="_blank"
                  style="{{ $item->file_surat_path ? '' : 'display:none;' }}">
                 {{ $item->file_surat_path ? 'Lihat Surat' : 'Preview Surat Baru' }}
