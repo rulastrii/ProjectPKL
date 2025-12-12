@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container py-4">
+
+    <h3 class="mb-4 text-center">Pengaturan Akun Siswa</h3>
 
     <!-- Flash message sukses -->
     @if(session('success'))
@@ -12,18 +14,19 @@
     @endif
 
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="card-title mb-0">Form Profile Siswa</h4>
+                    <h5 class="card-title mb-0">Form Profile Siswa</h5>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('siswa.profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        @method('PUT') <!-- Spoofing method PUT -->
+                        @method('PUT')
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                        <div class="row g-3">
+                            <!-- Nama -->
+                            <div class="col-12 col-md-6">
                                 <label class="form-label">Nama</label>
                                 <input type="text" name="nama" class="form-control @error('nama') is-invalid @enderror" 
                                        value="{{ old('nama', $profile->nama) }}" required>
@@ -32,7 +35,8 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <!-- NISN -->
+                            <div class="col-12 col-md-6">
                                 <label class="form-label">NISN</label>
                                 <input type="text" name="nisn" class="form-control @error('nisn') is-invalid @enderror" 
                                        value="{{ old('nisn', $profile->nisn) }}" required>
@@ -42,8 +46,9 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                        <div class="row g-3 mt-2">
+                            <!-- Kelas -->
+                            <div class="col-12 col-md-6">
                                 <label class="form-label">Kelas</label>
                                 <input type="text" name="kelas" class="form-control @error('kelas') is-invalid @enderror" 
                                        value="{{ old('kelas', $profile->kelas) }}" required>
@@ -52,7 +57,8 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <!-- Jurusan -->
+                            <div class="col-12 col-md-6">
                                 <label class="form-label">Jurusan</label>
                                 <input type="text" name="jurusan" class="form-control @error('jurusan') is-invalid @enderror" 
                                        value="{{ old('jurusan', $profile->jurusan) }}" required>
@@ -63,21 +69,22 @@
                         </div>
 
                         <!-- Foto -->
-                        <div class="mb-3">
+                        <div class="mt-3">
                             <label class="form-label">Foto</label>
                             <input type="file" name="foto" class="form-control @error('foto') is-invalid @enderror">
                             @if($profile->foto)
-                                <div class="mt-2">
-                                    <img src="{{ asset('uploads/foto_siswa/'.$profile->foto) }}" alt="Foto Siswa" width="120" class="rounded">
+                                <div class="mt-2 d-flex justify-content-center">
+                                    <img src="{{ asset('uploads/foto_siswa/'.$profile->foto) }}" alt="Foto Siswa" 
+                                         class="rounded" style="max-width:150px; max-height:150px;">
                                 </div>
                             @endif
                             @error('foto')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">Simpan Profile</button>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Simpan Profile</button>
                         </div>
 
                     </form>
