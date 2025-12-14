@@ -121,7 +121,15 @@
              @endif
 
               {{-- ==================== PEMBIMBING (ROLE 2) ==================== --}}
-                @if(auth()->user()->role_id == 2)                
+                @if(auth()->user()->role_id == 2)     
+                <li class="nav-item">
+                    <a class="nav-link" href="./form-elements.html">
+                      <span class="nav-link-icon d-md-none d-lg-inline-block">
+                        <i class="ti ti-user-check"></i>
+                      </span>
+                      <span class="nav-link-title"> Siswa Bimbingan</span>
+                    </a>
+                  </li>           
                   <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
                       <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -197,16 +205,7 @@
                       </span>
                       <span class="nav-link-title">Pengajuan PKL/Magang</span>
                     </a>
-                  </li> 
-                  
-                <li class="nav-item">
-                  <a class="nav-link" href="{{ route('siswa.profile.index') }}">
-                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                      <i class="ti ti-user"></i>
-                    </span>
-                    <span class="nav-link-title"> Pengaturan Akun</span>
-                  </a>
-                </li>  
+                  </li>
                   {{-- Menu tambahan hanya muncul jika pengajuan diterima --}}
     @if($isApproved)
                 <li class="nav-item">

@@ -43,4 +43,14 @@ class SiswaProfile extends Model
     {
         return $this->belongsTo(PengajuanPklMagang::class, 'pengajuan_id');
     }
+
+    public function isLengkap(): bool
+{
+    return !empty($this->nama)
+        && !empty($this->nisn)
+        && !empty($this->kelas)
+        && !empty($this->jurusan)
+        && !empty($this->foto);
+}
+    
 }

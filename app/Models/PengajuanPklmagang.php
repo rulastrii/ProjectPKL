@@ -44,10 +44,12 @@ class PengajuanPklmagang extends Model
         return $this->belongsTo(Sekolah::class,'sekolah_id');
     }
 
-    public function siswaProfile()
+
+public function siswaProfile()
 {
-    return $this->hasOne(SiswaProfile::class,'pengajuan_id');
+    return $this->hasOne(SiswaProfile::class, 'pengajuan_id', 'id');
 }
+
 
 
     public function pembimbing()

@@ -14,6 +14,11 @@
     opacity: 1;
 }
 /*** Spinner End ***/
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* SELALU 2 KOLOM */
+  gap: 1rem;
+}
 
 .hover-scale { transition:.3s; cursor:pointer; }
 .hover-scale:hover { transform:scale(1.15); box-shadow:0 0 15px rgba(255,255,255,.3); }

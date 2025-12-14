@@ -2,10 +2,33 @@
 @section('title','Status Pengajuan PKL/Magang')
 
 @section('content')
+@php
+    $profile = \App\Models\SiswaProfile::where('user_id', auth()->id())->first();
+    $profileLengkap = $profile && $profile->isLengkap();
+@endphp
+
 <div class="page-body">
  <div class="container-xl">
   <div class="row row-cards">
    <div class="col-12">
+    @if(!$profileLengkap)
+<div class="alert alert-warning d-flex align-items-center mb-3">
+    <i class="ti ti-alert-triangle me-2"></i>
+    <div>
+        <strong>Profile belum lengkap.</strong><br>
+        Lengkapi profile terlebih dahulu sebelum mengajukan PKL.
+        <a href="{{ route('siswa.profile.index') }}" class="fw-bold ms-1">
+            Lengkapi sekarang →
+        </a>
+    </div>
+</div>
+@else
+<div class="alert alert-success d-flex align-items-center mb-3">
+    <i class="ti ti-circle-check me-2"></i>
+    <strong>Profile sudah lengkap.</strong>
+</div>
+@endif
+
     <div class="card">
 
      {{-- Card Header --}}
@@ -18,13 +41,18 @@
       @endphp
 
       <a 
-        href="{{ $hasPending ? '#' : route('siswa.pengajuan.create') }}" 
-        class="btn btn-primary ms-auto {{ $hasPending ? 'disabled' : '' }}"
-        style="{{ $hasPending ? 'pointer-events:none; opacity:0.6;' : '' }}"
-        title="{{ $hasPending ? 'Anda masih memiliki pengajuan yang belum selesai' : '' }}"
-      >
-          <i class="ti ti-plus me-1"></i> Ajukan PKL
-      </a>
+    href="{{ (!$profileLengkap || $hasPending) ? '#' : route('siswa.pengajuan.create') }}" 
+    class="btn btn-primary ms-auto {{ (!$profileLengkap || $hasPending) ? 'disabled' : '' }}"
+    style="{{ (!$profileLengkap || $hasPending) ? 'pointer-events:none; opacity:0.6;' : '' }}"
+    title="
+        {{ !$profileLengkap 
+            ? 'Lengkapi profile terlebih dahulu' 
+            : ($hasPending ? 'Anda masih memiliki pengajuan yang belum selesai' : '') 
+        }}"
+>
+    <i class="ti ti-plus me-1"></i> Ajukan PKL
+</a>
+
 
      </div>
 

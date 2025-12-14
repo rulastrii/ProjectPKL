@@ -4,14 +4,17 @@
 <div class="container py-4">
 
     <h3 class="mb-4 text-center">Pengaturan Akun Siswa</h3>
-
-    <!-- Flash message sukses -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+@if($statusProfile)
+    <div class="alert alert-success d-flex align-items-center">
+        <i class="ti ti-circle-check me-2"></i>
+        <strong>Profile Lengkap</strong>
+    </div>
+@else
+    <div class="alert alert-warning d-flex align-items-center">
+        <i class="ti ti-alert-triangle me-2"></i>
+        <strong>Profile belum lengkap.</strong> Lengkapi semua data & upload foto.
+    </div>
+@endif
 
     <div class="row justify-content-center">
         <div class="col-lg-8 col-md-10 col-sm-12">

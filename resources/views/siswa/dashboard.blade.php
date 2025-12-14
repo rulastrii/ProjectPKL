@@ -516,7 +516,7 @@
 
                         <!-- Card 4: Lihat Penilaian -->
                         <div class="col-md-3 mb-3">
-                          <div class="card h-100 text-center bg-warning text-white">
+                          <div class="card h-100 text-center bg-yellow text-white">
                             <div class="card-body d-flex flex-column align-items-center justify-content-center">
                               <i class="ti ti-star" style="font-size: 2rem;"></i> <!-- Icon Bintang -->
                               <h5 class="card-title mt-2">Lihat Penilaian Akhir</h5>

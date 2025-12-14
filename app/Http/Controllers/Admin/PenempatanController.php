@@ -11,42 +11,53 @@ use Illuminate\Support\Facades\Auth;
 
 class PenempatanController extends Controller
 {
-    // List data penempatan
+    // ===============================
+    // INDEX
+    // ===============================
     public function index(Request $request)
-{
-    $search    = $request->search;
-    $is_active = $request->is_active;
-    $per_page  = $request->per_page ?? 10;
-
-    $penempatan = Penempatan::with(['pengajuan','bidang'])
-        ->whereNull('deleted_date')
-        ->when($search, fn($q) => 
-            $q->whereHas('pengajuan', fn($p)=>$p->where('nama_siswa','like',"%$search%"))
-              ->orWhereHas('bidang', fn($b)=>$b->where('nama','like',"%$search%"))
-        )
-        ->when($is_active !== null, fn($q)=>$q->where('is_active',$is_active))
-        ->paginate($per_page)
-        ->appends($request->query());
-
-    // <-- Tambahkan fetch daftar pengajuan & bidang untuk modal create/edit
-    $pengajuan = PengajuanPklmagang::whereNull('deleted_date')->where('is_active', true)->get();
-    $bidang    = Bidang::whereNull('deleted_date')->where('is_active', true)->get();
-
-    // kirim semua variabel ke view
-    return view('admin.penempatan.index', compact('penempatan','pengajuan','bidang'));
-}
-
-
-    // Form tambah
-    public function create()
     {
-        $pengajuan = PengajuanPklmagang::where('is_active', true)->whereNull('deleted_date')->get();
-        $bidang    = Bidang::where('is_active', true)->whereNull('deleted_date')->get();
+        $search    = $request->search;
+        $is_active = $request->is_active;
+        $per_page  = $request->per_page ?? 10;
 
-        return view('admin.penempatan.create', compact('pengajuan','bidang'));
+        $penempatan = Penempatan::with([
+                'pengajuan.siswaProfile',
+                'bidang'
+            ])
+            ->whereNull('deleted_date')
+            ->when($search, function ($q) use ($search) {
+                $q->whereHas('pengajuan.siswaProfile', function ($s) use ($search) {
+                    $s->where('nama', 'like', "%$search%");
+                })
+                ->orWhereHas('bidang', function ($b) use ($search) {
+                    $b->where('nama', 'like', "%$search%");
+                });
+            })
+            ->when($is_active !== null, fn ($q) => $q->where('is_active', $is_active))
+            ->paginate($per_page)
+            ->appends($request->query());
+
+        // 🔥 hanya pengajuan diterima & belum dihapus
+        $pengajuan = PengajuanPklmagang::with('siswaProfile')
+            ->where('status', 'diterima')
+            ->whereNull('deleted_date')
+            ->where('is_active', true)
+            ->get();
+
+        $bidang = Bidang::whereNull('deleted_date')
+            ->where('is_active', true)
+            ->get();
+
+        return view('admin.penempatan.index', compact(
+            'penempatan',
+            'pengajuan',
+            'bidang'
+        ));
     }
 
-    // Store
+    // ===============================
+    // STORE
+    // ===============================
     public function store(Request $request)
     {
         $request->validate([
@@ -62,20 +73,14 @@ class PenempatanController extends Controller
             'is_active'    => true,
         ]);
 
-        return redirect()->route('admin.penempatan.index')->with('success','Penempatan berhasil ditambahkan');
+        return redirect()
+            ->route('admin.penempatan.index')
+            ->with('success', 'Penempatan berhasil ditambahkan');
     }
 
-    // Form edit
-    public function edit($id)
-    {
-        $penempatan = Penempatan::findOrFail($id);
-        $pengajuan  = PengajuanPklmagang::whereNull('deleted_date')->get();
-        $bidang     = Bidang::whereNull('deleted_date')->get();
-
-        return view('admin.penempatan.edit', compact('penempatan','pengajuan','bidang'));
-    }
-
-    // Update
+    // ===============================
+    // UPDATE
+    // ===============================
     public function update(Request $request, $id)
     {
         $penempatan = Penempatan::findOrFail($id);
@@ -94,17 +99,24 @@ class PenempatanController extends Controller
             'updated_id'   => Auth::id(),
         ]);
 
-        return redirect()->route('admin.penempatan.index')->with('success','Penempatan berhasil diperbarui');
+        return redirect()
+            ->route('admin.penempatan.index')
+            ->with('success', 'Penempatan berhasil diperbarui');
     }
 
-    // Soft delete
+    // ===============================
+    // DELETE (SOFT)
+    // ===============================
     public function destroy($id)
     {
         $penempatan = Penempatan::findOrFail($id);
-        $penempatan->deleted_date = now();
-        $penempatan->deleted_id = Auth::id();
-        $penempatan->save();
+        $penempatan->update([
+            'deleted_date' => now(),
+            'deleted_id'   => Auth::id(),
+        ]);
 
-        return redirect()->route('admin.penempatan.index')->with('success','Penempatan berhasil dihapus');
+        return redirect()
+            ->route('admin.penempatan.index')
+            ->with('success', 'Penempatan berhasil dihapus');
     }
 }

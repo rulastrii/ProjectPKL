@@ -156,6 +156,14 @@ Route::middleware(['auth','role:3'])->prefix('siswa')->name('siswa.')->group(fun
 
 });
 
+Route::middleware(['profile.complete'])->group(function () {
+    Route::get('/pengajuan/create', [PengajuanSiswaController::class, 'create'])
+        ->name('siswa.pengajuan.create');
+
+    Route::post('/pengajuan/store', [PengajuanSiswaController::class, 'store'])
+        ->name('siswa.pengajuan.store');
+});
+
 
 Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(function() {
 

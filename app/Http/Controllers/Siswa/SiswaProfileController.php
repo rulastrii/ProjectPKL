@@ -10,23 +10,27 @@ use App\Models\SiswaProfile;
 class SiswaProfileController extends Controller
 {
     public function index()
-    {
-        // Ambil profile siswa, jika belum ada buat kosong
-        $profile = SiswaProfile::firstOrCreate(
-            ['user_id' => Auth::id()],
-            [
-                'nama' => '',
-                'nisn' => '',
-                'kelas' => '',
-                'jurusan' => '',
-                'is_active' => true,
-                'created_date' => now(),
-                'created_id' => Auth::id()
-            ]
-        );
+{
+    // Ambil / buat profile siswa dulu
+    $profile = SiswaProfile::firstOrCreate(
+        ['user_id' => Auth::id()],
+        [
+            'nama' => '',
+            'nisn' => '',
+            'kelas' => '',
+            'jurusan' => '',
+            'is_active' => true,
+            'created_date' => now(),
+            'created_id' => Auth::id()
+        ]
+    );
 
-        return view('siswa.profile.index', compact('profile'));
-    }
+    // Baru cek status kelengkapan
+    $statusProfile = $profile->isLengkap();
+
+    return view('siswa.profile.index', compact('profile','statusProfile'));
+}
+
 
     public function update(Request $request)
     {

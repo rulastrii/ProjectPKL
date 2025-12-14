@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PengajuanPklmagang;
 use App\Models\Sekolah;
+use App\Models\SiswaProfile;
 use Illuminate\Support\Facades\Auth;
 
 class PengajuanSiswaController extends Controller
@@ -80,38 +81,47 @@ class PengajuanSiswaController extends Controller
      * Store Pengajuan Baru
      */
     public function store(Request $request)
-    {
-        $request->validate([
-            'sekolah_id' => 'required|exists:sekolah,id',
-            'jumlah_siswa' => 'required|integer|min:1',
-            'periode_mulai' => 'required|date',
-            'periode_selesai' => 'required|date|after_or_equal:periode_mulai',
-            'file_surat' => 'nullable|file|mimes:pdf|max:5120',
-        ]);
+{
+    $request->validate([
+        'sekolah_id' => 'required|exists:sekolah,id',
+        'jumlah_siswa' => 'required|integer|min:1',
+        'periode_mulai' => 'required|date',
+        'periode_selesai' => 'required|date|after_or_equal:periode_mulai',
+        'file_surat' => 'nullable|file|mimes:pdf|max:5120',
+    ]);
 
-        // Upload file surat
-        $filePath = null;
-        if ($request->hasFile('file_surat')) {
-            $file = $request->file('file_surat');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/surat'), $fileName);
-            $filePath = 'uploads/surat/' . $fileName;
-        }
-
-        PengajuanPklmagang::create([
-            'sekolah_id'      => $request->sekolah_id,
-            'jumlah_siswa'    => $request->jumlah_siswa,
-            'periode_mulai'   => $request->periode_mulai,
-            'periode_selesai' => $request->periode_selesai,
-            'file_surat_path' => $filePath,
-            'status'          => 'draft',
-            'created_id'      => Auth::id(),
-            'created_date'    => now(),
-        ]);
-
-        return redirect()->route('siswa.pengajuan.index')
-            ->with('success', 'Pengajuan berhasil dibuat!');
+    // Upload file surat
+    $filePath = null;
+    if ($request->hasFile('file_surat')) {
+        $file = $request->file('file_surat');
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('uploads/surat'), $fileName);
+        $filePath = 'uploads/surat/' . $fileName;
     }
+
+    // SIMPAN KE VARIABEL
+    $pengajuan = PengajuanPklmagang::create([
+        'sekolah_id'      => $request->sekolah_id,
+        'jumlah_siswa'    => $request->jumlah_siswa,
+        'periode_mulai'   => $request->periode_mulai,
+        'periode_selesai' => $request->periode_selesai,
+        'file_surat_path' => $filePath,
+        'status'          => 'draft',
+        'created_id'      => Auth::id(),
+        'created_date'    => now(),
+    ]);
+
+    // UPDATE siswa_profile
+    SiswaProfile::where('user_id', auth()->id())
+        ->update([
+            'pengajuan_id' => $pengajuan->id,
+            'updated_date' => now(),
+            'updated_id'   => auth()->id(),
+        ]);
+
+    return redirect()->route('siswa.pengajuan.index')
+        ->with('success', 'Pengajuan berhasil dibuat!');
+}
 
     /**
      * Edit Draft Pengajuan

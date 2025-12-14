@@ -44,7 +44,7 @@
     <div class="col mb-3">
       <div class="card card-sm h-100">
         <div class="card-body d-flex align-items-center">
-          <span class="avatar bg-orange text-white me-3 d-flex justify-content-center align-items-center" style="width:48px;height:48px;">
+          <span class="avatar bg-yellow text-white me-3 d-flex justify-content-center align-items-center" style="width:48px;height:48px;">
             <i class="ti ti-users" style="font-size:24px;"></i>
           </span>
           <div class="flex-grow-1">

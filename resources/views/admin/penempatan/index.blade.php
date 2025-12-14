@@ -8,6 +8,7 @@
    <div class="col-12">
     <div class="card">
 
+     {{-- Header --}}
      <div class="card-header d-flex align-items-center">
       <h3 class="card-title">Penempatan</h3>
       <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalCreatePenempatan">
@@ -23,7 +24,9 @@
           Show
           <select name="per_page" class="form-select form-select-sm mx-2" onchange="this.form.submit()">
             @foreach([5,10,25,50,100] as $size)
-              <option value="{{ $size }}" {{ request('per_page') == $size ? 'selected':'' }}>{{ $size }}</option>
+              <option value="{{ $size }}" {{ request('per_page') == $size ? 'selected':'' }}>
+                {{ $size }}
+              </option>
             @endforeach
           </select>
           entries
@@ -36,7 +39,8 @@
         </select>
 
         <div class="ms-auto d-flex">
-          <input type="text" name="search" value="{{ request('search') }}" placeholder="Search penempatan..."
+          <input type="text" name="search" value="{{ request('search') }}"
+                 placeholder="Search siswa / bidang..."
                  class="form-control form-control-sm">
           <button class="btn btn-sm btn-primary ms-2">Search</button>
         </div>
@@ -51,6 +55,7 @@
         <tr>
          <th>No.</th>
          <th>Nama Siswa</th>
+         <th>Kelas</th>
          <th>Bidang</th>
          <th>Status</th>
          <th>Created</th>
@@ -59,56 +64,94 @@
        </thead>
 
        <tbody>
-        @forelse($penempatan as $index=>$row)
+        @forelse($penempatan as $index => $row)
         <tr>
          <td>{{ $penempatan->firstItem() + $index }}</td>
-         <td>{{ $row->pengajuan->nama_siswa ?? '-' }}</td>
-         <td>{{ $row->bidang->nama ?? '-' }}</td>
 
+         {{-- Nama Siswa --}}
          <td>
-            {!! $row->is_active 
-                ? '<span class="badge bg-success-soft text-success">Active</span>' 
-                : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
-            !!}
+            {{ $row->pengajuan->siswaProfile->nama ?? '-' }}
          </td>
 
-         <td>{{ $row->created_date ? \Carbon\Carbon::parse($row->created_date)->format('d M Y') : '-' }}</td>
+         {{-- Kelas --}}
+         <td>
+            {{ $row->pengajuan->siswaProfile->kelas ?? '-' }}
+         </td>
 
+         {{-- Bidang --}}
+         <td>
+            {{ $row->bidang->nama ?? '-' }}
+         </td>
+
+         {{-- Status --}}
+         <td>
+            @if($row->is_active)
+              <span class="badge bg-success-soft text-success">Active</span>
+            @else
+              <span class="badge bg-danger-soft text-danger">Inactive</span>
+            @endif
+         </td>
+
+         {{-- Created --}}
+         <td>
+            {{ $row->created_date 
+                ? \Carbon\Carbon::parse($row->created_date)->format('d M Y') 
+                : '-' 
+            }}
+         </td>
+
+         {{-- Actions --}}
          <td class="text-end">
-           <button type="button" class="btn btn-outline-warning btn-sm me-1"
+           <button type="button"
+                   class="btn btn-outline-warning btn-sm me-1"
                    data-bs-toggle="modal"
                    data-bs-target="#modalEditPenempatan-{{ $row->id }}"
                    title="Edit">
              <i class="ti ti-pencil"></i>
            </button>
 
-           <form action="{{ route('admin.penempatan.destroy',$row->id) }}" method="POST" class="d-inline">
+           <form action="{{ route('admin.penempatan.destroy',$row->id) }}"
+                 method="POST" class="d-inline">
                @csrf
                @method('DELETE')
-               <button type="submit" onclick="return confirm('Delete penempatan?')" class="btn btn-outline-danger btn-sm">
+               <button type="submit"
+                       onclick="return confirm('Delete penempatan?')"
+                       class="btn btn-outline-danger btn-sm">
                    <i class="ti ti-trash"></i>
                </button>
            </form>
          </td>
         </tr>
+
         @empty
-        <tr><td colspan="6" class="text-center">No penempatan found</td></tr>
+        <tr>
+          <td colspan="7" class="text-center text-muted">
+            No penempatan found
+          </td>
+        </tr>
         @endforelse
        </tbody>
       </table>
      </div>
 
+     {{-- Pagination --}}
      <div class="card-footer d-flex align-items-center">
       <p class="m-0 text-secondary">
-          Showing <strong>{{ $penempatan->firstItem() }}</strong> to <strong>{{ $penempatan->lastItem() }}</strong> of <strong>{{ $penempatan->total() }}</strong> entries
+          Showing
+          <strong>{{ $penempatan->firstItem() }}</strong>
+          to
+          <strong>{{ $penempatan->lastItem() }}</strong>
+          of
+          <strong>{{ $penempatan->total() }}</strong>
+          entries
       </p>
 
       <ul class="pagination m-0 ms-auto">
-          @foreach ($penempatan->getUrlRange(1, $penempatan->lastPage()) as $page => $url)
-              <li class="page-item {{ $page == $penempatan->currentPage() ? 'active' : '' }}">
-                  <a class="page-link" href="{{ $url }}">{{ $page }}</a>
-              </li>
-          @endforeach
+        @foreach ($penempatan->getUrlRange(1, $penempatan->lastPage()) as $page => $url)
+          <li class="page-item {{ $page == $penempatan->currentPage() ? 'active' : '' }}">
+            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+          </li>
+        @endforeach
       </ul>
      </div>
 
