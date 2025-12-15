@@ -84,13 +84,12 @@ document.getElementById('toggleConfirmPassword').addEventListener('click', funct
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
 @if(session('error'))
 Swal.fire({
     icon: 'error',
     title: 'Gagal!',
-    text: '{{ session("error") }}',
+    text: @json(session('error')),
 });
 @endif
 
@@ -98,7 +97,7 @@ Swal.fire({
 Swal.fire({
     icon: 'warning',
     title: 'Periksa input!',
-    text: '{{ $errors->first() }}',
+    text: @json($errors->first()),
 });
 @endif
 
@@ -106,12 +105,13 @@ Swal.fire({
 Swal.fire({
     icon: 'success',
     title: 'Berhasil!',
-    text: '{{ session("success") }}',
+    text: @json(session('success')),
     timer: 2000,
     showConfirmButton: true
 });
 @endif
 </script>
+
 
   </body>
 </html>

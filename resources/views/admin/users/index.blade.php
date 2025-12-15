@@ -41,6 +41,18 @@
           @endforeach
         </select>
 
+        {{-- Filter Verifikasi Email --}}
+<select name="verified" class="form-select form-select-sm w-auto ms-2" onchange="this.form.submit()">
+    <option value="">All Status</option>
+    <option value="1" {{ request('verified') === '1' ? 'selected' : '' }}>
+        Terverifikasi
+    </option>
+    <option value="0" {{ request('verified') === '0' ? 'selected' : '' }}>
+        Belum Terverifikasi
+    </option>
+</select>
+
+
         {{-- Search --}}
         <div class="ms-auto d-flex">
           <input type="text" name="search" value="{{ request('search') }}" placeholder="Search user..."
@@ -69,7 +81,18 @@
         <tr>
          <td>{{ $users->firstItem() + $index }}</td>
          <td>{{ $user->name }}</td>
-         <td>{{ $user->email }}</td>
+         <td>
+    {{ $user->email }}
+
+    @if($user->email_verified_at)
+        <i class="ti ti-circle-check text-success ms-1"
+           title="Email Terverifikasi"></i>
+    @else
+        <i class="ti ti-circle-x text-danger ms-1"
+           title="Belum Terverifikasi"></i>
+    @endif
+</td>
+
          <td>{{ $user->role->name ?? '-' }}</td>
         <td>
     {!! $user->is_active 
@@ -78,6 +101,17 @@
     !!}
 </td>
          <td class="text-end">
+
+         @if(!$user->email_verified_at)
+    <form action="{{ route('admin.users.sendVerify', $user->id) }}" method="POST" class="d-inline">
+        @csrf
+        <button class="btn btn-sm btn-warning" title="Kirim Email Verifikasi">
+            <i class="ti ti-mail-forward"></i>
+        </button>
+    </form>
+@endif
+
+
           <!-- Show Button -->
 <button 
     type="button" 

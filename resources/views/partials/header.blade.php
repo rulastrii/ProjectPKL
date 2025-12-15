@@ -103,39 +103,38 @@
             </div>
             <div class="nav-item dropdown">
               @php
-    $user = Auth::user();
-    $foto = $user && $user->foto 
-            ? asset('storage/profile/'.$user->foto)        // jika user punya foto
-            : asset('static/avatars/user-default.png');    // default avatar
-@endphp
+                  $user = Auth::user();
+                  $foto = $user && $user->foto 
+                          ? asset('storage/profile/'.$user->foto)        // jika user punya foto
+                          : asset('static/avatars/user-default.png');    // default avatar
+              @endphp
 
-<a href="#" class="nav-link d-flex align-items-center lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-    <span class="avatar avatar-sm rounded-circle" 
-        style="
-            background-image:url('{{ $foto }}');
-            background-size: cover;
-            background-position: center;
-        ">
-    </span>
+              <a href="#" class="nav-link d-flex align-items-center lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+                  <span class="avatar avatar-sm rounded-circle" 
+                      style="
+                          background-image:url('{{ $foto }}');
+                          background-size: cover;
+                          background-position: center;
+                      ">
+                  </span>
 
-    <div class="d-none d-xl-block ps-2">
-        <div>{{ $user->name ?? 'Guest' }}</div>
-        <div class="mt-1 small text-secondary">
-            {{ $user->role->name ?? 'No Role' }}
-        </div>
-    </div>
-</a>
+                  <div class="d-none d-xl-block ps-2">
+                      <div>{{ $user->name ?? 'Guest' }}</div>
+                      <div class="mt-1 small text-secondary">
+                          {{ $user->role->name ?? 'No Role' }}
+                      </div>
+                  </div>
+              </a>
 
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <a href="#" class="dropdown-item">Status</a>
                 <a href="{{ route('siswa.profile.index') }}" class="dropdown-item">Profile</a>
                 <a href="#" class="dropdown-item">Feedback</a>
                 <div class="dropdown-divider"></div>
                 <a href="./settings.html" class="dropdown-item">Settings</a>
                 <form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit" class="dropdown-item">Logout</button>
-</form>
+                    @csrf
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form>
 
               </div>
             </div>
@@ -149,41 +148,41 @@
         </div>
       </header>
       <script>
-function updateDateTime() {
-    const dt = new Date();
-    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        function updateDateTime() {
+            const dt = new Date();
+            const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
-    const dayName = days[dt.getDay()];
-    const date = dt.getDate().toString().padStart(2,'0');
-    const month = months[dt.getMonth()];
-    const year = dt.getFullYear();
+            const dayName = days[dt.getDay()];
+            const date = dt.getDate().toString().padStart(2,'0');
+            const month = months[dt.getMonth()];
+            const year = dt.getFullYear();
 
-    const hours = dt.getHours().toString().padStart(2,'0');
-    const minutes = dt.getMinutes().toString().padStart(2,'0');
-    const seconds = dt.getSeconds().toString().padStart(2,'0');
+            const hours = dt.getHours().toString().padStart(2,'0');
+            const minutes = dt.getMinutes().toString().padStart(2,'0');
+            const seconds = dt.getSeconds().toString().padStart(2,'0');
 
-    const formatted = `${dayName}, ${date} ${month} ${year} | ${hours}:${minutes}:${seconds}`;
-    const datetimeEl = document.getElementById('datetime');
+            const formatted = `${dayName}, ${date} ${month} ${year} | ${hours}:${minutes}:${seconds}`;
+            const datetimeEl = document.getElementById('datetime');
 
-    if(datetimeEl) {
-        datetimeEl.textContent = formatted;
+            if(datetimeEl) {
+                datetimeEl.textContent = formatted;
 
-        // Detect theme dari URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const theme = urlParams.get('theme');
+                // Detect theme dari URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const theme = urlParams.get('theme');
 
-        if(theme === 'dark') {
-            datetimeEl.classList.remove('text-dark');
-            datetimeEl.classList.add('text-white');
-        } else {
-            datetimeEl.classList.remove('text-white');
-            datetimeEl.classList.add('text-dark');
+                if(theme === 'dark') {
+                    datetimeEl.classList.remove('text-dark');
+                    datetimeEl.classList.add('text-white');
+                } else {
+                    datetimeEl.classList.remove('text-white');
+                    datetimeEl.classList.add('text-dark');
+                }
+            }
         }
-    }
-}
 
-// Update setiap detik
-setInterval(updateDateTime, 1000);
-updateDateTime(); // initial
-</script>
+        // Update setiap detik
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); // initial
+        </script>

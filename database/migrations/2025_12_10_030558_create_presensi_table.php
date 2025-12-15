@@ -26,7 +26,9 @@ return new class extends Migration
             $table->time('jam_keluar')->nullable();
 
             $table->enum('status', ['hadir','absen','sakit'])->default('hadir');
-            $table->string('foto', 255)->nullable();
+            $table->string('foto_masuk', 255)->nullable();
+            $table->string('foto_pulang',255)->nullable();
+
 
             // Timestamp custom
             $table->timestamp('created_date')->nullable();

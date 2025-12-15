@@ -29,23 +29,25 @@ class LoginController extends Controller
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-    return back()->with('error', 'Email atau password salah.')->withInput();
-}
+            return back()->with('error', 'Email atau password salah.')->withInput();
+        }
 
-// Cek verifikasi email
-if (!$user->hasVerifiedEmail()) {
-    return redirect()->route('login')->with('error', 'Silakan verifikasi email terlebih dahulu.');
-}
+        // Cek verifikasi email
+        if (!$user->hasVerifiedEmail()) {
+            return redirect()->route('login')->with('error', 'Silakan verifikasi email terlebih dahulu.');
+        }
 
-Auth::login($user);
+        Auth::login($user);
 
-// Arahkan dashboard sesuai role
-return match($user->role_id) {
-    1 => redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!'),
-    2 => redirect()->route('pembimbing.dashboard')->with('success', 'Selamat datang Pembimbing!'),
-    default => redirect()->route('siswa.dashboard')->with('success', 'Selamat datang Siswa!'),
-};
-
+        // Arahkan dashboard sesuai role
+        return match($user->role_id) {
+            1 => redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!'),
+            2 => redirect()->route('pembimbing.dashboard')->with('success', 'Selamat datang Pembimbing!'),
+            3 => redirect()->route('guru.dashboard')->with('success', 'Selamat datang Guru!'),
+            4 => redirect()->route('siswa.dashboard')->with('success', 'Selamat datang Siswa!'),
+            5 => redirect()->route('magang.dashboard')->with('success', 'Selamat datang Magang!'),
+            default => redirect()->route('magang.dashboard')->with('success', 'Selamat datang!'),
+        };
     }
 
     // Logout

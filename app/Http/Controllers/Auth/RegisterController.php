@@ -31,7 +31,7 @@ class RegisterController extends Controller
         'name'          => $request->name,
         'email'         => $request->email,
         'password'      => $request->password,
-        'role_id'       => $request->role_id ?? 3,
+        'role_id'       => $request->role_id ?? 5,
         'is_active'     => true,
         'created_date'  => now(),
         'created_id'    => null,

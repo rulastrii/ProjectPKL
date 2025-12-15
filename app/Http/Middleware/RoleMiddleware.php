@@ -14,22 +14,25 @@ class RoleMiddleware
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
-{
+    {
+        $userRole = auth()->user()->role_id;
 
-    // Jika role tidak sesuai
-    if (!in_array(auth()->user()->role_id, $roles)) {
+        // Jika role tidak sesuai
+        if (!in_array($userRole, $roles)) {
 
-        // Redirect otomatis ke dashboard sesuai role user
-        $route = match(auth()->user()->role_id) {
-            1 => 'admin.dashboard',
-            2 => 'pembimbing.dashboard',
-            default => 'siswa.dashboard',
-        };
+            // Redirect otomatis ke dashboard sesuai role user
+            $route = match($userRole) {
+                1 => 'admin.dashboard',        // ADMIN
+                2 => 'pembimbing.dashboard',   // PEMBIMBING
+                3 => 'guru.dashboard',         // GURU
+                4 => 'siswa.dashboard',        // SISWA
+                5 => 'magang.dashboard',       // MAGANG
+                default => 'magang.dashboard', // DEFAULT
+            };
 
-        return redirect()->route($route)->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
+            return redirect()->route($route)->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
+        }
+
+        return $next($request);
     }
-
-    return $next($request);
-}
-
 }

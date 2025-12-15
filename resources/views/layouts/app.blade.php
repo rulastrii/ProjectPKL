@@ -755,54 +755,54 @@
     // Set tahun otomatis
     document.getElementById('year').textContent = new Date().getFullYear();
 </script>
-
 <script>
-    @if(session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: '{{ session("success") }}',
-            timer: 2000,
-            showConfirmButton: true
-        });
-    @endif
+@if(session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: @json(session('success')),
+        timer: 2000,
+        showConfirmButton: true
+    });
+@endif
 
-    @if(session('error'))
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: '{{ session("error") }}',
-            showConfirmButton: true
-        });
-    @endif
+@if(session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: @json(session('error')),
+        showConfirmButton: true
+    });
+@endif
 
-    @if(session('warning'))
-        Swal.fire({
-            icon: 'warning',
-            title: 'Warning!',
-            text: '{{ session("warning") }}',
-            showConfirmButton: true
-        });
-    @endif
+@if(session('warning'))
+    Swal.fire({
+        icon: 'warning',
+        title: 'Warning!',
+        text: @json(session('warning')),
+        showConfirmButton: true
+    });
+@endif
 
-    @if(session('info'))
-        Swal.fire({
-            icon: 'info',
-            title: 'Info!',
-            text: '{{ session("info") }}',
-            showConfirmButton: true
-        });
-    @endif
+@if(session('info'))
+    Swal.fire({
+        icon: 'info',
+        title: 'Info!',
+        text: @json(session('info')),
+        showConfirmButton: true
+    });
+@endif
 
-    @if($errors->any())
-        Swal.fire({
-            icon: 'error',
-            title: 'Kesalahan!',
-            text: '{{ $errors->first() }}',
-            showConfirmButton: true
-        });
-    @endif
+@if($errors->any())
+    Swal.fire({
+        icon: 'error',
+        title: 'Kesalahan!',
+        text: @json($errors->first()),
+        showConfirmButton: true
+    });
+@endif
 </script>
+
 
   </body>
 </html>

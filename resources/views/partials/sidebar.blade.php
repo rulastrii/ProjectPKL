@@ -46,9 +46,11 @@
                     <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.pembimbing.index') }}">
                       <i class="ti ti-user-check"></i> Data Pembimbing
                     </a>
-                    <a class="dropdown-item d-flex align-items-center gap-2" href="./buttons.html">
+                    <a class="dropdown-item d-flex align-items-center gap-2"
+                      href="{{ route('admin.siswa.index') }}">
                       <i class="ti ti-users"></i> Data Siswa
                     </a>
+
                   </div>
                       </div>
                     </div>
@@ -187,17 +189,17 @@
                 @endif
 
 
-                {{-- ==================== SISWA (ROLE 3) ==================== --}}
-                @if(auth()->user()->role_id == 3) 
+                {{-- ==================== SISWA (ROLE 4) ==================== --}}
+                @if(auth()->user()->role_id == 4) 
                 @php
-        // Ambil pengajuan terakhir siswa
-        $pengajuan = \App\Models\PengajuanPklmagang::where('created_id', auth()->id())
-                        ->orderByDesc('created_date')
-                        ->first();
+                    // Ambil pengajuan terakhir siswa
+                    $pengajuan = \App\Models\PengajuanPklmagang::where('created_id', auth()->id())
+                                    ->orderByDesc('created_date')
+                                    ->first();
 
-        // Cek apakah pengajuan sudah diterima
-        $isApproved = $pengajuan && $pengajuan->status === 'diterima';
-    @endphp
+                    // Cek apakah pengajuan sudah diterima
+                    $isApproved = $pengajuan && $pengajuan->status === 'diterima';
+                @endphp
                   <li class="nav-item">
                     <a class="nav-link" href="{{ route('siswa.pengajuan.index') }}">
                       <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -206,10 +208,10 @@
                       <span class="nav-link-title">Pengajuan PKL/Magang</span>
                     </a>
                   </li>
-                  {{-- Menu tambahan hanya muncul jika pengajuan diterima --}}
-    @if($isApproved)
+                {{-- Menu tambahan hanya muncul jika pengajuan diterima --}}
+                @if($isApproved)
                 <li class="nav-item">
-                  <a class="nav-link" href="./form-elements.html">
+                  <a class="nav-link" href="{{ route('siswa.presensi.index') }}">
                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                       <i class="ti ti-calendar-time"></i>
                     </span>

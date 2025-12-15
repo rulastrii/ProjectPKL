@@ -13,7 +13,7 @@
           <!-- Name -->
           <div class="col-12 col-md-6">
             <label class="form-label">Full Name</label>
-            <input type="text" name="name" class="form-control" placeholder="Enter full name" value="{{ old('name') }}" required>
+            <input type="text" name="name" id="name" class="form-control" placeholder="Enter full name" value="{{ old('name') }}" required>
           </div>
 
           <!-- Email -->
@@ -26,7 +26,7 @@
           <div class="col-12 col-md-6">
             <label class="form-label">Password</label>
             <div class="input-group input-group-flat">
-              <input type="password" name="password" id="password" class="form-control" placeholder="Create password" required>
+              <input type="password" name="password" id="password" class="form-control" placeholder="Create password" readonly>
               <span class="input-group-text">
                 <a href="javascript:void(0)" id="togglePassword" class="link-secondary" title="Show password">
                   <!-- Eye -->
@@ -50,7 +50,7 @@
           <div class="col-12 col-md-6">
             <label class="form-label">Confirm Password</label>
             <div class="input-group input-group-flat">
-              <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" placeholder="Repeat password" required>
+              <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" placeholder="Repeat password" readonly>
               <span class="input-group-text">
                 <a href="javascript:void(0)" id="toggleConfirmPassword" class="link-secondary" title="Show password">
                   <!-- Eye -->
@@ -128,5 +128,38 @@ document.addEventListener('DOMContentLoaded', function () {
             eyeOff.style.display = 'none';
         }
     });
+});
+</script>
+
+<script>
+function generatePassword(name) {
+    if (!name) return '';
+
+    let base = name.trim().split(' ')[0].toLowerCase();
+    let random = Math.floor(100000 + Math.random() * 900000);
+
+    return base + random;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const modal = document.getElementById('modalCreateUser');
+
+    modal.addEventListener('shown.bs.modal', function () {
+
+        const nameInput = modal.querySelector('#name');
+        const passwordInput = modal.querySelector('#password');
+        const confirmInput = modal.querySelector('#password_confirmation');
+
+        if (!nameInput) return;
+
+        nameInput.addEventListener('input', function () {
+            const password = generatePassword(this.value);
+            passwordInput.value = password;
+            confirmInput.value = password;
+        });
+
+    });
+
 });
 </script>

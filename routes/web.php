@@ -16,7 +16,8 @@ use App\Http\Controllers\Admin\PenempatanController;
 use App\Http\Controllers\Siswa\PengajuanSiswaController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Siswa\SiswaProfileController;
-
+use App\Http\Controllers\Siswa\PresensiSiswaController;
+use App\Http\Controllers\Admin\SiswaProfileController as AdminSiswaProfileController;
 /*
 |--------------------------------------------------------------------------
 | Public / Guest Route
@@ -96,16 +97,20 @@ Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->
 /*
 |--------------------------------------------------------------------------
 | Universal Dashboard Redirect Based on Role
-| /dashboard akan otomatis pilih dashboard sesuai role
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth','verified'])->get('/dashboard', function () {
     return match(auth()->user()->role_id) {
         1 => redirect()->route('admin.dashboard'),
         2 => redirect()->route('pembimbing.dashboard'),
-        default => redirect()->route('siswa.dashboard'),
+        3 => redirect()->route('guru.dashboard'),
+        4 => redirect()->route('siswa.dashboard'),
+        5 => redirect()->route('magang.dashboard'),
+        default => redirect()->route('magang.dashboard'),
     };
 })->name('dashboard');
+
 
 
 
@@ -117,43 +122,53 @@ Route::middleware(['auth','verified'])->get('/dashboard', function () {
 
 Route::middleware(['auth','role:1'])->get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
-
 Route::middleware(['auth','role:2'])->get('/pembimbing/dashboard', function () {
     return view('pembimbing.dashboard');
 })->name('pembimbing.dashboard');
 
-Route::middleware(['auth','role:3'])->get('/siswa/dashboard', function () {
+Route::middleware(['auth','role:3'])->get('/guru/dashboard', function () {
+    return view('guru.dashboard');
+})->name('guru.dashboard');
+
+Route::middleware(['auth','role:4'])->get('/siswa/dashboard', function () {
     return view('siswa.dashboard');
 })->name('siswa.dashboard');
+
+Route::middleware(['auth','role:5'])->get('/magang/dashboard', function () {
+    return view('magang.dashboard');
+})->name('magang.dashboard');
+
 
 
 /*
 |--------------------------------------------------------------------------
-| Admin CRUD Module (Hanya role admin)
+| SISWA Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth','role:3'])->prefix('siswa')->name('siswa.')->group(function() {
 
-    /**
-     * PENGAJUAN CRUD
-     */
+Route::middleware(['auth','role:4'])->prefix('siswa')->name('siswa.')->group(function() {
+    // PENGAJUAN CRUD
     Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
-        Route::get('/', [PengajuanSiswaController::class,'index'])->name('index');           // status pengajuan
-        Route::get('/create', [PengajuanSiswaController::class,'create'])->name('create');   // form pengajuan
-        Route::post('/store', [PengajuanSiswaController::class,'store'])->name('store');     // simpan pengajuan
-        Route::get('/{id}/edit', [PengajuanSiswaController::class,'edit'])->name('edit');    // edit draft
-        Route::put('/{id}', [PengajuanSiswaController::class,'update'])->name('update');     // update pengajuan
-        Route::get('/{pengajuan}', [PengajuanSiswaController::class,'detail'])->name('detail'); // detail pengajuan
+        Route::get('/', [PengajuanSiswaController::class,'index'])->name('index');
+        Route::get('/create', [PengajuanSiswaController::class,'create'])->name('create');
+        Route::post('/store', [PengajuanSiswaController::class,'store'])->name('store');
+        Route::get('/{id}/edit', [PengajuanSiswaController::class,'edit'])->name('edit');
+        Route::put('/{id}', [PengajuanSiswaController::class,'update'])->name('update');
+        Route::get('/{pengajuan}', [PengajuanSiswaController::class,'detail'])->name('detail');
     });
 
-    /**
-     * PROFILE SISWA (Pengaturan Akun)
-     */
+    // PROFILE SISWA
     Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', [SiswaProfileController::class,'index'])->name('index');        // tampilkan form create/update profile
-        Route::put('/update', [SiswaProfileController::class,'update'])->name('update'); // update data profile
+        Route::get('/', [SiswaProfileController::class,'index'])->name('index');
+        Route::put('/update', [SiswaProfileController::class,'update'])->name('update');
     });
 
+    // PRESENSI
+    Route::prefix('presensi')->name('presensi.')->group(function () {
+        Route::get('/', [PresensiSiswaController::class,'index'])->name('index');
+        Route::get('/create', [PresensiSiswaController::class,'create'])->name('create');
+        Route::post('/store', [PresensiSiswaController::class,'store'])->name('store');
+    });
 });
 
 Route::middleware(['profile.complete'])->group(function () {
@@ -163,7 +178,6 @@ Route::middleware(['profile.complete'])->group(function () {
     Route::post('/pengajuan/store', [PengajuanSiswaController::class, 'store'])
         ->name('siswa.pengajuan.store');
 });
-
 
 Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(function() {
 
@@ -176,6 +190,10 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
         Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+        
+        // Kirim Email Verifikasi Ulang
+        Route::post('/{user}/send-verify', [UserController::class, 'sendVerify'])
+            ->name('sendVerify');
 
     });
 
@@ -258,5 +276,10 @@ Route::prefix('penempatan')->name('penempatan.')->group(function () {
     Route::delete('/{penempatan}', [PenempatanController::class,'destroy'])->name('destroy');
 });
 
+Route::get('/siswa', [AdminSiswaProfileController::class, 'index'])
+    ->name('siswa.index');
+
+Route::get('/siswa/{id}', [AdminSiswaProfileController::class, 'show'])
+    ->name('siswa.show');
 
 });

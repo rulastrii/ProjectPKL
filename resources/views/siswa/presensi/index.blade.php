@@ -1,0 +1,95 @@
+@extends('layouts.app')
+@section('title','Data Presensi Siswa')
+
+@section('content')
+<div class="page-body">
+  <div class="container-xl">
+    <div class="row row-cards">
+      <div class="col-12">
+        <div class="card">
+
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title">Presensi Siswa</h3>
+            <a href="{{ route('siswa.presensi.create') }}" class="btn btn-primary btn-sm">
+              <i class="ti ti-plus"></i> Tambah Presensi
+            </a>
+          </div>
+
+          <div class="card-body border-bottom py-3">
+            <form method="GET" class="d-flex w-100 gap-2">
+              <div class="d-flex align-items-center">
+                Show
+                <select name="per_page" class="form-select form-select-sm mx-2" onchange="this.form.submit()">
+                  @foreach([5,10,25,50] as $size)
+                    <option value="{{ $size }}" {{ request('per_page',10) == $size ? 'selected':'' }}>
+                      {{ $size }}
+                    </option>
+                  @endforeach
+                </select>
+                entries
+              </div>
+              <div class="ms-auto d-flex">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama / NISN..." class="form-control form-control-sm">
+                <button class="btn btn-sm btn-primary ms-2">Search</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table card-table table-vcenter text-nowrap table-hover">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama Siswa</th>
+                  <th>Tanggal</th>
+                  <th>Jam Masuk</th>
+                    <th>Jam Keluar</th>
+                    <th>Status</th>
+                    <th>Foto Masuk</th>
+                    <th>Foto Pulang</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse($presensi as $i => $p)
+                  <tr>
+                    <td>{{ $presensi->firstItem() + $i }}</td>
+                    <td>{{ $p->siswa->nama ?? '-' }}</td>
+                    <td>{{ $p->tanggal }}</td>
+                    <td>{{ $p->jam_masuk ?? '-' }}</td>
+<td>{{ $p->jam_keluar ?? '-' }}</td>
+<td>{{ ucfirst($p->status) ?? '-' }}</td>
+<td>
+    @if($p->foto_masuk)
+      <img src="{{ asset('uploads/presensi/'.$p->foto_masuk) }}" width="50">
+    @else
+      -
+    @endif
+</td>
+<td>
+    @if($p->foto_pulang)
+      <img src="{{ asset('uploads/presensi/'.$p->foto_pulang) }}" width="50">
+    @else
+      -
+    @endif
+</td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="7" class="text-center">Data presensi belum tersedia</td>
+                  </tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card-footer d-flex justify-content-between">
+            <p class="m-0 text-secondary">Showing {{ $presensi->firstItem() }} to {{ $presensi->lastItem() }} of {{ $presensi->total() }}</p>
+            {{ $presensi->links() }}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+@endsection
