@@ -4,15 +4,23 @@
 @section('content')
 <div class="page-body">
   <div class="container-xl">
+    {{-- INCLUDE FORM ABSENSI --}}
+    @php
+      $siswa = auth()->user()->siswaProfile;
+      $todayPresensi = \App\Models\Presensi::where('siswa_id', $siswa->id)
+                        ->where('tanggal', date('Y-m-d'))
+                        ->first();
+    @endphp
+
+<div class="mb-4"> {{-- <-- ini kasih jarak bawah --}}
+      @include('siswa.presensi._form')
+    </div>
     <div class="row row-cards">
       <div class="col-12">
         <div class="card">
 
           <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title">Presensi Siswa</h3>
-            <a href="{{ route('siswa.presensi.create') }}" class="btn btn-primary btn-sm">
-              <i class="ti ti-plus"></i> Tambah Presensi
-            </a>
           </div>
 
           <div class="card-body border-bottom py-3">
@@ -28,6 +36,20 @@
                 </select>
                 entries
               </div>
+              
+
+    <div class="ms-2">
+      <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="form-control form-control-sm" onchange="this.form.submit()">
+    </div>
+
+    <div class="ms-2">
+      <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">Semua Status</option>
+        <option value="hadir" {{ request('status')=='hadir'?'selected':'' }}>Hadir</option>
+        <option value="absen" {{ request('status')=='absen'?'selected':'' }}>Absen</option>
+        <option value="sakit" {{ request('status')=='sakit'?'selected':'' }}>Sakit</option>
+      </select>
+    </div>
               <div class="ms-auto d-flex">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama / NISN..." class="form-control form-control-sm">
                 <button class="btn btn-sm btn-primary ms-2">Search</button>

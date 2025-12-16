@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\RegisterGuruController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
@@ -37,8 +38,32 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
+/*
+|--------------------------------------------------------------------------
+| Register Guru (Khusus)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('guest')->group(function () {
+
+    Route::get('/register', [RegisterGuruController::class, 'showForm'])
+        ->name('register');
+
+    Route::post('/register', [RegisterGuruController::class, 'register'])
+        ->name('register.store');
+
+    // Validasi data guru (AJAX)
+    Route::post('/cek-guru', [RegisterGuruController::class, 'cekDataGuru'])
+        ->name('cek-guru');
+});
+
+
+
+
+/*
 Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+*/
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
@@ -126,7 +151,7 @@ Route::middleware(['auth','role:2'])->get('/pembimbing/dashboard', function () {
     return view('pembimbing.dashboard');
 })->name('pembimbing.dashboard');
 
-Route::middleware(['auth','role:3'])->get('/guru/dashboard', function () {
+Route::middleware(['auth','verified','role:3','guru_verified'])->get('/guru/dashboard', function () {
     return view('guru.dashboard');
 })->name('guru.dashboard');
 
@@ -190,7 +215,9 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
         Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
-        
+        // APPROVE GURU
+        Route::post('/{user}/approve-guru', [UserController::class, 'approveGuru'])
+            ->name('approve-guru');
         // Kirim Email Verifikasi Ulang
         Route::post('/{user}/send-verify', [UserController::class, 'sendVerify'])
             ->name('sendVerify');

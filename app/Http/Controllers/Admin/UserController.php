@@ -165,4 +165,24 @@ class UserController extends Controller
 
         return back()->with('success', 'Email verifikasi berhasil dikirim.');
     }
+
+    public function approveGuru(User $user)
+{
+    if ($user->role_id != 3) {
+        return back()->with('error', 'Hanya guru yang bisa di-approve.');
+    }
+
+    if ($user->is_active) {
+        return back()->with('info', 'Guru sudah di-approve.');
+    }
+
+    $user->is_active = true;
+    $user->save();
+
+    // Kirim email verifikasi otomatis
+    $user->sendEmailVerificationNotification();
+
+    return back()->with('success', 'Guru telah di-approve dan email verifikasi dikirim.');
+}
+
 }

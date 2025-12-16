@@ -62,6 +62,14 @@
 </div>
 
 <div class="text-center text-secondary mt-3">
-    Don't have account yet? <a href="{{ route('register') }}">Sign up</a>
+    Belum punya akun guru?
+    <a href="{{ route('register') }}">Daftar Guru</a>
+    <div class="small mt-1">
+        <span class="text-success">
+            ✔ Data guru divalidasi melalui sistem simulasi
+        </span>
+    </div>
 </div>
+
+
 @endsection

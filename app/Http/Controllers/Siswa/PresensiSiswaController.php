@@ -5,73 +5,121 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Presensi;
+use Carbon\Carbon;
 
 class PresensiSiswaController extends Controller
 {
     public function index(Request $request)
-    {
-        $perPage = $request->per_page ?? 10;
+{
+    $siswa = auth()->user()->siswaProfile;
 
-        $siswa = auth()->user()->siswaProfile;
+    $query = Presensi::where('siswa_id', $siswa->id);
 
-        $presensi = Presensi::with('siswa')
-            ->where('siswa_id', $siswa->id)
-            ->when($request->search, fn($q) => $q->where('tanggal','like','%'.$request->search.'%'))
-            ->orderBy('tanggal', 'desc')
-            ->paginate($perPage)
-            ->withQueryString();
-
-        return view('siswa.presensi.index', compact('presensi'));
+    // Filter search
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->whereHas('siswa', function($q) use ($search) {
+            $q->where('nama', 'like', "%$search%")
+              ->orWhere('nisn', 'like', "%$search%");
+        });
     }
+
+    // Filter tanggal
+    if ($request->filled('tanggal')) {
+        $query->where('tanggal', $request->tanggal);
+    }
+
+    // Filter status
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    $perPage = $request->input('per_page', 10);
+    $presensi = $query->orderBy('tanggal', 'desc')->paginate($perPage);
+
+    // Tetap bawa query string agar pagination mempertahankan filter
+    $presensi->appends($request->all());
+
+    return view('siswa.presensi.index', compact('presensi'));
+}
+
 
     public function create()
     {
         $siswa = auth()->user()->siswaProfile;
 
-        return view('siswa.presensi.create', compact('siswa'));
+        // Ambil presensi hari ini
+        $todayPresensi = Presensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', date('Y-m-d'))
+            ->first();
+
+        // Helper untuk view agar lebih ringkas dan aman null
+        $jamMasuk = $todayPresensi->jam_masuk ?? null;
+        $jamPulang = $todayPresensi->jam_keluar ?? null;
+
+        $absenMasukSudah = !is_null($jamMasuk);
+        $absenPulangSudah = !is_null($jamPulang);
+
+        return view('siswa.presensi.create', compact(
+            'siswa', 'todayPresensi', 'jamMasuk', 'jamPulang', 'absenMasukSudah', 'absenPulangSudah'
+        ));
     }
 
     public function store(Request $request)
     {
         $siswa = auth()->user()->siswaProfile;
+        $tanggal = date('Y-m-d');
 
         $request->validate([
-            'tanggal' => 'required|date',
             'tab' => 'required|in:masuk,pulang',
-            'jam_masuk' => 'required_if:tab,masuk',
-            'jam_keluar' => 'required_if:tab,pulang',
             'status' => 'required_if:tab,masuk|in:hadir,absen,sakit',
             'foto_masuk' => 'nullable|image|max:2048',
             'foto_pulang' => 'nullable|image|max:2048',
         ]);
 
-        $data = ['siswa_id' => $siswa->id, 'tanggal' => $request->tanggal];
+        /** ================= ABSEN MASUK ================= */
+        if ($request->tab === 'masuk') {
 
-        if($request->tab == 'masuk') {
-            $data['jam_masuk'] = $request->jam_masuk;
-            $data['status'] = $request->status;
+            $presensi = Presensi::firstOrNew([
+                'siswa_id' => $siswa->id,
+                'tanggal' => $tanggal
+            ]);
 
-            if($request->hasFile('foto_masuk')){
+            if ($presensi->jam_masuk) {
+                return back()->withErrors(['msg' => 'Absensi masuk sudah dilakukan.']);
+            }
+
+            $presensi->jam_masuk = Carbon::now('Asia/Jakarta')->format('H:i:s');
+            $presensi->status = $request->status;
+
+            if ($request->hasFile('foto_masuk')) {
                 $file = $request->file('foto_masuk');
                 $filename = time().'_masuk_'.$file->getClientOriginalName();
                 $file->move(public_path('uploads/presensi'), $filename);
-                $data['foto_masuk'] = $filename;
+                $presensi->foto_masuk = $filename;
             }
 
-            // Cek apakah hari ini sudah ada presensi, update jam_masuk jika belum ada
-            Presensi::updateOrCreate(
-                ['siswa_id' => $siswa->id, 'tanggal' => $request->tanggal],
-                $data
-            );
+            $presensi->save();
+        }
 
-        } elseif($request->tab == 'pulang') {
-            $presensi = Presensi::firstOrCreate(
-                ['siswa_id' => $siswa->id, 'tanggal' => $request->tanggal]
-            );
+        /** ================= ABSEN PULANG ================= */
+        if ($request->tab === 'pulang') {
 
-            $presensi->jam_keluar = $request->jam_keluar;
+            $presensi = Presensi::where('siswa_id', $siswa->id)
+                ->where('tanggal', $tanggal)
+                ->first();
 
-            if($request->hasFile('foto_pulang')){
+            if (!$presensi || !$presensi->jam_masuk) {
+                return back()->withErrors(['msg' => 'Anda belum melakukan absensi masuk.']);
+            }
+
+            if ($presensi->jam_keluar) {
+                return back()->withErrors(['msg' => 'Absensi pulang sudah dilakukan.']);
+            }
+
+            $presensi->jam_keluar = Carbon::now('Asia/Jakarta')->format('H:i:s');
+
+            if ($request->hasFile('foto_pulang')) {
                 $file = $request->file('foto_pulang');
                 $filename = time().'_pulang_'.$file->getClientOriginalName();
                 $file->move(public_path('uploads/presensi'), $filename);
@@ -81,7 +129,7 @@ class PresensiSiswaController extends Controller
             $presensi->save();
         }
 
-        return redirect()->route('siswa.presensi.index')
+        return redirect()->route('siswa.presensi.create')
             ->with('success', 'Presensi berhasil disimpan.');
     }
 }

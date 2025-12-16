@@ -102,6 +102,16 @@
 </td>
          <td class="text-end">
 
+         {{-- Tombol Approve --}}
+    @if(!$user->is_active && $user->role_id == 3)
+    <form action="{{ route('admin.users.approve-guru', $user->id) }}" method="POST" class="d-inline">
+        @csrf
+        <button class="btn btn-sm btn-success" title="Approve Guru">
+            <i class="ti ti-check"></i>
+        </button>
+    </form>
+    @endif
+
          @if(!$user->email_verified_at)
     <form action="{{ route('admin.users.sendVerify', $user->id) }}" method="POST" class="d-inline">
         @csrf
