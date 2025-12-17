@@ -10,6 +10,7 @@ use App\Models\MockDataGuru;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
+
 class RegisterGuruController extends Controller
 {
     public function showForm()
@@ -54,7 +55,7 @@ class RegisterGuruController extends Controller
             $user = User::create([
                 'name'         => $guru->nama_lengkap,
                 'email'        => $request->email,
-                'password'     => Hash::make($request->password),
+                'password'     => $request->password,
                 'role_id'      => 3, // GURU
                 'is_active'    => false, // nunggu approve admin
                 'created_date' => now(),

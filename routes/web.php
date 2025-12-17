@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SekolahController;
 use App\Http\Controllers\Admin\BidangController;
 use App\Http\Controllers\Admin\PegawaiController;
 use App\Http\Controllers\Admin\PengajuanPklmagangController;
+use App\Http\Controllers\Admin\PengajuanMagangMahasiswaController;
 use App\Http\Controllers\Admin\PembimbingController;
 use App\Http\Controllers\Admin\PenempatanController;
 use App\Http\Controllers\Siswa\PengajuanSiswaController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Siswa\SiswaProfileController;
 use App\Http\Controllers\Siswa\PresensiSiswaController;
 use App\Http\Controllers\Admin\SiswaProfileController as AdminSiswaProfileController;
+use App\Http\Controllers\Magang\PengajuanMagangController;
 /*
 |--------------------------------------------------------------------------
 | Public / Guest Route
@@ -159,7 +161,7 @@ Route::middleware(['auth','role:4'])->get('/siswa/dashboard', function () {
     return view('siswa.dashboard');
 })->name('siswa.dashboard');
 
-Route::middleware(['auth','role:5'])->get('/magang/dashboard', function () {
+Route::middleware(['auth','verified','role:5', 'magang_verified'])->get('/magang/dashboard', function () {
     return view('magang.dashboard');
 })->name('magang.dashboard');
 
@@ -218,6 +220,9 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         // APPROVE GURU
         Route::post('/{user}/approve-guru', [UserController::class, 'approveGuru'])
             ->name('approve-guru');
+        // REJECT GURU
+        Route::post('/{user}/reject-guru', [UserController::class, 'rejectGuru'])
+            ->name('reject-guru');
         // Kirim Email Verifikasi Ulang
         Route::post('/{user}/send-verify', [UserController::class, 'sendVerify'])
             ->name('sendVerify');
@@ -281,6 +286,22 @@ Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
 
 });
 
+// ADMIN PENGAJUAN MAGANG MAHASISWA
+Route::prefix('pengajuan-magang')->name('pengajuan-magang.')->group(function() {
+
+    Route::get('/', [PengajuanMagangMahasiswaController::class, 'index'])->name('index');
+    Route::get('/create', [PengajuanMagangMahasiswaController::class, 'create'])->name('create');
+    Route::post('/store', [PengajuanMagangMahasiswaController::class, 'store'])->name('store');
+    Route::get('/{pengajuan}/edit', [PengajuanMagangMahasiswaController::class, 'edit'])->name('edit');
+    Route::put('/{pengajuan}', [PengajuanMagangMahasiswaController::class, 'update'])->name('update');
+    Route::delete('/{pengajuan}', [PengajuanMagangMahasiswaController::class, 'destroy'])->name('destroy');
+    Route::get('/{pengajuan}', [PengajuanMagangMahasiswaController::class, 'show'])->name('show');
+
+    // Approve / Reject
+    Route::post('/{pengajuan}/approve', [PengajuanMagangMahasiswaController::class, 'approve'])->name('approve');
+    Route::post('/{pengajuan}/reject', [PengajuanMagangMahasiswaController::class, 'reject'])->name('reject');
+});
+
 // PEMBIMBING CRUD
 
 Route::prefix('pembimbing')->name('pembimbing.')->group(function () {
@@ -310,3 +331,14 @@ Route::get('/siswa/{id}', [AdminSiswaProfileController::class, 'show'])
     ->name('siswa.show');
 
 });
+
+/*
+|--------------------------------------------------------------------------
+| Pendaftaran Magang (Mahasiswa / Public)
+|--------------------------------------------------------------------------
+*/
+Route::get('/daftar-magang', [PengajuanMagangController::class, 'create'])
+    ->name('magang.daftar');
+
+Route::post('/daftar-magang', [PengajuanMagangController::class, 'store'])
+    ->name('magang.store');

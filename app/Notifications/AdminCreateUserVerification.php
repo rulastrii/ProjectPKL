@@ -10,10 +10,12 @@ use Illuminate\Support\Facades\URL;
 class AdminCreateUserVerification extends VerifyEmail
 {
     protected ?string $plainPassword;
+    protected bool $isAdminCreated;
 
-    public function __construct(?string $plainPassword = null)
+    public function __construct(?string $plainPassword = null, bool $isAdminCreated = false)
     {
         $this->plainPassword = $plainPassword;
+        $this->isAdminCreated = $isAdminCreated;
     }
 
     protected function verificationUrl($notifiable)
@@ -31,6 +33,10 @@ class AdminCreateUserVerification extends VerifyEmail
     protected function resolveRole($user): array
     {
         return match ((int) $user->role_id) {
+            3 => [
+                'label' => 'Guru',
+                'title' => 'Akun Guru Anda Telah Dibuat',
+            ],
             4 => [
                 'label' => 'Peserta PKL',
                 'title' => 'Akun Peserta PKL Anda Telah Dibuat',
@@ -53,11 +59,12 @@ class AdminCreateUserVerification extends VerifyEmail
         return (new MailMessage)
             ->subject($role['title'])
             ->view('auth.admin-created-user', [
-                'user'      => $notifiable,
-                'password'  => $this->plainPassword,
-                'url'       => $this->verificationUrl($notifiable),
-                'roleLabel' => $role['label'],
-                'title'     => $role['title'],
+                'user'           => $notifiable,
+                'password'       => $this->isAdminCreated ? $this->plainPassword : null,
+                'url'            => $this->verificationUrl($notifiable),
+                'roleLabel'      => $role['label'],
+                'title'          => $role['title'],
+                'isAdminCreated' => $this->isAdminCreated,
             ]);
     }
 }

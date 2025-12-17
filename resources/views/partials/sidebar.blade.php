@@ -50,11 +50,19 @@
           </a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route('admin.pengajuan.index') }}">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
             <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-text"></i></span>
             <span class="nav-link-title">Data Pengajuan</span>
           </a>
+          <div class="dropdown-menu">
+            <div class="dropdown-menu-columns">
+              <div class="dropdown-menu-column">
+                <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.pengajuan.index') }}"><i class="ti ti-users"></i> Siswa PKL</a>
+                <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.pengajuan-magang.index') }}"><i class="ti ti-users"></i> Mahasiswa Magang</a>
+              </div>
+            </div>
+          </div>
         </li>
 
         <li class="nav-item">

@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0">
-                <a href="" class="navbar-brand p-0">
+                <a href="{{ route('welcome') }}" class="navbar-brand p-0">
                     <!-- <h1 class="text-primary"><i class="fas fa-search-dollar me-3"></i>Stocker</h1>-->
                         <img id="logo-dark" src="{{ asset('img/logo-dark.png') }}" alt="Logo" style="height:45px; display:none;">
                         <img id="logo-light" src="{{ asset('img/logo-light.png') }}" alt="Logo" style="height:45px;">
@@ -9,14 +9,14 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0">
-                        <a href="#" class="nav-item nav-link active">Home</a>
+                        <a href="{{ route('welcome') }}" class="nav-item nav-link active">Home</a>
                         <a href="#" class="nav-item nav-link">Syarat Magang</a>
                         <a href="#" class="nav-item nav-link">Dokumentasi</a>
                         <a href="#" class="nav-item nav-link">About</a>
                         <a href="#" class="nav-item nav-link">Kontak</a>
                     </div>
                     <a href="{{ route('login') }}" class="btn btn-info text-white rounded-pill py-2 px-4 my-3 my-lg-0 me-2 flex-shrink-0">Masuk</a>
-                    <a href="#" class="btn btn-primary text-white rounded-pill py-2 px-4 my-3 my-lg-0 flex-shrink-0">Daftar</a>
+                    <a href="{{ route('magang.daftar') }}" class="btn btn-primary text-white rounded-pill py-2 px-4 my-3 my-lg-0 flex-shrink-0">Apply Magang</a>
                 </div>
             </nav>
 

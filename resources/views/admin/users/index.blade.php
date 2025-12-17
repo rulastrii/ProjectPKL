@@ -102,20 +102,32 @@
 </td>
          <td class="text-end">
 
-         {{-- Tombol Approve --}}
-    @if(!$user->is_active && $user->role_id == 3)
-    <form action="{{ route('admin.users.approve-guru', $user->id) }}" method="POST" class="d-inline">
-        @csrf
-        <button class="btn btn-sm btn-success" title="Approve Guru">
-            <i class="ti ti-check"></i>
-        </button>
-    </form>
+         {{-- Untuk Guru --}}
+@if($user->role_id == 3)
+    @if(!$user->is_active)
+        {{-- Form Approve Guru --}}
+        <form action="{{ route('admin.users.approve-guru', $user->id) }}" method="POST" class="d-inline">
+            @csrf
+            <button class="btn btn-outline-success btn-sm" title="Approve Guru">
+                <i class="ti ti-check"></i>
+            </button>
+        </form>
+
+        {{-- Form Reject Guru --}}
+        <form action="{{ route('admin.users.reject-guru', $user->id) }}" method="POST" class="d-inline">
+            @csrf
+            <input type="text" name="reason" placeholder="Alasan ditolak" class="form-control form-control-sm d-inline w-auto" required>
+            <button class="btn btn-outline-danger btn-sm" title="Tolak Guru">
+                <i class="ti ti-x"></i>
+            </button>
+        </form>
     @endif
 
+    @endif
          @if(!$user->email_verified_at)
     <form action="{{ route('admin.users.sendVerify', $user->id) }}" method="POST" class="d-inline">
         @csrf
-        <button class="btn btn-sm btn-warning" title="Kirim Email Verifikasi">
+        <button class="btn btn-outline-warning btn-sm" title="Kirim Email Verifikasi">
             <i class="ti ti-mail-forward"></i>
         </button>
     </form>

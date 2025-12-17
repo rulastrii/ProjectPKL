@@ -66,5 +66,6 @@ class Kernel extends HttpKernel
         'role' => \App\Http\Middleware\RoleMiddleware::class,
         'profile.complete' => \App\Http\Middleware\EnsureProfileComplete::class,
         'guru_verified' => \App\Http\Middleware\GuruVerified::class,
+        'magang_verified' => \App\Http\Middleware\MagangVerified::class,
     ];
 }

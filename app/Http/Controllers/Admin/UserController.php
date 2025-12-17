@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\ProfileGuru;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\AdminCreateUserVerification;
+use App\Notifications\AdminGuruStatusNotification;
 
 class UserController extends Controller
 {
@@ -166,23 +169,52 @@ class UserController extends Controller
         return back()->with('success', 'Email verifikasi berhasil dikirim.');
     }
 
-    public function approveGuru(User $user)
+   public function approveGuru(User $user)
 {
-    if ($user->role_id != 3) {
-        return back()->with('error', 'Hanya guru yang bisa di-approve.');
-    }
+    DB::transaction(function () use ($user) {
+        // Aktifkan akun user
+        $user->is_active = true;
+        $user->save();
 
-    if ($user->is_active) {
-        return back()->with('info', 'Guru sudah di-approve.');
-    }
+        // Aktifkan profile guru
+        $profile = ProfileGuru::where('user_id', $user->id)->first();
+        if ($profile) {
+            $profile->is_active = true;
+            $profile->save();
+        }
+    });
 
-    $user->is_active = true;
-    $user->save();
+    $user->notify(new AdminGuruStatusNotification('approved'));
 
-    // Kirim email verifikasi otomatis
-    $user->sendEmailVerificationNotification();
-
-    return back()->with('success', 'Guru telah di-approve dan email verifikasi dikirim.');
+    return back()->with('success', 'Guru telah di-approve dan notifikasi email dikirim.');
 }
+
+public function rejectGuru(Request $request, User $user)
+{
+    $request->validate([
+        'reason' => 'required|string|max:255',
+    ]);
+
+    DB::transaction(function () use ($user, $request) {
+        // Nonaktifkan akun user dan simpan alasan
+        $user->update([
+            'is_active'     => false,
+            'reject_reason' => $request->reason,
+        ]);
+
+        // Nonaktifkan profile guru jika ada
+        $profile = ProfileGuru::where('user_id', $user->id)->first();
+        if ($profile) {
+            $profile->is_active = false;
+            $profile->save();
+        }
+    });
+
+    $user->notify(new AdminGuruStatusNotification('rejected', $request->reason));
+
+    return back()->with('success', 'Guru ditolak dan notifikasi email dikirim.');
+}
+
+
 
 }

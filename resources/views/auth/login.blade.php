@@ -15,6 +15,13 @@
                 </ul>
             </div>
         @endif
+
+        {{-- Tambahan alert khusus inactive --}}
+@if ($errors->has('inactive'))
+    <div class="alert alert-warning">
+        {{ $errors->first('inactive') }}
+    </div>
+@endif
         <form action="{{ route('login.post') }}" method="POST" autocomplete="off" novalidate>
             @csrf
             <div class="mb-3">

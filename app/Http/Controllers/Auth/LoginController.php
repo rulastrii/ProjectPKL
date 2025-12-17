@@ -24,19 +24,34 @@ class LoginController extends Controller
             'password'  => 'required|min:6',
         ]);
 
-        $user = User::where('email', $request->email)
-            ->where('is_active', true)
-            ->first();
+        $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user) {
             return back()->with('error', 'Email atau password salah.')->withInput();
         }
 
-        // Cek verifikasi email
-        if (!$user->hasVerifiedEmail()) {
-            return redirect()->route('login')->with('error', 'Silakan verifikasi email terlebih dahulu.');
+        // Cek status akun guru
+        if (!$user->is_active) {
+            if ($user->reject_reason) {
+                // Akun ditolak admin
+                return back()->with('error', 'Akun Anda telah ditolak oleh admin. Silakan hubungi admin untuk informasi lebih lanjut.')->withInput();
+            } else {
+                // Menunggu persetujuan admin
+                return back()->with('error', 'Akun Anda masih menunggu persetujuan admin.')->withInput();
+            }
         }
 
+        // Cek password
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->with('error', 'Email atau password salah.')->withInput();
+        }
+
+        // Cek verifikasi email (hanya untuk akun yang sudah disetujui)
+        if (!$user->hasVerifiedEmail()) {
+            return back()->with('error', 'Akun Anda sudah disetujui admin, namun email belum diverifikasi. Silakan cek email untuk melakukan verifikasi.')->withInput();
+        }
+
+        // Login berhasil
         Auth::login($user);
 
         // Arahkan dashboard sesuai role
@@ -46,7 +61,7 @@ class LoginController extends Controller
             3 => redirect()->route('guru.dashboard')->with('success', 'Selamat datang Guru!'),
             4 => redirect()->route('siswa.dashboard')->with('success', 'Selamat datang Siswa!'),
             5 => redirect()->route('magang.dashboard')->with('success', 'Selamat datang Magang!'),
-            default => redirect()->route('magang.dashboard')->with('success', 'Selamat datang!'),
+            default => redirect()->route('login')->with('success', 'Selamat datang!'),
         };
     }
 
