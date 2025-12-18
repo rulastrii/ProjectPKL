@@ -12,9 +12,11 @@ class PengajuanMagangMahasiswa extends Model
     use HasFactory;
 
     protected $table = 'pengajuan_magang_mahasiswa';
+    protected $primaryKey = 'id';
     public $timestamps = false;
 
     protected $fillable = [
+        'user_id',
         'nama_mahasiswa',
         'email_mahasiswa',
         'universitas',
@@ -53,4 +55,20 @@ class PengajuanMagangMahasiswa extends Model
     {
         return $this->email_mahasiswa;
     }
+    
+public function pembimbing()
+{
+    return $this->morphMany(Pembimbing::class, 'pengajuan');
+}
+
+    
+public function siswaProfile()
+{
+    return $this->hasOne(SiswaProfile::class, 'pengajuan_id', 'id');
+}
+    public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
 }

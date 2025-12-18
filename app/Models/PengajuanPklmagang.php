@@ -54,7 +54,8 @@ public function siswaProfile()
 
     public function pembimbing()
 {
-    return $this->hasMany(Pembimbing::class, 'pengajuan_id');
+    return $this->morphMany(Pembimbing::class, 'pengajuan');
 }
+
 
 }

@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\PengajuanMagangMahasiswa;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\PengajuanMagangStatusNotification;
+use App\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class PengajuanMagangMahasiswaController extends Controller
 {
@@ -211,11 +214,12 @@ class PengajuanMagangMahasiswaController extends Controller
         'approved_date' => now(),
     ]);
 
+    // Email pemberitahuan SAJA
     $pengajuan->notify(
         new PengajuanMagangStatusNotification('diterima')
     );
 
-    return back()->with('success', 'Pengajuan magang diterima dan email dikirim.');
+    return back()->with('success', 'Pengajuan diterima. Silakan buat akun magang.');
 }
 
 public function reject(Request $request, PengajuanMagangMahasiswa $pengajuan)

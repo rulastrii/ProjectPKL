@@ -21,6 +21,9 @@ use App\Http\Controllers\Siswa\SiswaProfileController;
 use App\Http\Controllers\Siswa\PresensiSiswaController;
 use App\Http\Controllers\Admin\SiswaProfileController as AdminSiswaProfileController;
 use App\Http\Controllers\Magang\PengajuanMagangController;
+use App\Http\Controllers\Magang\MagangProfileController;
+use App\Http\Controllers\MagangDashboardController;
+use App\Http\Controllers\Magang\PresensiMagangController;
 /*
 |--------------------------------------------------------------------------
 | Public / Guest Route
@@ -75,6 +78,11 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode
 
 Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])->name('reset-password.form');
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('reset-password.update');
+
+Route::get('/change-password', [UserController::class, 'showChangePasswordForm'])
+    ->name('auth.change-password');
+Route::post('/change-password', [UserController::class, 'updatePassword'])
+    ->name('password.update');
 
 /*
 |--------------------------------------------------------------------------
@@ -161,9 +169,7 @@ Route::middleware(['auth','role:4'])->get('/siswa/dashboard', function () {
     return view('siswa.dashboard');
 })->name('siswa.dashboard');
 
-Route::middleware(['auth','verified','role:5', 'magang_verified'])->get('/magang/dashboard', function () {
-    return view('magang.dashboard');
-})->name('magang.dashboard');
+Route::middleware(['auth','verified','role:5', 'magang_verified'])->get('/magang/dashboard', [MagangDashboardController::class, 'index'])->name('magang.dashboard');
 
 
 
@@ -303,15 +309,28 @@ Route::prefix('pengajuan-magang')->name('pengajuan-magang.')->group(function() {
 });
 
 // PEMBIMBING CRUD
-
 Route::prefix('pembimbing')->name('pembimbing.')->group(function () {
+
     Route::get('/', [PembimbingController::class,'index'])->name('index');
+
     Route::get('/create', [PembimbingController::class,'create'])->name('create');
     Route::post('/', [PembimbingController::class,'store'])->name('store');
-    Route::get('/{pembimbing}/edit', [PembimbingController::class,'edit'])->name('edit');
-    Route::put('/{pembimbing}', [PembimbingController::class,'update'])->name('update');
-    Route::delete('/{pembimbing}', [PembimbingController::class,'destroy'])->name('destroy');
-    Route::get('/{pembimbing}', [PembimbingController::class, 'show'])->name('show');
+
+    Route::get('/{pembimbing}', [PembimbingController::class,'show'])
+        ->whereNumber('pembimbing')
+        ->name('show');
+
+    Route::get('/{pembimbing}/edit', [PembimbingController::class,'edit'])
+        ->whereNumber('pembimbing')
+        ->name('edit');
+
+    Route::put('/{pembimbing}', [PembimbingController::class,'update'])
+        ->whereNumber('pembimbing')
+        ->name('update');
+
+    Route::delete('/{pembimbing}', [PembimbingController::class,'destroy'])
+        ->whereNumber('pembimbing')
+        ->name('destroy');
 });
 
 // PENEMPATAN CRUD
@@ -342,3 +361,18 @@ Route::get('/daftar-magang', [PengajuanMagangController::class, 'create'])
 
 Route::post('/daftar-magang', [PengajuanMagangController::class, 'store'])
     ->name('magang.store');
+
+
+Route::middleware(['auth','role:5'])->prefix('magang')->name('magang.')->group(function() {
+    // Profile Magang
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [MagangProfileController::class, 'index'])->name('index');
+        Route::put('/update', [MagangProfileController::class, 'update'])->name('update');
+    });
+    // PRESESNSI MAGANG
+    Route::prefix('presensi')->name('presensi.')->group(function () {
+        Route::get('/', [PresensiMagangController::class, 'index'])->name('index');
+        Route::get('/create', [PresensiMagangController::class, 'create'])->name('create');
+        Route::post('/store', [PresensiMagangController::class, 'store'])->name('store');
+    });
+});

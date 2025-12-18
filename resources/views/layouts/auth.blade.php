@@ -110,6 +110,17 @@ Swal.fire({
     showConfirmButton: true
 });
 @endif
+
+@if(session('info'))
+Swal.fire({
+    icon: 'info',
+    title: 'Info',
+    text: @json(session('info')),
+    timer: 3000,
+    showConfirmButton: true
+});
+@endif
+
 </script>
 
 

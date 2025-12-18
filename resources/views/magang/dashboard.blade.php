@@ -11,22 +11,25 @@
               <div class="col-12">
                 <div class="row row-cards align-items-stretch">
                   <div class="col-4">
-                    <div class="card card-sm h-100">
-                      <div class="card-body">
-                        <div class="row align-items-center">
-                        <div class="col-auto">
-                          <span class="bg-primary text-white avatar">
-                            <i class="ti ti-clock fs-1"></i>
-                          </span>
-                        </div>
-                          <div class="col">
-                            <div class="font-weight-medium">Belum Presensi</div>
-                            <div class="text-secondary">Status Presensi Hari Ini</div>
-                          </div>
-                        </div>
-                      </div>
+    <div class="card card-sm h-100">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <span class="bg-primary text-white avatar">
+                        <i class="ti ti-clock fs-1"></i>
+                    </span>
+                </div>
+                <div class="col">
+                    <div class="font-weight-medium">
+                        {{ $sudahPresensi ? 'Sudah Presensi' : 'Belum Presensi' }}
                     </div>
-                  </div>
+                    <div class="text-secondary">Status Presensi Hari Ini</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
                   <div class="col-4">
                     <div class="card card-sm h-100">
@@ -69,20 +72,20 @@
              <div class="col-md-6 col-lg-12">
               <div class="card">
                 <div class="card-header">
-                  <h3 class="card-title">Progress PKL</h3>
+                  <h3 class="card-title">Progress Magang</h3>
                 </div>
                 <div class="card-body">
 
                   <!-- Presensi -->
-                  <div class="mb-3">
-                    <div class="d-flex justify-content-between">
-                      <span>Presensi</span>
-                      <span>14/20 hari (70%)</span>
-                    </div>
-                    <div class="progress" style="height:10px;">
-                      <div class="progress-bar bg-primary" style="width:70%;"></div>
-                    </div>
-                  </div>
+<div class="mb-3">
+    <div class="d-flex justify-content-between">
+        <span>Presensi</span>
+        <span>{{ $jumlahPresensi }}/{{ $totalHariMagang }} hari ({{ $prosentasePresensi }}%)</span>
+    </div>
+    <div class="progress" style="height:10px;">
+        <div class="progress-bar bg-primary" style="width:{{ $prosentasePresensi }}%;"></div>
+    </div>
+</div>
 
                   <!-- Laporan Harian -->
                   <div class="mb-3">
@@ -487,14 +490,15 @@
                     <div class="row">
 
                       <!-- Card 1: Presensi -->
-                      <div class="col-md-3 mb-3">
-                        <div class="card h-100 text-center bg-primary text-white">
-                          <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                            <i class="ti ti-clock" style="font-size: 2rem;"></i> <!-- Icon Jam -->
-                            <h5 class="card-title mt-2">Presensi Masuk / Keluar</h5>
-                          </div>
-                        </div>
-                      </div>
+<div class="col-md-3 mb-3">
+  <div class="card h-100 text-center bg-primary text-white" data-bs-toggle="modal" data-bs-target="#presensiModal" style="cursor:pointer;">
+    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+      <i class="ti ti-clock" style="font-size: 2rem;"></i>
+      <h5 class="card-title mt-2">Presensi Masuk / Keluar</h5>
+    </div>
+  </div>
+</div>
+
                      <!-- Card 2: Buat Laporan -->
                       <div class="col-md-3 mb-3">
                         <div class="card h-100 text-center bg-success text-white">
@@ -532,4 +536,134 @@
             </div>
           </div>
         </div>
+
+        <!-- Modal Presensi -->
+<div class="modal fade" id="presensiModal" tabindex="-1">
+  <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered modal-lg">
+    <div class="modal-content border-0">
+
+      {{-- HEADER --}}
+      <div class="modal-header bg-primary text-white">
+        <div>
+          <h5 class="modal-title mb-0">Presensi Hari Ini</h5>
+          <small>{{ now()->format('d F Y') }}</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      {{-- BODY --}}
+      <div class="modal-body p-3 p-md-4">
+
+        @php
+          $jamMasuk = $todayPresensi?->jam_masuk;
+          $jamPulang = $todayPresensi?->jam_keluar;
+          $absenMasukSudah = !is_null($jamMasuk);
+          $absenPulangSudah = !is_null($jamPulang);
+        @endphp
+
+        {{-- STATUS --}}
+        <div class="alert {{ $absenMasukSudah ? 'alert-success' : 'alert-warning' }} d-flex align-items-center gap-2">
+          <i class="ti ti-clock"></i>
+          <div>
+            <strong>Status Presensi</strong><br>
+            {{ $absenMasukSudah ? 'Sudah Absen Masuk' : 'Belum Absen Masuk' }}
+          </div>
+        </div>
+
+        {{-- PILIH AKSI --}}
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <button
+              class="btn w-100 py-3 {{ !$absenMasukSudah ? 'btn-primary' : 'btn-outline-secondary' }}"
+              data-bs-toggle="collapse"
+              data-bs-target="#formMasuk"
+              {{ $absenMasukSudah ? 'disabled' : '' }}>
+              <i class="ti ti-login fs-3"></i><br>
+              <span class="fw-semibold">Absen Masuk</span>
+            </button>
+          </div>
+
+          <div class="col-6">
+            <button
+              class="btn w-100 py-3 {{ $absenMasukSudah && !$absenPulangSudah ? 'btn-success' : 'btn-outline-secondary' }}"
+              data-bs-toggle="collapse"
+              data-bs-target="#formPulang"
+              {{ !$absenMasukSudah || $absenPulangSudah ? 'disabled' : '' }}>
+              <i class="ti ti-logout fs-3"></i><br>
+              <span class="fw-semibold">Absen Pulang</span>
+            </button>
+          </div>
+        </div>
+
+        {{-- FORM MASUK --}}
+        <div class="collapse {{ !$absenMasukSudah ? 'show' : '' }}" id="formMasuk">
+          <div class="card border shadow-sm mb-3">
+            <div class="card-body">
+              <h6 class="mb-3 text-primary">
+                <i class="ti ti-login"></i> Form Absen Masuk
+              </h6>
+              @include('magang.presensi._form_masuk')
+            </div>
+          </div>
+        </div>
+
+        {{-- FORM PULANG --}}
+        <div class="collapse {{ $absenMasukSudah && !$absenPulangSudah ? 'show' : '' }}" id="formPulang">
+          <div class="card border shadow-sm">
+            <div class="card-body">
+              <h6 class="mb-3 text-success">
+                <i class="ti ti-logout"></i> Form Absen Pulang
+              </h6>
+              @include('magang.presensi._form_pulang')
+            </div>
+          </div>
+        </div>
+
+        {{-- RINGKASAN --}}
+        @if($absenMasukSudah || $absenPulangSudah)
+          <div class="mt-4 p-3 rounded bg-light">
+            <strong>Ringkasan Hari Ini</strong><br>
+            Masuk : {{ $jamMasuk ?? '-' }} <br>
+            Pulang : {{ $jamPulang ?? '-' }}
+          </div>
+        @endif
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function updateClock() {
+  const now = new Date(new Date().toLocaleString("en-US", {
+    timeZone: "Asia/Jakarta"
+  }));
+
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+
+  const timeString = `${hh}:${mm}:${ss}`;
+
+  // Tampilkan ke UI
+  const clockEl = document.getElementById('liveClock');
+  if (clockEl) clockEl.textContent = timeString;
+
+  // Inject ke input (jika ada)
+  @if(!$absenMasukSudah)
+    const masuk = document.getElementById('jamMasuk');
+    if (masuk) masuk.value = timeString;
+  @endif
+
+  @if(!$absenPulangSudah)
+    const pulang = document.getElementById('jamPulang');
+    if (pulang) pulang.value = timeString;
+  @endif
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+
 @endsection

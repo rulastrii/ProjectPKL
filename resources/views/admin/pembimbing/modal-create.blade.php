@@ -1,8 +1,11 @@
 <!-- Modal Create Pembimbing -->
-<div class="modal modal-blur fade" id="modalCreatePembimbing" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+<!-- Modal Create Pembimbing -->
+<div class="modal modal-blur fade" id="modalCreatePembimbing" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+
     <form action="{{ route('admin.pembimbing.store') }}" method="POST" class="modal-content">
       @csrf
+
       <div class="modal-header">
         <h5 class="modal-title">Add New Pembimbing</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -10,20 +13,34 @@
 
       <div class="modal-body">
         <div class="row g-3">
-          <!-- Pengajuan -->
-          <div class="col-12 col-md-6">
-            <label class="form-label">Pengajuan</label>
-            <select name="pengajuan_id" class="form-select" required>
-              <option value="">-- Select Pengajuan --</option>
-              @foreach($pengajuan as $p)
-                <option value="{{ $p->id }}">{{ $p->no_surat }} - {{ $p->sekolah->nama ?? '-' }}</option>
-              @endforeach
+
+          {{-- PENGAJUAN (PKL + MAHASISWA) --}}
+          <div class="col-12">
+            <label class="form-label required">Pengajuan</label>
+            <select name="pengajuan_key" class="form-select" required>
+              <option value="">-- Pilih Pengajuan --</option>
+
+              <optgroup label="PKL / Magang Siswa">
+                @foreach($pkl as $p)
+                  <option value="pkl:{{ $p->id }}">
+                    [PKL] {{ $p->no_surat }} - {{ $p->sekolah->nama ?? '-' }}
+                  </option>
+                @endforeach
+              </optgroup>
+
+              <optgroup label="Magang Mahasiswa">
+                @foreach($mahasiswa as $m)
+                  <option value="mhs:{{ $m->id }}">
+                    [MHS] {{ $m->no_surat }} - {{ $m->nama_mahasiswa }}
+                  </option>
+                @endforeach
+              </optgroup>
             </select>
           </div>
 
-          <!-- Pegawai -->
+          {{-- PEGAWAI --}}
           <div class="col-12 col-md-6">
-            <label class="form-label">Pembimbing</label>
+            <label class="form-label required">Pembimbing</label>
             <select name="pegawai_id" class="form-select" required>
               <option value="">-- Select Pegawai --</option>
               @foreach($pegawai as $peg)
@@ -32,15 +49,15 @@
             </select>
           </div>
 
-          <!-- Tahun -->
+          {{-- TAHUN --}}
           <div class="col-12 col-md-6">
             <label class="form-label">Tahun</label>
-            <input type="number" name="tahun" class="form-control" placeholder="Enter year" value="{{ old('tahun') }}">
+            <input type="number" name="tahun" class="form-control" placeholder="Contoh: 2025">
           </div>
 
-          <!-- Active -->
+          {{-- STATUS --}}
           <div class="col-12 col-md-6">
-            <label class="form-label">Active</label>
+            <label class="form-label">Status</label>
             <select name="is_active" class="form-select">
               <option value="1" selected>Active</option>
               <option value="0">Inactive</option>
@@ -51,9 +68,33 @@
       </div>
 
       <div class="modal-footer">
-        <button type="reset" class="btn btn-secondary">Reset</button>
-        <button type="submit" class="btn btn-primary ms-auto">Create Pembimbing</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary ms-auto">
+          <i class="ti ti-check me-1"></i> Create Pembimbing
+        </button>
       </div>
+
     </form>
   </div>
 </div>
+
+
+{{-- SCRIPT --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const typeSelect = document.getElementById('pengajuan_type');
+    const pklWrap = document.getElementById('pengajuan_pkl_wrapper');
+    const mhsWrap = document.getElementById('pengajuan_mahasiswa_wrapper');
+
+    typeSelect.addEventListener('change', function () {
+        pklWrap.classList.add('d-none');
+        mhsWrap.classList.add('d-none');
+
+        if (this.value === '{{ \App\Models\PengajuanPklmagang::class }}') {
+            pklWrap.classList.remove('d-none');
+        } else if (this.value === '{{ \App\Models\PengajuanMagangMahasiswa::class }}') {
+            mhsWrap.classList.remove('d-none');
+        }
+    });
+});
+</script>

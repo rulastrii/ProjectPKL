@@ -14,6 +14,7 @@ class Pembimbing extends Model
 
     protected $fillable = [
         'pengajuan_id',
+        'pengajuan_type',
         'pegawai_id',
         'tahun',
         'created_date',
@@ -32,15 +33,16 @@ class Pembimbing extends Model
         'is_active'    => 'boolean',
     ];
 
-    /** Pembimbing belongs to satu pengajuan PKL */
+    /** polymorphic pengajuan (PKL / Mahasiswa) */
     public function pengajuan()
     {
-        return $this->belongsTo(PengajuanPklmagang::class, 'pengajuan_id');
+        return $this->morphTo();
     }
 
-    /** Pembimbing belongs to satu pegawai */
+    /** Pembimbing belongs to pegawai */
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
 }
+

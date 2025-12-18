@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Bidang;
 use App\Models\Pembimbing;
-use App\Models\PengajuanPklmagang;
+use App\Models\PengajuanMagangMahasiswa;
 use App\Models\SiswaProfile;
 
 class AdminDashboardController extends Controller
@@ -19,10 +19,10 @@ class AdminDashboardController extends Controller
         $totalPembimbing = Pembimbing::where('is_active', true)->count();
 
         // Total Pengajuan Masuk (aktif)
-        $totalPengajuan = PengajuanPklmagang::where('is_active', true)->count();
+        $totalPengajuan = PengajuanMagangMahasiswa::where('is_active', true)->count();
 
         // Menunggu Verifikasi (status = 0 atau sesuai kode status verifikasi)
-        $menungguVerifikasi = PengajuanPklmagang::where('status', 'diproses')
+        $menungguVerifikasi = PengajuanMagangMahasiswa::where('status', 'diproses')
                                          ->where('is_active', true)
                                          ->count();
 

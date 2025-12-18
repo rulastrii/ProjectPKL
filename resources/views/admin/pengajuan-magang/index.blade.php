@@ -104,34 +104,53 @@
          </td>
 
          <td class="text-end">
-            @if(in_array($p->status, ['draft','proses']))
+          @if(in_array($p->status, ['draft','proses']))
 
-    {{-- Approve --}}
-    <form action="{{ route('admin.pengajuan-magang.approve', $p->id) }}"
-          method="POST" class="d-inline">
-      @csrf
-      <button class="btn btn-outline-success btn-sm"
-              title="Terima Pengajuan">
-        <i class="ti ti-check"></i>
-      </button>
-    </form>
+  {{-- Approve --}}
+  <form action="{{ route('admin.pengajuan-magang.approve', $p->id) }}"
+        method="POST" class="d-inline">
+    @csrf
+    <button class="btn btn-outline-success btn-sm" title="Terima Pengajuan">
+      <i class="ti ti-check"></i>
+    </button>
+  </form>
 
-    {{-- Reject --}}
-    <form action="{{ route('admin.pengajuan-magang.reject', $p->id) }}"
-          method="POST" class="d-inline">
-      @csrf
-      <input type="text"
-             name="reason"
-             class="form-control form-control-sm d-inline w-auto"
-             placeholder="Alasan ditolak"
-             required>
-      <button class="btn btn-outline-danger btn-sm"
-              title="Tolak Pengajuan">
-        <i class="ti ti-x"></i>
-      </button>
-    </form>
+  {{-- Reject --}}
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-outline-danger btn-sm" title="Tolak Pengajuan"
+          data-bs-toggle="modal" data-bs-target="#rejectModal{{ $p->id }}">
+    <i class="ti ti-x"></i>
+  </button>
 
-  @endif
+  <!-- Modal -->
+  <div class="modal fade" id="rejectModal{{ $p->id }}" tabindex="-1"
+       aria-labelledby="rejectModalLabel{{ $p->id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form action="{{ route('admin.pengajuan-magang.reject', $p->id) }}" method="POST">
+          @csrf
+          <div class="modal-header">
+            <h5 class="modal-title" id="rejectModalLabel{{ $p->id }}">Alasan Penolakan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="reason{{ $p->id }}" class="form-label">Masukkan alasan penolakan</label>
+              <input type="text" name="reason" id="reason{{ $p->id }}"
+                     class="form-control" placeholder="Alasan ditolak" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-danger">Tolak</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+@endif
+
 
           <a href="{{ route('admin.pengajuan-magang.show', $p->id) }}" 
              class="btn btn-outline-info btn-sm" title="Lihat Detail Pengajuan">

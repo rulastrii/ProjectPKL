@@ -127,7 +127,16 @@
               </a>
 
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <a href="{{ route('siswa.profile.index') }}" class="dropdown-item">Profile</a>
+                @php
+    $profileRoute = match(auth()->user()->role_id) {
+        4 => route('siswa.profile.index'),
+        5 => route('magang.profile.index'),
+        default => '#',
+    };
+@endphp
+
+<a href="{{ $profileRoute }}" class="dropdown-item">Profile</a>
+
                 <a href="#" class="dropdown-item">Feedback</a>
                 <div class="dropdown-divider"></div>
                 <a href="./settings.html" class="dropdown-item">Settings</a>

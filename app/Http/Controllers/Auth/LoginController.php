@@ -54,6 +54,14 @@ class LoginController extends Controller
         // Login berhasil
         Auth::login($user);
 
+        // Cek apakah user harus ganti password (hanya role 4,5,2 misal)
+// Cek apakah user harus ganti password
+$rolesForceChange = [2,4,5]; // role yang wajib ganti password
+if (in_array($user->role_id, $rolesForceChange) && $user->force_change_password) {
+    return redirect()->route('auth.change-password')
+        ->with('info', 'Anda harus mengganti password terlebih dahulu.');
+}
+
         // Arahkan dashboard sesuai role
         return match($user->role_id) {
             1 => redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!'),

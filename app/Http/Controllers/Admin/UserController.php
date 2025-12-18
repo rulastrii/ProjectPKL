@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\PengajuanMagangMahasiswa;
 use App\Models\ProfileGuru;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\AdminCreateUserVerification;
@@ -65,37 +66,63 @@ class UserController extends Controller
     }
 
     // =====================
-    // STORE (ADMIN CREATE USER)
-    // =====================
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name'     => 'required|string|max:100',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'role_id'  => 'nullable|exists:roles,id',
+// STORE (ADMIN CREATE USER)
+// =====================
+public function store(Request $request)
+{
+    $request->validate([
+        'name'     => 'required|string|max:100',
+        'email'    => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6|confirmed',
+        'role_id'  => 'required|exists:roles,id',
+    ]);
+
+    // SIMPAN PASSWORD ASLI (UNTUK EMAIL)
+    $plainPassword = $request->password;
+
+    // BUAT USER
+    $user = User::create([
+        'name'         => $request->name,
+        'email'        => $request->email,
+        'password'     => $plainPassword, // akan di-hash oleh mutator
+        'role_id'      => (int) $request->role_id,
+        'force_change_password' => true, // wajib ganti password pertama kali
+        'created_date' => now(),
+        'created_id'   => Auth::id(),
+        'is_active'    => true,
+    ]);
+
+    // HUBUNGKAN DENGAN PENGAJUAN MAGANG (JIKA ADA)
+    PengajuanMagangMahasiswa::where('email_mahasiswa', $user->email)
+        ->where('status', 'diterima')
+        ->update([
+            'user_id'   => $user->id,
+            'is_active' => true,
         ]);
 
-        // simpan password asli untuk email
-        $plainPassword = $request->password;
+    // ==========================
+    // LOGIKA EMAIL (INI KUNCI)
+    // ==========================
 
-        $user = User::create([
-            'name'         => $request->name,
-            'email'        => $request->email,
-            'password'     => $plainPassword, // di-hash via mutator
-            'role_id'      => (int) $request->role_id,
-            'created_date' => now(),
-            'created_id'   => Auth::id(),
-            'is_active'    => true,
-        ]);
+    // ROLE YANG PASSWORD-NYA DIKIRIM VIA EMAIL
+    $rolesWithPassword = [2, 4, 5];
+    // 4 = PKL
+    // 5 = Magang
+    // 2 = Pembimbing (sesuaikan jika beda)
 
-        // kirim email versi ADMIN
-        $user->notify(new AdminCreateUserVerification($plainPassword));
+    $passwordForEmail = in_array((int) $user->role_id, $rolesWithPassword)
+        ? $plainPassword
+        : null;
 
-        return redirect()
-            ->route('admin.users.index')
-            ->with('success', 'User berhasil ditambahkan & email verifikasi dikirim.');
-    }
+    // KIRIM EMAIL VERIFIKASI
+    $user->notify(
+        new AdminCreateUserVerification($passwordForEmail)
+    );
+
+    return redirect()
+        ->route('admin.users.index')
+        ->with('success', 'User berhasil ditambahkan & email verifikasi dikirim.');
+}
 
     // =====================
     // EDIT
@@ -215,6 +242,28 @@ public function rejectGuru(Request $request, User $user)
     return back()->with('success', 'Guru ditolak dan notifikasi email dikirim.');
 }
 
+public function showChangePasswordForm()
+{
+    return view('auth.change-password');
+}
+
+
+public function updatePassword(Request $request)
+{
+    $request->validate([
+        'password' => 'required|string|min:6|confirmed',
+    ]);
+
+    $user = auth()->user();
+    $user->password = $request->password; // pastikan password di-hash
+    $user->force_change_password = false; // sudah ganti password
+    $user->save();
+
+    auth()->logout(); // logout user setelah ganti password
+
+    return redirect()->route('login') // arahkan ke halaman login
+        ->with('success', 'Password berhasil diubah. Silakan login menggunakan password baru.');
+}
 
 
 }

@@ -11,21 +11,24 @@ class SiswaProfile extends Model
     public $timestamps = false; // karena tidak menggunakan created_at & updated_at default
 
     protected $fillable = [
-        'user_id',
-        'pengajuan_id',
-        'nama',
-        'nisn',
-        'kelas',
-        'jurusan',
-        'foto',
-        'created_date',
-        'created_id',
-        'updated_date',
-        'updated_id',
-        'deleted_id',
-        'deleted_date',
-        'is_active'
-    ];
+    'user_id',
+    'pengajuan_id',
+    'nama',
+    'nisn',
+    'nim',
+    'kelas',
+    'jurusan',
+    'universitas',
+    'foto',
+    'created_date',
+    'created_id',
+    'updated_date',
+    'updated_id',
+    'deleted_id',
+    'deleted_date',
+    'is_active'
+];
+
 
     /**
      * Relasi ke Users
@@ -39,18 +42,29 @@ class SiswaProfile extends Model
     /**
      * Relasi ke tabel pengajuan_pklmagang
      */
-    public function pengajuan()
-    {
-        return $this->belongsTo(PengajuanPklMagang::class, 'pengajuan_id');
-    }
 
-    public function isLengkap(): bool
+    public function pengajuan()
 {
-    return !empty($this->nama)
-        && !empty($this->nisn)
-        && !empty($this->kelas)
-        && !empty($this->jurusan)
-        && !empty($this->foto);
+    return $this->belongsTo(PengajuanMagangMahasiswa::class, 'pengajuan_id');
 }
+
+public function isLengkap(): bool
+{
+    if($this->user->role_id == 4){ // PKL
+        return !empty($this->nama)
+            && !empty($this->nisn)
+            && !empty($this->kelas)
+            && !empty($this->jurusan)
+            && !empty($this->foto);
+    } elseif($this->user->role_id == 5){ // Mahasiswa Magang
+        return !empty($this->nama)
+            && !empty($this->nim)
+            && !empty($this->jurusan)
+            && !empty($this->universitas)
+            && !empty($this->foto);
+    }
+    return false;
+}
+
     
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\AdminCreateUserVerification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -90,4 +91,16 @@ public function deleter()
     {
         return $query->where('is_active', true);
     }
+
+    public function pengajuanMagang()
+{
+    return $this->hasOne(PengajuanMagangMahasiswa::class);
+}
+
+public function sendEmailVerificationNotification()
+    {
+        // JANGAN kirim default VerifyEmail
+        // biar admin yang kontrol notifikasinya
+    }
+
 }

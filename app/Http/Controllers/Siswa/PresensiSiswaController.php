@@ -60,7 +60,7 @@ class PresensiSiswaController extends Controller
         $absenMasukSudah = !is_null($jamMasuk);
         $absenPulangSudah = !is_null($jamPulang);
 
-        return view('siswa.presensi.create', compact(
+        return view('siswa.presensi.index', compact(
             'siswa', 'todayPresensi', 'jamMasuk', 'jamPulang', 'absenMasukSudah', 'absenPulangSudah'
         ));
     }
@@ -129,7 +129,7 @@ class PresensiSiswaController extends Controller
             $presensi->save();
         }
 
-        return redirect()->route('siswa.presensi.create')
+        return redirect()->route('siswa.presensi.index')
             ->with('success', 'Presensi berhasil disimpan.');
     }
 }
