@@ -107,7 +107,7 @@ class PresensiMagangController extends Controller
 
         $request->validate([
             'tab' => 'required|in:masuk,pulang',
-            'status' => 'required_if:tab,masuk|in:hadir,absen,sakit',
+            'status' => 'required_if:tab,masuk|in:hadir,izin,sakit,absen',
             'foto_masuk' => 'nullable|image|max:2048',
             'foto_pulang' => 'nullable|image|max:2048',
         ]);

@@ -16,14 +16,19 @@ class Penempatan extends Model
     const UPDATED_AT = 'updated_date';
 
     protected $fillable = [
-        'pengajuan_id','bidang_id',
+        'pengajuan_id',
+        'pengajuan_type', // field baru untuk tipe pengajuan 
+        'bidang_id',
         'created_date','created_id','updated_date','updated_id',
         'deleted_date','deleted_id','is_active'
     ];
 
+    /**
+     * Relasi polymorphic ke pengajuan (PKL atau Mahasiswa)
+     */
     public function pengajuan()
     {
-        return $this->belongsTo(PengajuanPklmagang::class,'pengajuan_id');
+        return $this->morphTo();
     }
 
     public function bidang()

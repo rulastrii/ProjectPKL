@@ -24,6 +24,10 @@ use App\Http\Controllers\Magang\PengajuanMagangController;
 use App\Http\Controllers\Magang\MagangProfileController;
 use App\Http\Controllers\MagangDashboardController;
 use App\Http\Controllers\Magang\PresensiMagangController;
+use App\Http\Controllers\Magang\FeedbackController;
+use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\Pembimbing\PembimbingPresensiController;
+use App\Http\Controllers\Pembimbing\BimbinganPesertaController as PembimbingAreaController;
 /*
 |--------------------------------------------------------------------------
 | Public / Guest Route
@@ -33,9 +37,10 @@ use App\Http\Controllers\Magang\PresensiMagangController;
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('dashboard')
-        : view('welcome');
-})->name('welcome');
+        : redirect()->route('welcome');
+});
 
+Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
 
 /*
 |--------------------------------------------------------------------------
@@ -171,6 +176,11 @@ Route::middleware(['auth','role:4'])->get('/siswa/dashboard', function () {
 
 Route::middleware(['auth','verified','role:5', 'magang_verified'])->get('/magang/dashboard', [MagangDashboardController::class, 'index'])->name('magang.dashboard');
 
+    // Pengajuan Magang
+    Route::get('/pengajuan/{id}', [App\Http\Controllers\PengajuanController::class, 'show'])->name('pengajuan.show');
+
+    // Pengajuan PKL
+    Route::get('/pengajuan/{id}', [App\Http\Controllers\PengajuanPklController::class, 'show'])->name('pengajuan.show');
 
 
 /*
@@ -351,6 +361,36 @@ Route::get('/siswa/{id}', [AdminSiswaProfileController::class, 'show'])
 
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| Bimbingan Pembimbing Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth','role:2'])->prefix('pembimbing')->name('pembimbing.')->group(function() {
+    
+    Route::prefix('bimbingan-peserta')->name('bimbingan-peserta.')->group(function () {
+        Route::get('/', [PembimbingAreaController::class, 'index'])->name('index');
+        
+Route::get('/bimbingan-peserta/{id}', [PembimbingAreaController::class, 'show'])
+    ->name('show');
+    });
+
+    Route::prefix('verifikasi-presensi')
+        ->name('verifikasi-presensi.')
+        ->group(function () {
+
+        Route::get('/', [PembimbingPresensiController::class, 'index'])
+            ->name('index');
+
+        Route::put('/{id}', [PembimbingPresensiController::class, 'update'])
+            ->name('update');
+    });
+});
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Pendaftaran Magang (Mahasiswa / Public)
@@ -369,10 +409,29 @@ Route::middleware(['auth','role:5'])->prefix('magang')->name('magang.')->group(f
         Route::get('/', [MagangProfileController::class, 'index'])->name('index');
         Route::put('/update', [MagangProfileController::class, 'update'])->name('update');
     });
+
     // PRESESNSI MAGANG
     Route::prefix('presensi')->name('presensi.')->group(function () {
         Route::get('/', [PresensiMagangController::class, 'index'])->name('index');
         Route::get('/create', [PresensiMagangController::class, 'create'])->name('create');
         Route::post('/store', [PresensiMagangController::class, 'store'])->name('store');
     });
+
+    // Feedback CRUD khusus Magang
+    Route::prefix('feedback')->name('feedback.')->group(function () {
+        // Lihat semua feedback Magang sendiri
+        Route::get('/', [FeedbackController::class, 'index'])->name('index');
+
+        // Lihat detail feedback
+        Route::get('/{id}', [FeedbackController::class, 'show'])->name('show');
+
+        // Buat feedback baru
+        Route::post('/store', [FeedbackController::class, 'store'])->name('store');
+
+        // Update feedback sendiri
+        Route::put('/{id}', [FeedbackController::class, 'update'])->name('update');
+         Route::put('{id}/toggle-status', [FeedbackController::class, 'toggleStatus'])->name('feedback.toggle-status');
+
+    });
+
 });

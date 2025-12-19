@@ -4,8 +4,30 @@ namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
+use Illuminate\Console\Scheduling\Schedule;
+use App\Models\Presensi;
+
 class Kernel extends HttpKernel
 {
+
+    protected function schedule(Schedule $schedule)
+    {
+        /**
+         * AUTO-RECORD ABSEN
+         * Jika sampai jam 17:01 belum presensi
+         */
+        $schedule->call(function () {
+
+            Presensi::where('tanggal', date('Y-m-d'))
+                ->whereNull('jam_masuk')
+                ->where('is_active', 1)
+                ->update([
+                    'status' => 'absen'
+                ]);
+
+        })->dailyAt('17:01');
+
+    }
     /**
      * The application's global HTTP middleware stack.
      *

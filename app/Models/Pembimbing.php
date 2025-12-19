@@ -13,6 +13,7 @@ class Pembimbing extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'user_id',
         'pengajuan_id',
         'pengajuan_type',
         'pegawai_id',
@@ -33,16 +34,21 @@ class Pembimbing extends Model
         'is_active'    => 'boolean',
     ];
 
-    /** polymorphic pengajuan (PKL / Mahasiswa) */
+    /** Polymorphic pengajuan (PKL / Mahasiswa) */
     public function pengajuan()
     {
         return $this->morphTo();
     }
 
-    /** Pembimbing belongs to pegawai */
+    /** Relasi ke pegawai */
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
-}
 
+    /** Relasi ke user (akun pembimbing) */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+}

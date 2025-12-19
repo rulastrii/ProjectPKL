@@ -25,8 +25,9 @@
     <label>Status</label>
     <select name="status" class="form-select" {{ $absenMasukSudah ? 'disabled' : '' }}>
       <option value="hadir">Hadir</option>
-      <option value="absen">Absen</option>
+      <option value="izin">Izin</option>
       <option value="sakit">Sakit</option>
+      <option value="absen">Absen</option>
     </select>
   </div>
 

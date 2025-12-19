@@ -53,25 +53,33 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function siswaProfile()
-{
-    return $this->hasOne(SiswaProfile::class,'user_id');
-}
+    {
+        return $this->hasOne(SiswaProfile::class,'user_id');
+    }
 
-public function creator()
-{
-    return $this->belongsTo(User::class, 'created_id');
-}
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_id');
+    }
 
-public function updater()
-{
-    return $this->belongsTo(User::class, 'updated_id');
-}
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_id');
+    }
 
-public function deleter()
-{
-    return $this->belongsTo(User::class, 'deleted_id');
-}
+    public function deleter()
+    {
+        return $this->belongsTo(User::class, 'deleted_id');
+    }
 
+    public function pegawai()
+{
+    return $this->hasOne(Pegawai::class, 'user_id');
+}
+public function pembimbing()
+{
+    return $this->hasMany(Pembimbing::class, 'user_id');
+}
 
 
     /**
@@ -93,11 +101,11 @@ public function deleter()
     }
 
     public function pengajuanMagang()
-{
-    return $this->hasOne(PengajuanMagangMahasiswa::class);
-}
+    {
+        return $this->hasOne(PengajuanMagangMahasiswa::class);
+    }
 
-public function sendEmailVerificationNotification()
+    public function sendEmailVerificationNotification()
     {
         // JANGAN kirim default VerifyEmail
         // biar admin yang kontrol notifikasinya

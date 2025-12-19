@@ -66,5 +66,10 @@ public function isLengkap(): bool
     return false;
 }
 
+public function bidang()
+{
+    return $this->belongsTo(Bidang::class, 'bidang_id'); // pastikan nama kolomnya benar
+}
+
     
 }

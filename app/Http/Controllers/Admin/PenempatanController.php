@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Penempatan;
 use App\Models\PengajuanPklmagang;
+use App\Models\PengajuanMagangMahasiswa;
 use App\Models\Bidang;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,12 +38,32 @@ class PenempatanController extends Controller
             ->paginate($per_page)
             ->appends($request->query());
 
-        // 🔥 hanya pengajuan diterima & belum dihapus
-        $pengajuan = PengajuanPklmagang::with('siswaProfile')
-            ->where('status', 'diterima')
-            ->whereNull('deleted_date')
-            ->where('is_active', true)
-            ->get();
+        $pengajuanPkl = PengajuanPklmagang::with('siswaProfile')
+    ->where('status', 'diterima')
+    ->whereNull('deleted_date')
+    ->where('is_active', true)
+    ->get()
+    ->map(function($p) {
+        return [
+            'id' => $p->id,
+            'siswaProfile' => [
+                'nama' => $p->siswaProfile->nama ?? null,
+                'kelas' => $p->siswaProfile->kelas ?? null
+            ]
+        ];
+    });
+
+        $pengajuanMahasiswa = PengajuanMagangMahasiswa::where('status', 'diterima')
+    ->whereNull('deleted_date')
+    ->where('is_active', true)
+    ->get()
+    ->map(function($m) {
+        return [
+            'id' => $m->id,
+            'nama_mahasiswa' => $m->nama_mahasiswa,
+            'email_mahasiswa' => $m->email_mahasiswa,
+        ];
+    });
 
         $bidang = Bidang::whereNull('deleted_date')
             ->where('is_active', true)
@@ -50,7 +71,8 @@ class PenempatanController extends Controller
 
         return view('admin.penempatan.index', compact(
             'penempatan',
-            'pengajuan',
+            'pengajuanPkl',
+            'pengajuanMahasiswa',
             'bidang'
         ));
     }
@@ -61,16 +83,24 @@ class PenempatanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pengajuan_id' => 'required|exists:pengajuan_pklmagang,id',
-            'bidang_id'    => 'required|exists:bidang,id',
+            'pengajuan_id'   => 'required',
+            'pengajuan_type' => 'required|in:App\Models\PengajuanPklmagang,App\Models\PengajuanMagangMahasiswa',
+            'bidang_id'      => 'required|exists:bidang,id',
         ]);
 
+        $pengajuanModel = $request->pengajuan_type;
+        $pengajuan = $pengajuanModel::where('id', $request->pengajuan_id)
+            ->where('status', 'diterima')
+            ->whereNull('deleted_date')
+            ->firstOrFail();
+
         Penempatan::create([
-            'pengajuan_id' => $request->pengajuan_id,
-            'bidang_id'    => $request->bidang_id,
-            'created_date' => now(),
-            'created_id'   => Auth::id(),
-            'is_active'    => true,
+            'pengajuan_id'   => $pengajuan->id,
+            'pengajuan_type' => $pengajuanModel,
+            'bidang_id'      => $request->bidang_id,
+            'created_date'   => now(),
+            'created_id'     => Auth::id(),
+            'is_active'      => true,
         ]);
 
         return redirect()
@@ -86,17 +116,25 @@ class PenempatanController extends Controller
         $penempatan = Penempatan::findOrFail($id);
 
         $request->validate([
-            'pengajuan_id' => 'required|exists:pengajuan_pklmagang,id',
-            'bidang_id'    => 'required|exists:bidang,id',
-            'is_active'    => 'required|boolean',
+            'pengajuan_id'   => 'required',
+            'pengajuan_type' => 'required|in:App\Models\PengajuanPklmagang,App\Models\PengajuanMagangMahasiswa',
+            'bidang_id'      => 'required|exists:bidang,id',
+            'is_active'      => 'required|boolean',
         ]);
 
+        $pengajuanModel = $request->pengajuan_type;
+        $pengajuan = $pengajuanModel::where('id', $request->pengajuan_id)
+            ->where('status', 'diterima')
+            ->whereNull('deleted_date')
+            ->firstOrFail();
+
         $penempatan->update([
-            'pengajuan_id' => $request->pengajuan_id,
-            'bidang_id'    => $request->bidang_id,
-            'is_active'    => $request->is_active,
-            'updated_date' => now(),
-            'updated_id'   => Auth::id(),
+            'pengajuan_id'   => $pengajuan->id,
+            'pengajuan_type' => $pengajuanModel,
+            'bidang_id'      => $request->bidang_id,
+            'is_active'      => $request->is_active,
+            'updated_date'   => now(),
+            'updated_id'     => Auth::id(),
         ]);
 
         return redirect()

@@ -713,6 +713,7 @@
     position: relative;
     margin-bottom: 30px;
     padding: 0 25px 25px 25px;
+    min-height: 350px; /* sesuaikan dengan konten */
 }
 
 .testimonial .testimonial-item::before {
@@ -808,6 +809,8 @@
 
 
 /*** Testimonial End ***/
+
+
 .icon-outline-custom i {
     transition:.3s;
 }

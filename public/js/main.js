@@ -72,9 +72,10 @@ $(".testimonial-carousel").owlCarousel({
     smartSpeed: 1500,
     center: false,
     dots: true,      // aktifkan bullet
-    loop: true,
+    loop: false,
     margin: 25,
     nav : false,     // hilangkan tombol panah
+    autoHeight: false,  // penting
     responsiveClass: true,
     responsive: {
         0:{ items:1 },

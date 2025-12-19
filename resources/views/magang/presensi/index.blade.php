@@ -64,8 +64,9 @@
                   <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">Semua Status</option>
                     <option value="hadir" {{ request('status')=='hadir'?'selected':'' }}>Hadir</option>
-                    <option value="absen" {{ request('status')=='absen'?'selected':'' }}>Absen</option>
+                    <option value="izin" {{ request('status')=='izin'?'selected':'' }}>Izin</option>
                     <option value="sakit" {{ request('status')=='sakit'?'selected':'' }}>Sakit</option>
+                    <option value="absen" {{ request('status')=='absen'?'selected':'' }}>Absen</option>
                   </select>
                 </div>
 

@@ -80,7 +80,7 @@
 
         {{-- ==================== PEMBIMBING (ROLE 2) ==================== --}}
         @if(auth()->user()->role_id == 2)
-        <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-user-check"></i></span><span class="nav-link-title">Siswa Bimbingan</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.bimbingan-peserta.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-user-check"></i></span><span class="nav-link-title">Siswa Bimbingan</span></a></li>
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
@@ -90,7 +90,12 @@
           <div class="dropdown-menu">
             <div class="dropdown-menu-columns">
               <div class="dropdown-menu-column">
-                <a class="dropdown-item d-flex align-items-center gap-2" href="./alerts.html"><i class="ti ti-calendar-time"></i> Presensi</a>
+                <a class="dropdown-item d-flex align-items-center gap-2"
+   href="{{ route('pembimbing.verifikasi-presensi.index') }}">
+    <i class="ti ti-calendar-time"></i>
+    Presensi
+</a>
+
                 <a class="dropdown-item d-flex align-items-center gap-2" href="./accordion.html"><i class="ti ti-notes"></i> Laporan Harian</a>
               </div>
             </div>
@@ -133,6 +138,12 @@
         <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard"></i></span><span class="nav-link-title">Tugas & Evaluasi</span></a></li>
         <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-award"></i></span><span class="nav-link-title">Nilai Akhir & Sertifikat</span></a></li>
         <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-text"></i></span><span class="nav-link-title">Riwayat Magang</span></a></li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('magang.feedback.index') }}">
+                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-message-circle"></i></span>
+                <span class="nav-link-title">Feedback</span>
+            </a>
+        </li>
         @endif
 
       </ul>

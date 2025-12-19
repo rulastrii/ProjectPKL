@@ -55,7 +55,7 @@
         <tr>
          <th>No.</th>
          <th>Nama Siswa</th>
-         <th>Kelas</th>
+         <th>Kelas / Email</th>
          <th>Bidang</th>
          <th>Status</th>
          <th>Created</th>
@@ -70,13 +70,23 @@
 
          {{-- Nama Siswa --}}
          <td>
-            {{ $row->pengajuan->siswaProfile->nama ?? '-' }}
-         </td>
+  @if($row->pengajuan_type === 'App\\Models\\PengajuanPklmagang')
+    {{ optional($row->pengajuan->siswaProfile)->nama ?? '-' }}
+  @else
+    {{ $row->pengajuan->nama_mahasiswa ?? '-' }}
+  @endif
+</td>
+
 
          {{-- Kelas --}}
          <td>
-            {{ $row->pengajuan->siswaProfile->kelas ?? '-' }}
-         </td>
+  @if($row->pengajuan_type === 'App\\Models\\PengajuanPklmagang')
+    {{ optional($row->pengajuan->siswaProfile)->kelas ?? '-' }}
+  @else
+    {{ $row->pengajuan->email_mahasiswa ?? '-' }}
+  @endif
+</td>
+
 
          {{-- Bidang --}}
          <td>
