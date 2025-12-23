@@ -16,41 +16,38 @@ class PembimbingController extends Controller
     // INDEX
     // ==========================
     public function index(Request $request)
-{
-    $search   = $request->search;
-    $per_page = $request->per_page ?? 10;
-    $tahun    = $request->tahun;
+    {
+        $search   = $request->search;
+        $per_page = $request->per_page ?? 10;
+        $tahun    = $request->tahun;
 
-    $pembimbing = Pembimbing::with(['pegawai','pengajuan'])
-        ->whereNull('deleted_date')
-        ->when($search, function ($q) use ($search) {
-            $q->whereHas('pegawai', fn($q)=>$q->where('nama','like',"%$search%"))
-              ->orWhereHasMorph(
-                    'pengajuan',
-                    [PengajuanPklmagang::class, PengajuanMagangMahasiswa::class],
-                    fn($q)=>$q->where('no_surat','like',"%$search%")
-              );
-        })
-        ->when($tahun, fn($q)=>$q->where('tahun',$tahun))
-        ->orderBy('id','desc')
-        ->paginate($per_page)
-        ->appends($request->query());
+        $pembimbing = Pembimbing::with(['pegawai','pengajuan'])
+            ->whereNull('deleted_date')
+            ->when($search, function ($q) use ($search) {
+                $q->whereHas('pegawai', fn($q)=>$q->where('nama','like',"%$search%"))
+                  ->orWhereHasMorph(
+                        'pengajuan',
+                        [PengajuanPklmagang::class, PengajuanMagangMahasiswa::class],
+                        fn($q)=>$q->where('no_surat','like',"%$search%")
+                  );
+            })
+            ->when($tahun, fn($q)=>$q->where('tahun',$tahun))
+            ->orderBy('id','desc')
+            ->paginate($per_page)
+            ->appends($request->query());
 
-    return view('admin.pembimbing.index', [
-        'pembimbing' => $pembimbing,
-        'pegawai'    => Pegawai::whereNull('deleted_date')->get(),
-        'tahunList'  => Pembimbing::select('tahun')
-                            ->whereNotNull('tahun')
-                            ->groupBy('tahun')
-                            ->orderBy('tahun','desc')
-                            ->get(),
-
-        //  TAMBAHKAN INI
-        'pkl'        => PengajuanPklmagang::with('sekolah')->get(),
-        'mahasiswa' => PengajuanMagangMahasiswa::all(),
-    ]);
-}
-
+        return view('admin.pembimbing.index', [
+            'pembimbing' => $pembimbing,
+            'pegawai'    => Pegawai::whereNull('deleted_date')->get(),
+            'tahunList'  => Pembimbing::select('tahun')
+                                ->whereNotNull('tahun')
+                                ->groupBy('tahun')
+                                ->orderBy('tahun','desc')
+                                ->get(),
+            'pkl'        => PengajuanPklmagang::with('sekolah')->get(),
+            'mahasiswa'  => PengajuanMagangMahasiswa::all(),
+        ]);
+    }
 
     // ==========================
     // CREATE
@@ -60,7 +57,7 @@ class PembimbingController extends Controller
         return view('admin.pembimbing.create', [
             'pegawai'    => Pegawai::whereNull('deleted_date')->get(),
             'pkl'        => PengajuanPklmagang::with('sekolah')->get(),
-            'mahasiswa' => PengajuanMagangMahasiswa::all(),
+            'mahasiswa'  => PengajuanMagangMahasiswa::all(),
         ]);
     }
 
@@ -68,48 +65,57 @@ class PembimbingController extends Controller
     // STORE
     // ==========================
     public function store(Request $request)
-{
-    $request->validate([
-        'pengajuan_key' => 'required|string',
-        'pegawai_id'    => 'required|exists:pegawai,id',
-        'tahun'         => 'nullable|integer',
-    ]);
+    {
+        $request->validate([
+            'pengajuan_key' => 'required|string',
+            'pegawai_id'    => 'required|exists:pegawai,id',
+            'tahun'         => 'nullable|integer',
+        ]);
 
-    [$type, $id] = explode(':', $request->pengajuan_key);
+        [$type, $id] = explode(':', $request->pengajuan_key);
 
-    $map = [
-        'pkl' => PengajuanPklmagang::class,
-        'mhs' => PengajuanMagangMahasiswa::class,
-    ];
+        $map = [
+            'pkl' => PengajuanPklmagang::class,
+            'mhs' => PengajuanMagangMahasiswa::class,
+        ];
 
-    if (!isset($map[$type])) {
-        abort(400, 'Invalid pengajuan');
+        if (!isset($map[$type])) {
+            abort(400, 'Invalid pengajuan');
+        }
+
+        // Ambil pegawai + user
+        $pegawai = Pegawai::with('user')->findOrFail($request->pegawai_id);
+
+        // 🚨 WAJIB punya akun user
+        if (!$pegawai->user_id) {
+            return back()->with('warning', 'Pegawai belum memiliki akun user.');
+        }
+
+        // Cegah duplikasi
+        $exists = Pembimbing::where([
+            'pengajuan_id'   => $id,
+            'pengajuan_type' => $map[$type],
+            'pegawai_id'     => $pegawai->id,
+        ])->whereNull('deleted_date')->exists();
+
+        if ($exists) {
+            return back()->with('warning','Pembimbing sudah terdaftar!');
+        }
+
+        Pembimbing::create([
+            'user_id'        => $pegawai->user_id, // ✅ INI KUNCI
+            'pengajuan_id'   => $id,
+            'pengajuan_type' => $map[$type],
+            'pegawai_id'     => $pegawai->id,
+            'tahun'          => $request->tahun,
+            'is_active'      => 1,
+            'created_id'     => auth()->id(),
+            'created_date'   => now(),
+        ]);
+
+        return redirect()->route('admin.pembimbing.index')
+            ->with('success','Pembimbing berhasil ditambahkan');
     }
-
-    $exists = Pembimbing::where([
-        'pengajuan_id'   => $id,
-        'pengajuan_type' => $map[$type],
-        'pegawai_id'     => $request->pegawai_id,
-    ])->whereNull('deleted_date')->exists();
-
-    if ($exists) {
-        return back()->with('warning','Pembimbing sudah terdaftar!');
-    }
-
-    Pembimbing::create([
-        'pengajuan_id'   => $id,
-        'pengajuan_type' => $map[$type],
-        'pegawai_id'     => $request->pegawai_id,
-        'tahun'          => $request->tahun,
-        'is_active'      => 1,
-        'created_id'     => auth()->id(),
-        'created_date'   => now(),
-    ]);
-
-    return redirect()->route('admin.pembimbing.index')
-        ->with('success','Pembimbing berhasil ditambahkan');
-}
-
 
     // ==========================
     // SHOW
@@ -137,34 +143,41 @@ class PembimbingController extends Controller
     // UPDATE
     // ==========================
     public function update(Request $request, Pembimbing $pembimbing)
-{
-    $request->validate([
-        'pengajuan_key' => 'required|string',
-        'pegawai_id'    => 'required|exists:pegawai,id',
-        'tahun'         => 'nullable|integer',
-    ]);
+    {
+        $request->validate([
+            'pengajuan_key' => 'required|string',
+            'pegawai_id'    => 'required|exists:pegawai,id',
+            'tahun'         => 'nullable|integer',
+            'is_active'     => 'required|boolean',
+        ]);
 
-    [$type, $id] = explode(':', $request->pengajuan_key);
+        [$type, $id] = explode(':', $request->pengajuan_key);
 
-    $map = [
-        'pkl' => PengajuanPklmagang::class,
-        'mhs' => PengajuanMagangMahasiswa::class,
-    ];
+        $map = [
+            'pkl' => PengajuanPklmagang::class,
+            'mhs' => PengajuanMagangMahasiswa::class,
+        ];
 
-    $pembimbing->update([
-        'pengajuan_id'   => $id,
-        'pengajuan_type' => $map[$type],
-        'pegawai_id'     => $request->pegawai_id,
-        'tahun'          => $request->tahun,
-        'is_active'      => $request->is_active,
-        'updated_id'     => auth()->id(),
-        'updated_date'   => now(),
-    ]);
+        $pegawai = Pegawai::with('user')->findOrFail($request->pegawai_id);
 
-    return redirect()->route('admin.pembimbing.index')
-        ->with('success','Pembimbing berhasil diperbarui');
-}
+        if (!$pegawai->user_id) {
+            return back()->with('warning', 'Pegawai belum memiliki akun user.');
+        }
 
+        $pembimbing->update([
+            'user_id'        => $pegawai->user_id, // ✅ PASTIKAN UPDATE
+            'pengajuan_id'   => $id,
+            'pengajuan_type' => $map[$type],
+            'pegawai_id'     => $pegawai->id,
+            'tahun'          => $request->tahun,
+            'is_active'      => $request->is_active,
+            'updated_id'     => auth()->id(),
+            'updated_date'   => now(),
+        ]);
+
+        return redirect()->route('admin.pembimbing.index')
+            ->with('success','Pembimbing berhasil diperbarui');
+    }
 
     // ==========================
     // DELETE

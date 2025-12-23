@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pegawai;
 use App\Models\Bidang;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PegawaiController extends Controller
 {
     // ==========================
-    // Tampilkan daftar pegawai
+    // Daftar pegawai
     // ==========================
     public function index(Request $request)
     {
@@ -20,7 +22,8 @@ class PegawaiController extends Controller
         $is_active = $request->is_active;
         $per_page  = $request->per_page ?? 10;
 
-        $pegawais = Pegawai::whereNull('deleted_date')
+        $pegawais = Pegawai::with('user')
+            ->whereNull('deleted_date')
             ->when($search, fn($q) => $q->where(function($q) use ($search) {
                 $q->where('nama', 'like', "%$search%")
                   ->orWhere('nip', 'like', "%$search%")
@@ -36,7 +39,9 @@ class PegawaiController extends Controller
         return view('admin.pegawai.index', compact('pegawais', 'bidangs'));
     }
 
-// Tampilkan detail pegawai
+    // ==========================
+    // Detail pegawai
+    // ==========================
     public function show($id)
     {
         $pegawai = Pegawai::with(['bidang', 'user'])->findOrFail($id);
@@ -52,7 +57,6 @@ class PegawaiController extends Controller
         return view('admin.pegawai.create', compact('bidangs'));
     }
 
-
     // ==========================
     // Simpan pegawai baru
     // ==========================
@@ -66,19 +70,18 @@ class PegawaiController extends Controller
         ]);
 
         Pegawai::create([
-            'user_id'      => Auth::id(), // otomatis user yang login
             'nip'          => $request->nip,
             'nama'         => $request->nama,
             'jabatan'      => $request->jabatan,
             'bidang_id'    => $request->bidang_id,
+            'is_active'    => true,
             'created_date' => now(),
             'created_id'   => Auth::id(),
-            'is_active'    => true,
         ]);
 
-        return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
+        return redirect()->route('admin.pegawai.index')
+            ->with('success', 'Pegawai berhasil ditambahkan. Akun user dapat dibuat terpisah.');
     }
-
 
     // ==========================
     // Form edit pegawai
@@ -87,10 +90,8 @@ class PegawaiController extends Controller
     {
         $pegawai = Pegawai::findOrFail($id);
         $bidangs = Bidang::active()->get();
-
         return view('admin.pegawai.edit', compact('pegawai', 'bidangs'));
     }
-
 
     // ==========================
     // Update pegawai
@@ -117,9 +118,9 @@ class PegawaiController extends Controller
             'updated_id'   => Auth::id(),
         ]);
 
-        return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil diperbarui.');
+        return redirect()->route('admin.pegawai.index')
+            ->with('success', 'Pegawai berhasil diperbarui.');
     }
-
 
     // ==========================
     // Soft delete pegawai
@@ -136,4 +137,47 @@ class PegawaiController extends Controller
         return redirect()->route('admin.pegawai.index')
             ->with('success', 'Pegawai berhasil dihapus.');
     }
+
+    // ==========================
+    // Form buat akun user untuk pegawai
+    // ==========================
+   public function storeUser(Request $request, Pegawai $pegawai)
+{
+    $request->validate([
+        'email'    => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6|confirmed',
+    ]);
+
+    DB::transaction(function () use ($request, $pegawai) {
+
+        $user = User::create([
+            'name'      => $pegawai->nama,
+            'email'     => $request->email,
+            'password'  => $request->password, // ✅ HASH lewat mutator
+            'role_id'   => 2,
+            'is_active' => false,
+            'force_change_password' => true,
+            'created_date' => now(),
+            'created_id'   => Auth::id(),
+        ]);
+
+        // relasi pegawai → user
+        $pegawai->update([
+            'user_id' => $user->id
+        ]);
+
+        //  LANGSUNG KIRIM EMAIL VERIFIKASI
+        $user->notify(
+            new \App\Notifications\AdminCreateUserVerification(
+                $request->password // boleh null kalau tidak mau kirim password
+            )
+        );
+    });
+
+    return redirect()
+        ->route('admin.pegawai.index')
+        ->with('success', 'Akun pegawai berhasil dibuat & email verifikasi dikirim.');
+}
+
+
 }

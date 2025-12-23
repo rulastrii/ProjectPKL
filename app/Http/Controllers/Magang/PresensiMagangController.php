@@ -12,17 +12,16 @@ class PresensiMagangController extends Controller
 {
     /**
      * Tampilkan daftar presensi magang
+     * ⚠️ TIDAK DIUBAH SESUAI PERMINTAAN
      */
     public function index(Request $request)
     {
         $user = auth()->user();
 
-        // Pastikan user role magang
         if ($user->role_id != 5) {
             abort(403, 'Akses hanya untuk magang.');
         }
 
-        // Ambil profile magang dari tabel siswa_profile
         $siswa = SiswaProfile::where('user_id', $user->id)->first();
         if (!$siswa) {
             abort(404, 'Profile magang tidak ditemukan.');
@@ -30,7 +29,6 @@ class PresensiMagangController extends Controller
 
         $query = Presensi::where('siswa_id', $siswa->id);
 
-        // Filter search (nama / NISN)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('siswa', function ($q) use ($search) {
@@ -40,12 +38,10 @@ class PresensiMagangController extends Controller
             });
         }
 
-        // Filter tanggal
         if ($request->filled('tanggal')) {
             $query->where('tanggal', $request->tanggal);
         }
 
-        // Filter status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -63,29 +59,15 @@ class PresensiMagangController extends Controller
     public function create()
     {
         $user = auth()->user();
-        if ($user->role_id != 5) {
-            abort(403, 'Akses hanya untuk magang.');
-        }
+        if ($user->role_id != 5) abort(403);
 
-        $siswa = SiswaProfile::where('user_id', $user->id)->first();
-        if (!$siswa) {
-            abort(404, 'Profile magang tidak ditemukan.');
-        }
+        $siswa = SiswaProfile::where('user_id', $user->id)->firstOrFail();
 
-        // Ambil presensi hari ini
         $todayPresensi = Presensi::where('siswa_id', $siswa->id)
             ->where('tanggal', date('Y-m-d'))
             ->first();
 
-        $jamMasuk = $todayPresensi->jam_masuk ?? null;
-        $jamPulang = $todayPresensi->jam_keluar ?? null;
-
-        $absenMasukSudah = !is_null($jamMasuk);
-        $absenPulangSudah = !is_null($jamPulang);
-
-        return view('magang.presensi.index', compact(
-            'siswa', 'todayPresensi', 'jamMasuk', 'jamPulang', 'absenMasukSudah', 'absenPulangSudah'
-        ));
+        return view('magang.presensi.index', compact('siswa', 'todayPresensi'));
     }
 
     /**
@@ -94,38 +76,42 @@ class PresensiMagangController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        if ($user->role_id != 5) {
-            abort(403, 'Akses hanya untuk magang.');
-        }
+        if ($user->role_id != 5) abort(403);
 
-        $siswa = SiswaProfile::where('user_id', $user->id)->first();
-        if (!$siswa) {
-            return back()->withErrors(['msg' => 'Profile magang tidak ditemukan.']);
-        }
-
+        $siswa   = SiswaProfile::where('user_id', $user->id)->firstOrFail();
         $tanggal = date('Y-m-d');
+        $now     = Carbon::now('Asia/Jakarta');
 
         $request->validate([
-            'tab' => 'required|in:masuk,pulang',
-            'status' => 'required_if:tab,masuk|in:hadir,izin,sakit,absen',
-            'foto_masuk' => 'nullable|image|max:2048',
+            'tab'         => 'required|in:masuk,pulang',
+            'foto_masuk'  => 'nullable|image|max:2048',
             'foto_pulang' => 'nullable|image|max:2048',
         ]);
 
-        /** ================= ABSEN MASUK ================= */
+        /**
+         * ================= ABSEN MASUK =================
+         */
         if ($request->tab === 'masuk') {
+
+            // ⏰ BATAS JAM MASUK 11.00
+            if ($now->gt(Carbon::createFromTime(11, 0))) {
+                return back()->withErrors([
+                    'msg' => 'Absen masuk melewati jam 11.00, dianggap tidak hadir.'
+                ]);
+            }
 
             $presensi = Presensi::firstOrNew([
                 'siswa_id' => $siswa->id,
-                'tanggal' => $tanggal
+                'tanggal'  => $tanggal
             ]);
 
             if ($presensi->jam_masuk) {
                 return back()->withErrors(['msg' => 'Absensi masuk sudah dilakukan.']);
             }
 
-            $presensi->jam_masuk = Carbon::now('Asia/Jakarta')->format('H:i:s');
-            $presensi->status = $request->status;
+            $presensi->jam_masuk  = $now->format('H:i:s');
+            $presensi->status     = 'hadir';
+            $presensi->kelengkapan = 'tidak_lengkap'; // default
 
             if ($request->hasFile('foto_masuk')) {
                 $file = $request->file('foto_masuk');
@@ -137,22 +123,39 @@ class PresensiMagangController extends Controller
             $presensi->save();
         }
 
-        /** ================= ABSEN PULANG ================= */
+        /**
+         * ================= ABSEN PULANG =================
+         */
         if ($request->tab === 'pulang') {
 
-            $presensi = Presensi::where('siswa_id', $siswa->id)
-                ->where('tanggal', $tanggal)
-                ->first();
-
-            if (!$presensi || !$presensi->jam_masuk) {
-                return back()->withErrors(['msg' => 'Anda belum melakukan absensi masuk.']);
+            // ⏰ BATAS JAM PULANG 17.00
+            if ($now->gt(Carbon::createFromTime(17, 0))) {
+                return back()->withErrors([
+                    'msg' => 'Absen pulang melewati jam 17.00.'
+                ]);
             }
+
+            // ✅ BOLEH PULANG WALAU LUPA MASUK
+            $presensi = Presensi::firstOrNew([
+                'siswa_id' => $siswa->id,
+                'tanggal'  => $tanggal
+            ]);
 
             if ($presensi->jam_keluar) {
                 return back()->withErrors(['msg' => 'Absensi pulang sudah dilakukan.']);
             }
 
-            $presensi->jam_keluar = Carbon::now('Asia/Jakarta')->format('H:i:s');
+            $presensi->jam_keluar = $now->format('H:i:s');
+
+            // 🔎 TENTUKAN STATUS & KELENGKAPAN
+            if ($presensi->jam_masuk) {
+                $presensi->status      = $presensi->status ?? 'hadir';
+                $presensi->kelengkapan = 'lengkap';
+            } else {
+                // Pulang tanpa masuk
+                $presensi->status      = 'hadir';
+                $presensi->kelengkapan = 'tidak_lengkap';
+            }
 
             if ($request->hasFile('foto_pulang')) {
                 $file = $request->file('foto_pulang');

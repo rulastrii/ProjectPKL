@@ -12,7 +12,20 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        /**
+         * ==============================
+         * AUTO GENERATE ABSEN HARIAN
+         * ==============================
+         * - Jalan setiap hari
+         * - Jam 17:05 WIB
+         * - Logic skip weekend, izin, sakit
+         *   ada di Command
+         */
+        $schedule->command('app:generate-absen-presensi')
+                 ->dailyAt('17:05')
+                 ->timezone('Asia/Jakarta')
+                 ->withoutOverlapping()
+                 ->onOneServer();
     }
 
     /**

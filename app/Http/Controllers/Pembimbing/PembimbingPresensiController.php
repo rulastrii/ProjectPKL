@@ -10,50 +10,33 @@ use Carbon\Carbon;
 
 class PembimbingPresensiController extends Controller
 {
-    /**
-     * R - List presensi peserta bimbingan
-     */
     public function index(Request $request)
     {
-        $tanggal  = $request->tanggal ?? date('Y-m-d');
-        $perPage  = $request->per_page ?? 10;
-        $search   = $request->search;
+        $perPage = $request->per_page ?? 10;
+        $search  = $request->search;
 
-        $presensi = Presensi::with('siswa')
-            ->where('tanggal', $tanggal)
-            ->where('is_active', 1)
-            ->when($search, function ($q) use ($search) {
-                $q->whereHas('siswa', function ($s) use ($search) {
-                    $s->where('nama', 'like', "%{$search}%")
-                      ->orWhere('nisn', 'like', "%{$search}%")
-                      ->orWhere('nim', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('jam_masuk', 'asc')
+        $query = Presensi::with('siswa')
+            ->where('is_active', 1);
+
+        if ($request->filled('tanggal')) {
+            $query->where('tanggal', $request->tanggal);
+        }
+
+        if ($search) {
+            $query->whereHas('siswa', function ($s) use ($search) {
+                $s->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nim', 'like', "%{$search}%");
+            });
+        }
+
+        $presensi = $query->orderBy('jam_masuk', 'asc')
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('pembimbing.verifikasi-presensi.index', [
-            'presensi' => $presensi,
-            'tanggal'  => $tanggal
-        ]);
+        return view('pembimbing.verifikasi-presensi.index', compact('presensi'));
     }
 
-    /**
-     * R - Detail presensi (opsional)
-     */
-    public function show($id)
-    {
-        $presensi = Presensi::with('siswa')->findOrFail($id);
-
-        return view('pembimbing.verifikasi-presensi.show', [
-            'presensi' => $presensi
-        ]);
-    }
-
-    /**
-     * U - Verifikasi / update status presensi
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -62,11 +45,13 @@ class PembimbingPresensiController extends Controller
 
         $presensi = Presensi::findOrFail($id);
 
-        // hanya boleh diverifikasi di hari yang sama
+        // TIDAK BOLEH HADIR TANPA JAM MASUK
+        if ($request->status === 'hadir' && !$presensi->jam_masuk) {
+            return back()->with('error', 'Tidak bisa verifikasi HADIR tanpa absen masuk.');
+        }
+
         if ($presensi->tanggal != date('Y-m-d')) {
-            return redirect()
-                ->back()
-                ->with('error', 'Presensi hanya bisa diverifikasi di hari yang sama');
+            return back()->with('error', 'Presensi hanya bisa diverifikasi di hari yang sama.');
         }
 
         $presensi->update([
@@ -75,8 +60,6 @@ class PembimbingPresensiController extends Controller
             'updated_date' => Carbon::now()
         ]);
 
-        return redirect()
-            ->back()
-            ->with('success', 'Presensi berhasil diverifikasi');
+        return back()->with('success', 'Presensi berhasil diverifikasi.');
     }
 }

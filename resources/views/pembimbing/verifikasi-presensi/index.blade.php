@@ -29,13 +29,11 @@
             @endforeach
           </select>
           entries
-
-          <input type="date"
-                 name="tanggal"
-                 value="{{ request('tanggal', $tanggal ?? date('Y-m-d')) }}"
-                 class="form-control form-control-sm ms-2"
-                 onchange="this.form.submit()">
         </div>
+        
+                <div class="ms-2">
+                  <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="form-control form-control-sm" onchange="this.form.submit()">
+                </div>
 
         <div class="ms-auto d-flex">
           <input type="text"
@@ -74,30 +72,39 @@
          <td>{{ $p->jam_masuk ?? '-' }}</td>
          <td>{{ $p->jam_keluar ?? '-' }}</td>
          <td>
-            @php
-                $badge = match($p->status) {
-                    'hadir' => 'bg-success-soft text-success',
-                    'izin'  => 'bg-warning-soft text-warning',
-                    'sakit' => 'bg-info-soft text-info',
-                    default => 'bg-danger-soft text-danger'
-                };
-            @endphp
-            <span class="badge {{ $badge }}">
-                {{ strtoupper($p->status) }}
-            </span>
-         </td>
+ @php
+    $badge = match($p->status) {
+        'hadir' => 'bg-success-soft text-success',
+        'izin'  => 'bg-warning-soft text-warning',
+        'sakit' => 'bg-info-soft text-info',
+        default => 'bg-danger-soft text-danger'
+    };
+
+    $tooltip = '';
+    if($p->status === 'absen') {
+        if(!$p->jam_masuk && !$p->jam_keluar) {
+            $tooltip = 'Tidak absen masuk & pulang';
+        } elseif(!$p->jam_masuk) {
+            $tooltip = 'Lupa absen masuk';
+        }
+    }
+ @endphp
+
+ <span class="badge {{ $badge }}" title="{{ $tooltip }}">
+    {{ strtoupper($p->status) }}
+ </span>
+</td>
          <td class="text-end">
-            @if($p->tanggal == date('Y-m-d'))
-            <button class="btn btn-outline-primary btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#verifikasiModal{{ $p->id }}"
-                    title="Verifikasi presensi hari ini">
-                <i class="ti ti-check"></i>
-            </button>
-            @else
-            <span class="text-muted">Locked</span>
-            @endif
-         </td>
+ @if($p->tanggal == date('Y-m-d') && $p->jam_masuk)
+    <button class="btn btn-outline-primary btn-sm"
+        data-bs-toggle="modal"
+        data-bs-target="#verifikasiModal{{ $p->id }}">
+        <i class="ti ti-check"></i>
+    </button>
+ @else
+    <span class="text-muted">Locked</span>
+ @endif
+</td>
         </tr>
 
         {{-- MODAL VERIFIKASI --}}

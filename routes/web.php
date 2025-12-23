@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use App\Http\Controllers\Auth\LoginController;
@@ -26,7 +26,9 @@ use App\Http\Controllers\MagangDashboardController;
 use App\Http\Controllers\Magang\PresensiMagangController;
 use App\Http\Controllers\Magang\FeedbackController;
 use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\Magang\TugasController as MagangTugasController;
 use App\Http\Controllers\Pembimbing\PembimbingPresensiController;
+use App\Http\Controllers\Pembimbing\TugasController as PembimbingTugasController;
 use App\Http\Controllers\Pembimbing\BimbinganPesertaController as PembimbingAreaController;
 /*
 |--------------------------------------------------------------------------
@@ -288,6 +290,13 @@ Route::prefix('pegawai')->name('pegawai.')->group(function () {
     Route::delete('/{pegawai}', [PegawaiController::class, 'destroy'])->name('destroy');
     
     Route::get('/{pegawai}', [PegawaiController::class, 'show'])->name('show');
+
+    Route::get('/{pegawai}/create-user', [PegawaiController::class, 'createUser'])
+    ->name('create-user');
+
+Route::post('/{pegawai}/store-user', [PegawaiController::class, 'storeUser'])
+    ->name('store-user');
+
 });
 
 // PENGAJUAN PKL/MAGANG CRUD
@@ -387,6 +396,21 @@ Route::get('/bimbingan-peserta/{id}', [PembimbingAreaController::class, 'show'])
         Route::put('/{id}', [PembimbingPresensiController::class, 'update'])
             ->name('update');
     });
+
+    // TUGAS CRUD
+    Route::prefix('tugas')->name('tugas.')->group(function () {
+        Route::get('/', [PembimbingTugasController::class, 'index'])->name('index');
+        Route::get('/create', [PembimbingTugasController::class, 'create'])->name('create');
+        Route::post('/', [PembimbingTugasController::class, 'store'])->name('store');
+    Route::get('/{id}', [PembimbingTugasController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [PembimbingTugasController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PembimbingTugasController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PembimbingTugasController::class, 'destroy'])->name('destroy');
+
+        // Assign siswa ke tugas
+        Route::get('/{id}/assign', [PembimbingTugasController::class, 'assignForm'])->name('assignForm');
+        Route::post('/{id}/assign', [PembimbingTugasController::class, 'assign'])->name('assign');
+    });
 });
 
 
@@ -432,6 +456,13 @@ Route::middleware(['auth','role:5'])->prefix('magang')->name('magang.')->group(f
         Route::put('/{id}', [FeedbackController::class, 'update'])->name('update');
          Route::put('{id}/toggle-status', [FeedbackController::class, 'toggleStatus'])->name('feedback.toggle-status');
 
+    });
+
+    // Tugas untuk Magang
+    Route::prefix('tugas')->name('tugas.')->group(function () {
+        Route::get('/', [MagangTugasController::class, 'index'])->name('index');
+        Route::get('/{id}/submit', [MagangTugasController::class, 'submitForm'])->name('submitForm');
+        Route::post('/{id}/submit', [MagangTugasController::class, 'submit'])->name('submit');
     });
 
 });

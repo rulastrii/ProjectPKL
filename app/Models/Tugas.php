@@ -32,6 +32,23 @@ class Tugas extends Model
         return $this->belongsTo(Pembimbing::class, 'pembimbing_id');
     }
 
+
+    public function tugasAssignees()
+{
+    return $this->hasMany(TugasAssignee::class, 'tugas_id');
+}
+
+// Tugas.php
+public function creator()
+{
+    return $this->belongsTo(User::class, 'created_id');
+}
+
+public function updater()
+{
+    return $this->belongsTo(User::class, 'updated_id');
+}
+
     /**
      * Accessor format waktu tenggat
      */

@@ -16,6 +16,7 @@ class Presensi extends Model
         'jam_masuk',
         'jam_keluar',
         'status',
+        'kelengkapan',
         'foto_masuk',
         'foto_pulang',
         'created_id',

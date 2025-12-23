@@ -68,7 +68,48 @@
         <tr>
          <td>{{ $pegawais->firstItem() + $index }}</td>
          <td>{{ $pegawai->nip }}</td>
-         <td>{{ $pegawai->nama }}</td>
+         <td>
+  <div class="d-flex align-items-center gap-1">
+
+    <span>{{ $pegawai->nama }}</span>
+
+    @if($pegawai->user_id)
+      <span
+        title="Akun sudah dibuat"
+        style="
+          width:11px;
+          height:11px;
+          border:1px solid #2fb344;
+          border-radius:50%;
+          position:relative;
+          display:inline-block;
+        ">
+
+        <svg xmlns="http://www.w3.org/2000/svg"
+             viewBox="0 0 24 24"
+             style="
+               position:absolute;
+               top:50%;
+               left:50%;
+               width:6px;
+               height:6px;
+               transform:translate(-50%, -50%);
+               stroke:#2fb344;
+               stroke-width:3;
+               fill:none;
+               stroke-linecap:round;
+               stroke-linejoin:round;
+             ">
+          <path d="M5 12l5 5l10 -10"/>
+        </svg>
+
+      </span>
+    @endif
+
+  </div>
+</td>
+
+
          <td>{{ $pegawai->jabatan }}</td>
          <td>{{ $pegawai->bidang->nama ?? '-' }}</td>
          <td>
@@ -85,6 +126,17 @@
                                    title="Lihat Detail">
                                     <i class="ti ti-eye"></i>
                                 </a>
+{{-- BUAT AKUN --}}
+@if(!$pegawai->user_id)
+  <button type="button"
+          class="btn btn-outline-success btn-sm me-1"
+          data-bs-toggle="modal"
+          data-bs-target="#modalCreateUser-{{ $pegawai->id }}"
+          title="Buat Akun">
+      <i class="ti ti-user-plus"></i>
+  </button>
+@endif
+
 
     <!-- Edit Button Outline (Trigger Modal) -->
     <button type="button" class="btn btn-outline-warning btn-sm me-1" 
@@ -151,4 +203,8 @@
 
 @include('admin.pegawai.modal-create') {{-- Modal Create --}}
 @include('admin.pegawai.modal-edit')   {{-- Modal Edit --}}
+ @foreach($pegawais as $pegawai)
+  ...
+  @include('admin.pegawai.modal-create-users', ['pegawai' => $pegawai])
+@endforeach
 @endsection

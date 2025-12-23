@@ -104,19 +104,24 @@
             <div class="nav-item dropdown">
               @php
                   $user = Auth::user();
-                  $foto = $user && $user->foto 
-                          ? asset('storage/profile/'.$user->foto)        // jika user punya foto
-                          : asset('static/avatars/user-default.png');    // default avatar
+                  $foto = ($user && $user->siswaProfile && $user->siswaProfile->foto)
+                          ? asset('uploads/foto_siswa/' . $user->siswaProfile->foto)
+                          : asset('static/avatars/user-default.png');
               @endphp
 
               <a href="#" class="nav-link d-flex align-items-center lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-                  <span class="avatar avatar-sm rounded-circle" 
-                      style="
-                          background-image:url('{{ $foto }}');
-                          background-size: cover;
-                          background-position: center;
-                      ">
+                  <span class="avatar avatar-sm rounded-circle me-2" 
+                        style="
+                            background-image: url('{{ $foto }}');
+                            background-size: cover;
+                            background-position: center;
+                            width: 32px;
+                            height: 32px;
+                            display: inline-block;
+                        ">
                   </span>
+    
+
 
                   <div class="d-none d-xl-block ps-2">
                       <div>{{ $user->name ?? 'Guest' }}</div>
