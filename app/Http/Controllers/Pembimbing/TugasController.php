@@ -5,6 +5,7 @@ use App\Models\Pembimbing;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tugas;
+use App\Models\TugasSubmit;
 use App\Models\TugasAssignee;
 use App\Models\SiswaProfile;
 use Illuminate\Http\Request;
@@ -167,4 +168,69 @@ public function show($id)
 
         return redirect()->route('pembimbing.tugas.index')->with('success', 'Tugas berhasil ditugaskan ke peserta');
     }
+
+    
+    // Lihat semua submit
+public function submissions(Request $request, $id)
+{
+    $search = $request->input('search');
+    $perPage = $request->input('per_page', 10);
+
+    $tugas = Tugas::with(['submits.siswa'])->findOrFail($id);
+
+    // Filter search nama siswa
+    $submits = $tugas->submits;
+    if ($search) {
+        $submits = $submits->filter(function($submit) use ($search) {
+            return stripos($submit->siswa->nama, $search) !== false;
+        });
+    }
+
+    // Pagination manual
+    $submits = new \Illuminate\Pagination\LengthAwarePaginator(
+        $submits->forPage($request->input('page', 1), $perPage),
+        $submits->count(),
+        $perPage,
+        $request->input('page', 1),
+        ['path' => $request->url(), 'query' => $request->query()]
+    );
+
+    return view('pembimbing.tugas.submissions', compact('tugas', 'submits'));
+}
+
+
+// Form menilai
+public function gradeForm($submit_id)
+{
+    $submit = TugasSubmit::with('siswa')->findOrFail($submit_id);
+    return view('pembimbing.tugas.grade', compact('submit'));
+}
+
+
+public function grade(Request $request, $submit_id)
+{
+    $request->validate([
+        'skor' => 'required|numeric|min:0|max:100',
+        'feedback' => 'nullable|string',
+        'status' => 'required|in:pending,sudah dinilai'
+    ]);
+
+    $submit = TugasSubmit::findOrFail($submit_id);
+    $submit->update([
+        'skor' => $request->skor,
+        'feedback' => $request->feedback,
+        'status' => $request->status,
+        'updated_id' => auth()->id(),
+        'updated_date' => now()
+    ]);
+
+    // Opsional: auto-update status tugas jika semua submit sudah dinilai
+    $tugas = $submit->tugas;
+    if ($tugas->submits()->where('status', 'pending')->count() == 0) {
+        $tugas->update(['status' => 'sudah dinilai']);
+    }
+
+    return redirect()->back()->with('success', 'Tugas berhasil dinilai.');
+}
+
 }

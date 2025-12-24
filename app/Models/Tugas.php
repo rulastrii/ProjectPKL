@@ -37,6 +37,10 @@ class Tugas extends Model
 {
     return $this->hasMany(TugasAssignee::class, 'tugas_id');
 }
+public function submits()
+{
+    return $this->hasMany(TugasSubmit::class, 'tugas_id');
+}
 
 // Tugas.php
 public function creator()

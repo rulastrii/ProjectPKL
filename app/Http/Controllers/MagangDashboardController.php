@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\SiswaProfile;
+use App\Models\TugasSubmit;
 use App\Models\Presensi;
+use App\Models\Tugas;
 use Carbon\Carbon;
 
 class MagangDashboardController extends Controller
@@ -38,6 +40,16 @@ class MagangDashboardController extends Controller
                 'serverTime'          => $serverTime,
             ]);
         }
+        // Ambil 3 tugas terbaru (dari tenggat terdekat) yang ditugaskan ke siswa ini
+    $tugasTerbaru = Tugas::whereHas('tugasAssignees', function($q) use ($magang) {
+        $q->where('siswa_id', $magang->id);
+    })
+    ->with(['submits' => function($q) use ($magang) {
+        $q->where('siswa_id', $magang->id);
+    }])
+    ->orderBy('tenggat', 'asc')
+    ->take(3)
+    ->get();
 
         // Presensi hari ini
         $todayPresensi = Presensi::where('siswa_id', $magang->id)
@@ -67,6 +79,32 @@ class MagangDashboardController extends Controller
         $prosentasePresensi = $totalHariMagang > 0
             ? round(($jumlahPresensi / $totalHariMagang) * 100)
             : 0;
+// Ambil total tugas yang diberikan ke siswa magang
+$totalTugas = Tugas::whereHas('tugasAssignees', function ($q) use ($magang) {
+    $q->where('siswa_id', $magang->id);
+})->count();
+
+// Hitung tugas yang sudah selesai
+$tugasSelesai = TugasSubmit::where('siswa_id', $magang->id)
+    ->where('status', '!=', 'pending')
+    ->where('is_active', 1)
+    ->count();
+
+// Hitung prosentase tugas selesai
+$prosentaseTugas = $totalTugas > 0
+    ? round(($tugasSelesai / $totalTugas) * 100)
+    : 0;
+
+        // ================= HITUNG LAPORAN HARI INI =================
+    $jumlahLaporanHariIni = TugasSubmit::where('siswa_id', $magang->id)
+        ->whereDate('submitted_at', now('Asia/Jakarta')->toDateString())
+        ->count();
+
+        // Hitung jumlah tugas pending untuk siswa magang yang login
+$jumlahTugasPending = TugasSubmit::where('siswa_id', $magang->id)
+    ->where('status', 'pending')
+    ->where('is_active', 1)
+    ->count();
 
         return view('magang.dashboard', compact(
             'magang',
@@ -75,6 +113,12 @@ class MagangDashboardController extends Controller
             'totalHariMagang',
             'jumlahPresensi',
             'prosentasePresensi',
+            'jumlahLaporanHariIni',
+            'jumlahTugasPending',
+            'totalTugas',
+            'tugasSelesai',
+            'prosentaseTugas',
+            'tugasTerbaru',
             'serverTime'
         ));
     }

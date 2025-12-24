@@ -39,6 +39,31 @@ class SiswaProfile extends Model
         return $this->belongsTo(User::class,'user_id');
     }
 
+    public function penilaianAkhir()
+{
+    return $this->hasOne(PenilaianAkhir::class, 'siswa_id');
+}
+
+public function sertifikat()
+{
+    return $this->hasOne(Sertifikat::class, 'siswa_id');
+}
+
+/**
+     * Relasi ke penempatan
+     * 1 siswa punya 1 penempatan aktif
+     */
+    public function penempatan()
+{
+    return $this->hasOne(Penempatan::class, 'pengajuan_id')
+        ->where('pengajuan_type', 'siswa')
+        ->where('is_active', 1);
+}
+
+    public function pembimbing()
+    {
+        return $this->hasMany(\App\Models\Pembimbing::class, 'siswa_id');
+    }
     /**
      * Relasi ke tabel pengajuan_pklmagang
      */

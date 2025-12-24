@@ -86,48 +86,58 @@
                                     <td>{{ $t->judul }}</td>
                                     <td>{{ \Carbon\Carbon::parse($t->tenggat)->format('d M Y H:i') }}</td>
                                     <td>
-                                        <span class="badge {{ $t->status == 'pending' ? 'badge-outline-warning text-warning' : 'badge-outline-success text-success' }}">
-                                            {{ ucfirst($t->status) }}
-                                        </span>
+    <span class="badge {{ $t->status == 'pending' ? 'badge-outline-warning text-warning' : 'badge-outline-success text-success' }}">
+        {{ ucfirst($t->status) }}
+        @if($t->status == 'sudah dinilai')
+        @endif
+    </span>
+</td>
+<td class="text-end">
+    {{-- Show --}}
+    <button class="btn btn-outline-primary btn-sm me-1"
+            onclick="window.location='{{ route('pembimbing.tugas.show', $t->id) }}'"
+            title="Detail Tugas">
+        <i class="ti ti-eye"></i>
+    </button>
 
-                                    </td>
-                                    <td class="text-end">
-                                        <button type="button"
-                                                class="btn btn-outline-primary btn-sm me-1"
-                                                onclick="window.location='{{ route('pembimbing.tugas.show', $t->id) }}'"
-                                                title="Detail Tugas">
-                                            <i class="ti ti-eye"></i>
-                                        </button>
-                                        {{-- Edit Button --}}
-                                        <button type="button"
-                                                class="btn btn-outline-warning btn-sm me-1"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalEditTugas-{{ $t->id }}"
-                                                title="Edit Tugas">
-                                            <i class="ti ti-pencil"></i>
-                                        </button>
+    @if($t->status == 'pending')
+        {{-- Nilai --}}
+        <button class="btn btn-outline-success btn-sm me-1"
+                onclick="window.location='{{ route('pembimbing.tugas.submissions', $t->id) }}'"
+                title="Lihat Submit / Nilai">
+            <i class="ti ti-file-text"></i>
+        </button>
 
-                                        {{-- Assign Button --}}
-                                        <button type="button"
-                                                class="btn btn-outline-info btn-sm me-1"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalAssignTugas-{{ $t->id }}"
-                                                title="Assign Tugas">
-                                            <i class="ti ti-user"></i>
-                                        </button>
+        {{-- Edit --}}
+        <button class="btn btn-outline-warning btn-sm me-1"
+                data-bs-toggle="modal"
+                data-bs-target="#modalEditTugas-{{ $t->id }}"
+                title="Edit Tugas">
+            <i class="ti ti-pencil"></i>
+        </button>
 
-                                        {{-- Delete Button --}}
-                                        <form action="{{ route('pembimbing.tugas.destroy', $t->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    onclick="return confirm('Yakin hapus tugas?')"
-                                                    class="btn btn-outline-danger btn-sm"
-                                                    title="Hapus Tugas">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
+        {{-- Assign --}}
+        <button class="btn btn-outline-info btn-sm me-1"
+                data-bs-toggle="modal"
+                data-bs-target="#modalAssignTugas-{{ $t->id }}"
+                title="Assign Tugas">
+            <i class="ti ti-user"></i>
+        </button>
+    @endif
+
+    {{-- Hapus --}}
+    <form action="{{ route('pembimbing.tugas.destroy', $t->id) }}" method="POST" class="d-inline">
+        @csrf
+        @method('DELETE')
+        <button type="submit"
+                onclick="return confirm('Yakin hapus tugas?')"
+                class="btn btn-outline-danger btn-sm"
+                title="Hapus Tugas">
+            <i class="ti ti-trash"></i>
+        </button>
+    </form>
+</td>
+
                                 </tr>
                             @empty
                                 <tr>

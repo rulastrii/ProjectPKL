@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\PembimbingController;
 use App\Http\Controllers\Admin\PenempatanController;
 use App\Http\Controllers\Siswa\PengajuanSiswaController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\PembimbingDashboardController;
 use App\Http\Controllers\Siswa\SiswaProfileController;
 use App\Http\Controllers\Siswa\PresensiSiswaController;
 use App\Http\Controllers\Admin\SiswaProfileController as AdminSiswaProfileController;
@@ -28,6 +29,10 @@ use App\Http\Controllers\Magang\FeedbackController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Magang\TugasController as MagangTugasController;
 use App\Http\Controllers\Pembimbing\PembimbingPresensiController;
+use App\Http\Controllers\Pembimbing\DailyReportController;
+use App\Http\Controllers\Pembimbing\PenilaianAkhirController;
+use App\Http\Controllers\Magang\MagangPenilaianAkhirController;
+use App\Http\Controllers\Magang\MagangDailyReportController;
 use App\Http\Controllers\Pembimbing\TugasController as PembimbingTugasController;
 use App\Http\Controllers\Pembimbing\BimbinganPesertaController as PembimbingAreaController;
 /*
@@ -164,9 +169,7 @@ Route::middleware(['auth','verified'])->get('/dashboard', function () {
 
 Route::middleware(['auth','role:1'])->get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
-Route::middleware(['auth','role:2'])->get('/pembimbing/dashboard', function () {
-    return view('pembimbing.dashboard');
-})->name('pembimbing.dashboard');
+Route::middleware(['auth','role:2'])->get('/pembimbing/dashboard', [PembimbingDashboardController::class, 'index'])->name('pembimbing.dashboard');
 
 Route::middleware(['auth','verified','role:3','guru_verified'])->get('/guru/dashboard', function () {
     return view('guru.dashboard');
@@ -381,10 +384,7 @@ Route::middleware(['auth','role:2'])->prefix('pembimbing')->name('pembimbing.')-
     
     Route::prefix('bimbingan-peserta')->name('bimbingan-peserta.')->group(function () {
         Route::get('/', [PembimbingAreaController::class, 'index'])->name('index');
-        
-Route::get('/bimbingan-peserta/{id}', [PembimbingAreaController::class, 'show'])
-    ->name('show');
-    });
+        Route::get('/bimbingan-peserta/{id}', [PembimbingAreaController::class, 'show'])->name('show');});
 
     Route::prefix('verifikasi-presensi')
         ->name('verifikasi-presensi.')
@@ -397,12 +397,17 @@ Route::get('/bimbingan-peserta/{id}', [PembimbingAreaController::class, 'show'])
             ->name('update');
     });
 
+    Route::prefix('verifikasi-laporan')->name('verifikasi-laporan.')->group(function () {
+        Route::get('/', [DailyReportController::class, 'index'])->name('index');
+        Route::put('/{id}', [DailyReportController::class, 'update'])->name('update');
+    });
+
     // TUGAS CRUD
     Route::prefix('tugas')->name('tugas.')->group(function () {
         Route::get('/', [PembimbingTugasController::class, 'index'])->name('index');
         Route::get('/create', [PembimbingTugasController::class, 'create'])->name('create');
         Route::post('/', [PembimbingTugasController::class, 'store'])->name('store');
-    Route::get('/{id}', [PembimbingTugasController::class, 'show'])->name('show');
+        Route::get('/{id}', [PembimbingTugasController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [PembimbingTugasController::class, 'edit'])->name('edit');
         Route::put('/{id}', [PembimbingTugasController::class, 'update'])->name('update');
         Route::delete('/{id}', [PembimbingTugasController::class, 'destroy'])->name('destroy');
@@ -410,7 +415,31 @@ Route::get('/bimbingan-peserta/{id}', [PembimbingAreaController::class, 'show'])
         // Assign siswa ke tugas
         Route::get('/{id}/assign', [PembimbingTugasController::class, 'assignForm'])->name('assignForm');
         Route::post('/{id}/assign', [PembimbingTugasController::class, 'assign'])->name('assign');
+
+        // Daftar submit peserta
+        Route::get('/{id}/submissions', [PembimbingTugasController::class, 'submissions'])->name('submissions');
+
+        // Form penilaian
+        Route::get('/submit/{id}/gradeForm', [PembimbingTugasController::class, 'gradeForm'])->name('gradeForm');
+
+        // Proses penilaian
+        Route::post('/submit/{id}/grade', [PembimbingTugasController::class, 'grade'])->name('grade');
+
     });
+    // PEMBIMBING
+Route::prefix('penilaian_akhir')->name('penilaian_akhir.')->group(function () {
+
+    Route::get('/', 
+        [PenilaianAkhirController::class, 'index']
+    )->name('index');
+    Route::get('/{siswa}/form', 
+        [PenilaianAkhirController::class, 'form']
+    )->name('form');
+
+    Route::post('/{siswa}', 
+        [PenilaianAkhirController::class, 'store']
+    )->name('store');
+});
 });
 
 
@@ -441,6 +470,16 @@ Route::middleware(['auth','role:5'])->prefix('magang')->name('magang.')->group(f
         Route::post('/store', [PresensiMagangController::class, 'store'])->name('store');
     });
 
+    Route::prefix('daily-report')->name('daily-report.')->group(function () {
+    Route::get('/', [MagangDailyReportController::class, 'index'])->name('index');
+    Route::get('/create', [MagangDailyReportController::class, 'create'])->name('create');
+    Route::post('/', [MagangDailyReportController::class, 'store'])->name('store');
+    Route::get('/{id}', [MagangDailyReportController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [MagangDailyReportController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [MagangDailyReportController::class, 'update'])->name('update');
+});
+
+
     // Feedback CRUD khusus Magang
     Route::prefix('feedback')->name('feedback.')->group(function () {
         // Lihat semua feedback Magang sendiri
@@ -461,8 +500,17 @@ Route::middleware(['auth','role:5'])->prefix('magang')->name('magang.')->group(f
     // Tugas untuk Magang
     Route::prefix('tugas')->name('tugas.')->group(function () {
         Route::get('/', [MagangTugasController::class, 'index'])->name('index');
+        Route::get('/{id}', [MagangTugasController::class, 'show'])->name('show');
         Route::get('/{id}/submit', [MagangTugasController::class, 'submitForm'])->name('submitForm');
         Route::post('/{id}/submit', [MagangTugasController::class, 'submit'])->name('submit');
     });
+
+    // PESERTA MAGANG / PKL
+Route::prefix('penilaian_akhir')->name('penilaian_akhir.')->group(function () {
+
+    Route::get('penilaian_akhir', 
+        [MagangPenilaianAkhirController::class, 'index']
+    )->name('magang.penilaian_akhir.index');
+});
 
 });

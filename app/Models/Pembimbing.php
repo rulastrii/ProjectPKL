@@ -39,6 +39,10 @@ class Pembimbing extends Model
     {
         return $this->morphTo();
     }
+public function bidang()
+{
+    return $this->belongsTo(Bidang::class, 'bidang_id');
+}
 
     /** Relasi ke pegawai */
     public function pegawai()

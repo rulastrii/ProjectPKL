@@ -12,7 +12,7 @@ class PresensiMagangController extends Controller
 {
     /**
      * Tampilkan daftar presensi magang
-     * ⚠️ TIDAK DIUBAH SESUAI PERMINTAAN
+     *  TIDAK DIUBAH SESUAI PERMINTAAN
      */
     public function index(Request $request)
     {
