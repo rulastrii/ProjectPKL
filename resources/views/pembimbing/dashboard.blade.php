@@ -80,52 +80,41 @@
 </div>
 
               <div class="col-md-6">
-                <div class="card">
-                  <div class="card-header">
-                    <h3 class="card-title">Aktivitas Terbaru</h3>
-                  </div>
+ <div class="card">
+  <div class="card-header">
+   <h3 class="card-title">Aktivitas Terbaru</h3>
+  </div>
 
-                  <!-- SCROLL AREA -->
-                  <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
-                    <table class="table card-table table-vcenter">
-                      <tbody>
-                        <tr>
-                          <td class="w-1 text-secondary">1.</td>
-                          <td><strong>Siswa A</strong> mengisi laporan harian</td>
-                          <td class="text-nowrap text-secondary">30 Jan</td>
-                        </tr>
-                        <tr>
-                          <td class="w-1 text-secondary">2.</td>
-                          <td><strong>Siswa B</strong> submit tugas Modul 2</td>
-                          <td class="text-nowrap text-secondary">Hari ini</td>
-                        </tr>
-                        <tr>
-                          <td class="w-1 text-secondary">3.</td>
-                          <td><strong>Siswa C</strong> presensi masuk pukul 08.00</td>
-                          <td class="text-nowrap text-secondary">Hari ini</td>
-                        </tr>
-                        <tr>
-                          <td class="w-1 text-secondary">4.</td>
-                          <td><strong>Siswa D</strong> mengisi laporan harian</td>
-                          <td class="text-nowrap text-secondary">29 Jan</td>
-                        </tr>
-                        <tr>
-                          <td class="w-1 text-secondary">5.</td>
-                          <td><strong>Siswa E</strong> submit tugas Modul 1</td>
-                          <td class="text-nowrap text-secondary">28 Jan</td>
-                        </tr>
+  <div class="table-responsive" style="max-height:260px;overflow-y:auto;">
+   <table class="table card-table table-vcenter">
+    <tbody>
 
-                        <!-- DATA KE-6 dst → otomatis muncul scroll -->
-                        <tr>
-                          <td class="w-1 text-secondary">6.</td>
-                          <td><strong>Siswa F</strong> presensi keluar pukul 16.00</td>
-                          <td class="text-nowrap text-secondary">28 Jan</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+@forelse($aktivitas as $i => $a)
+<tr>
+  <td class="w-1 text-secondary">{{ $i + 1 }}.</td>
+  <td>
+    <strong>{{ $a['nama'] }}</strong>
+    {{ $a['aksi'] }}
+  </td>
+  <td class="text-nowrap text-secondary">
+    {{ \Carbon\Carbon::parse($a['tanggal'])->format('d M Y H:i') }}
+  </td>
+</tr>
+@empty
+<tr>
+  <td colspan="3" class="text-center text-muted">
+    Belum ada aktivitas
+  </td>
+</tr>
+@endforelse
+
+
+    </tbody>
+   </table>
+  </div>
+ </div>
+</div>
+
 
 {{-- DAFTAR SISWA BIMBINGAN --}}
     <div class="col-md-6">

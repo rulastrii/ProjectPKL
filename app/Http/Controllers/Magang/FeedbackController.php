@@ -3,40 +3,38 @@
 namespace App\Http\Controllers\Magang;
 
 use App\Http\Controllers\Controller;
-use App\Models\Feedback;
-use App\Models\SiswaProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\SiswaProfile;
+use App\Models\Feedback;
 
 
 class FeedbackController extends Controller
 {
+    
     // Menampilkan list feedback (Magang hanya lihat sendiri)
+    public function index(Request $request) {
+        $user = Auth::user();
+        $query = Feedback::where('user_id', $user->id);
 
-public function index(Request $request)
-{
-    $user = Auth::user();
-    $query = Feedback::where('user_id', $user->id);
+        if ($request->has('search') && $request->search != '') {
+            $query->where('feedback', 'like', '%'.$request->search.'%');
+        }
 
-    if ($request->has('search') && $request->search != '') {
-        $query->where('feedback', 'like', '%'.$request->search.'%');
+        $feedbacks = $query->orderBy('created_at', 'desc')->get(); // Tanpa paginate
+
+        // Ambil foto dari profile
+        foreach ($feedbacks as $fb) {
+            $profile = SiswaProfile::where('user_id', $fb->user_id)->first();
+            $fb->foto = $profile?->foto ?? null;
+        }
+
+        return view('magang.feedback.index', compact('feedbacks'));
     }
-
-    $feedbacks = $query->orderBy('created_at', 'desc')->get(); // Tanpa paginate
-
-    // Ambil foto dari profile
-    foreach ($feedbacks as $fb) {
-        $profile = SiswaProfile::where('user_id', $fb->user_id)->first();
-        $fb->foto = $profile?->foto ?? null;
-    }
-
-    return view('magang.feedback.index', compact('feedbacks'));
-}
 
 
     // Menyimpan feedback baru
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $user = Auth::user();
 
         $request->validate([
@@ -70,8 +68,7 @@ public function index(Request $request)
     }
 
     // Update feedback sendiri
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $user = Auth::user();
         $feedback = Feedback::findOrFail($id);
 
@@ -95,8 +92,7 @@ public function index(Request $request)
     }
 
     // Toggle status feedback (aktif/non-aktif)
-    public function toggleStatus(Request $request, $id)
-    {
+    public function toggleStatus(Request $request, $id) {
         $request->validate([
             'status' => 'required|in:aktif,non-aktif',
         ]);
@@ -106,4 +102,5 @@ public function index(Request $request)
 
         return response()->json(['success' => true]);
     }
+
 }

@@ -1,12 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\DB;
+
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\SiswaProfile;
 use App\Models\TugasSubmit;
 use App\Models\Presensi;
 use App\Models\Tugas;
+use App\Models\PenilaianAkhir;
 use Carbon\Carbon;
 
 class MagangDashboardController extends Controller
@@ -14,8 +16,7 @@ class MagangDashboardController extends Controller
     /**
      * Tampilkan dashboard magang
      */
-    public function index()
-    {
+    public function index() {
         $user = auth()->user();
 
         // Validasi role magang
@@ -40,16 +41,15 @@ class MagangDashboardController extends Controller
                 'serverTime'          => $serverTime,
             ]);
         }
+
         // Ambil 3 tugas terbaru (dari tenggat terdekat) yang ditugaskan ke siswa ini
-    $tugasTerbaru = Tugas::whereHas('tugasAssignees', function($q) use ($magang) {
-        $q->where('siswa_id', $magang->id);
-    })
-    ->with(['submits' => function($q) use ($magang) {
-        $q->where('siswa_id', $magang->id);
-    }])
-    ->orderBy('tenggat', 'asc')
-    ->take(3)
-    ->get();
+        $tugasTerbaru = Tugas::whereHas('tugasAssignees', function($q) use ($magang) {
+            $q->where('siswa_id', $magang->id);
+        })->with(['submits' => function($q) use ($magang) {
+            $q->where('siswa_id', $magang->id);
+        }])->orderBy('tenggat', 'asc')
+           ->take(3)
+           ->get();
 
         // Presensi hari ini
         $todayPresensi = Presensi::where('siswa_id', $magang->id)
@@ -79,47 +79,53 @@ class MagangDashboardController extends Controller
         $prosentasePresensi = $totalHariMagang > 0
             ? round(($jumlahPresensi / $totalHariMagang) * 100)
             : 0;
-// Ambil total tugas yang diberikan ke siswa magang
-$totalTugas = Tugas::whereHas('tugasAssignees', function ($q) use ($magang) {
-    $q->where('siswa_id', $magang->id);
-})->count();
 
-// Hitung tugas yang sudah selesai
-$tugasSelesai = TugasSubmit::where('siswa_id', $magang->id)
-    ->where('status', '!=', 'pending')
-    ->where('is_active', 1)
-    ->count();
+        // Ambil total tugas yang diberikan ke siswa magang
+        $totalTugas = Tugas::whereHas('tugasAssignees', function ($q) use ($magang) {
+            $q->where('siswa_id', $magang->id);
+        })->count();
 
-// Hitung prosentase tugas selesai
-$prosentaseTugas = $totalTugas > 0
-    ? round(($tugasSelesai / $totalTugas) * 100)
-    : 0;
+        // Hitung tugas yang sudah selesai
+        $tugasSelesai = TugasSubmit::where('siswa_id', $magang->id)
+            ->where('status', '!=', 'pending')
+            ->where('is_active', 1)
+            ->count();
+
+        // Hitung prosentase tugas selesai
+        $prosentaseTugas = $totalTugas > 0
+            ? round(($tugasSelesai / $totalTugas) * 100)
+            : 0;
 
         // ================= HITUNG LAPORAN HARI INI =================
-    $jumlahLaporanHariIni = TugasSubmit::where('siswa_id', $magang->id)
-        ->whereDate('submitted_at', now('Asia/Jakarta')->toDateString())
-        ->count();
+        $jumlahLaporanHariIni = TugasSubmit::where('siswa_id', $magang->id)
+            ->whereDate('submitted_at', now('Asia/Jakarta')->toDateString())
+            ->count();
 
         // Hitung jumlah tugas pending untuk siswa magang yang login
-$jumlahTugasPending = TugasSubmit::where('siswa_id', $magang->id)
-    ->where('status', 'pending')
-    ->where('is_active', 1)
-    ->count();
+        $jumlahTugasPending = TugasSubmit::where('siswa_id', $magang->id)
+            ->where('status', 'pending')
+            ->where('is_active', 1)
+            ->count();
 
-        return view('magang.dashboard', compact(
-            'magang',
-            'todayPresensi',
-            'sudahPresensi',
-            'totalHariMagang',
-            'jumlahPresensi',
-            'prosentasePresensi',
-            'jumlahLaporanHariIni',
-            'jumlahTugasPending',
-            'totalTugas',
-            'tugasSelesai',
-            'prosentaseTugas',
-            'tugasTerbaru',
-            'serverTime'
-        ));
+        // ================= PENILAIAN AKHIR =================
+        $penilaian = PenilaianAkhir::where('siswa_id', $magang->id)->first();
+
+                return view('magang.dashboard', compact(
+                    'magang',
+                    'todayPresensi',
+                    'sudahPresensi',
+                    'totalHariMagang',
+                    'jumlahPresensi',
+                    'prosentasePresensi',
+                    'jumlahLaporanHariIni',
+                    'jumlahTugasPending',
+                    'totalTugas',
+                    'tugasSelesai',
+                    'prosentaseTugas',
+                    'tugasTerbaru',
+                    'penilaian',
+                    'serverTime'
+                ));
     }
+
 }

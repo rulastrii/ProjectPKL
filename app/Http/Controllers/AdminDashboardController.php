@@ -12,8 +12,7 @@ use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
-    public function index()
-    {
+    public function index() {
         // Total Bidang Aktif
         $totalBidang = Bidang::active()->count();
 
@@ -97,4 +96,5 @@ class AdminDashboardController extends Controller
             'pengajuanTerbaru'
         ));
     }
+
 }

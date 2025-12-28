@@ -290,15 +290,108 @@
 
 
 
-                        <!-- Card 4: Lihat Penilaian -->
-                        <div class="col-md-3 mb-3">
-                          <div class="card h-100 text-center bg-yellow text-white">
-                            <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                              <i class="ti ti-star" style="font-size: 2rem;"></i> <!-- Icon Bintang -->
-                              <h5 class="card-title mt-2">Lihat Penilaian Akhir</h5>
-                            </div>
-                          </div>
-                        </div>
+                       <!-- Card: Lihat Penilaian Akhir -->
+<div class="col-md-3 mb-3">
+    <div class="card h-100 text-center bg-yellow text-white cursor-pointer"
+         data-bs-toggle="modal"
+         data-bs-target="#modalPenilaianAkhir">
+        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+            <i class="ti ti-star" style="font-size: 2rem;"></i>
+            <h5 class="card-title mt-2">Lihat Penilaian Akhir</h5>
+        </div>
+    </div>
+</div>
+<!-- Modal Penilaian Akhir -->
+<div class="modal fade" id="modalPenilaianAkhir" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    Nilai Akhir PKL / Magang
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+
+                @if(!$penilaian)
+                    <div class="alert alert-warning text-center mb-0">
+                        Nilai akhir belum tersedia
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-vcenter mb-0">
+                            <tbody>
+                                <tr>
+                                    <th>Nilai Tugas</th>
+                                    <td>
+                                        {{ $penilaian->nilai_tugas !== null
+                                            ? number_format($penilaian->nilai_tugas, 2)
+                                            : '-' }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Nilai Laporan</th>
+                                    <td>
+                                        {{ $penilaian->nilai_laporan !== null
+                                            ? number_format($penilaian->nilai_laporan, 2)
+                                            : '-' }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Nilai Keaktifan</th>
+                                    <td>
+                                        {{ $penilaian->nilai_keaktifan !== null
+                                            ? number_format($penilaian->nilai_keaktifan, 2)
+                                            : '-' }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Nilai Sikap</th>
+                                    <td>
+                                        {{ $penilaian->nilai_sikap !== null
+                                            ? number_format($penilaian->nilai_sikap, 2)
+                                            : '-' }}
+                                    </td>
+                                </tr>
+
+                                {{-- Nilai Akhir muncul hanya jika tugas & laporan sudah ada --}}
+                                @if($penilaian->nilai_tugas !== null && $penilaian->nilai_laporan !== null)
+                                <tr class="table-success fw-bold">
+                                    <th>Nilai Akhir</th>
+                                    <td>{{ number_format($penilaian->nilai_akhir, 2) }}</td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+
+                {{-- Tombol Sertifikat hanya muncul jika nilai lengkap --}}
+                @if($penilaian && $penilaian->nilai_tugas !== null && $penilaian->nilai_laporan !== null)
+                    <a href="{{ route('magang.sertifikat.index') }}"
+                       class="btn btn-primary d-flex align-items-center gap-2">
+                        <i class="ti ti-certificate"></i> Lihat Sertifikat
+                    </a>
+                @endif
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Tutup
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
                     </div> <!-- end row -->
                   </div> <!-- end card-body -->

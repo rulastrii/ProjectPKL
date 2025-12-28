@@ -3,20 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Pembimbing;
 use App\Models\Pegawai;
 use App\Models\PengajuanPklmagang;
 use App\Models\PengajuanMagangMahasiswa;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PembimbingController extends Controller
 {
     // ==========================
     // INDEX
     // ==========================
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $search   = $request->search;
         $per_page = $request->per_page ?? 10;
         $tahun    = $request->tahun;
@@ -52,8 +51,7 @@ class PembimbingController extends Controller
     // ==========================
     // CREATE
     // ==========================
-    public function create()
-    {
+    public function create() {
         return view('admin.pembimbing.create', [
             'pegawai'    => Pegawai::whereNull('deleted_date')->get(),
             'pkl'        => PengajuanPklmagang::with('sekolah')->get(),
@@ -64,8 +62,7 @@ class PembimbingController extends Controller
     // ==========================
     // STORE
     // ==========================
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
             'pengajuan_key' => 'required|string',
             'pegawai_id'    => 'required|exists:pegawai,id',
@@ -86,7 +83,7 @@ class PembimbingController extends Controller
         // Ambil pegawai + user
         $pegawai = Pegawai::with('user')->findOrFail($request->pegawai_id);
 
-        // 🚨 WAJIB punya akun user
+        //  WAJIB punya akun user
         if (!$pegawai->user_id) {
             return back()->with('warning', 'Pegawai belum memiliki akun user.');
         }
@@ -103,7 +100,7 @@ class PembimbingController extends Controller
         }
 
         Pembimbing::create([
-            'user_id'        => $pegawai->user_id, // ✅ INI KUNCI
+            'user_id'        => $pegawai->user_id, 
             'pengajuan_id'   => $id,
             'pengajuan_type' => $map[$type],
             'pegawai_id'     => $pegawai->id,
@@ -120,8 +117,7 @@ class PembimbingController extends Controller
     // ==========================
     // SHOW
     // ==========================
-    public function show($id)
-    {
+    public function show($id) {
         $pembimbing = Pembimbing::with(['pegawai','pengajuan'])->findOrFail($id);
         return view('admin.pembimbing.show', compact('pembimbing'));
     }
@@ -129,8 +125,7 @@ class PembimbingController extends Controller
     // ==========================
     // EDIT
     // ==========================
-    public function edit(Pembimbing $pembimbing)
-    {
+    public function edit(Pembimbing $pembimbing) {
         return view('admin.pembimbing.edit', [
             'pembimbing' => $pembimbing,
             'pegawai'    => Pegawai::whereNull('deleted_date')->get(),
@@ -142,8 +137,7 @@ class PembimbingController extends Controller
     // ==========================
     // UPDATE
     // ==========================
-    public function update(Request $request, Pembimbing $pembimbing)
-    {
+    public function update(Request $request, Pembimbing $pembimbing) {
         $request->validate([
             'pengajuan_key' => 'required|string',
             'pegawai_id'    => 'required|exists:pegawai,id',
@@ -182,8 +176,7 @@ class PembimbingController extends Controller
     // ==========================
     // DELETE
     // ==========================
-    public function destroy(Pembimbing $pembimbing)
-    {
+    public function destroy(Pembimbing $pembimbing) {
         $pembimbing->update([
             'deleted_id'   => Auth::id(),
             'deleted_date' => now(),
@@ -192,4 +185,5 @@ class PembimbingController extends Controller
         return redirect()->route('admin.pembimbing.index')
             ->with('success','Pembimbing berhasil dihapus');
     }
+
 }

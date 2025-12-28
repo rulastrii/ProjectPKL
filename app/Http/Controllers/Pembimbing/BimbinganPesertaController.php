@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Pembimbing;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pembimbing;
-use App\Models\PengajuanPklmagang;
-use App\Models\PengajuanMagangMahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Pembimbing;
+use App\Models\PengajuanPklmagang;
+use App\Models\PengajuanMagangMahasiswa;
 
 class BimbinganPesertaController extends Controller
 {
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $user     = Auth::user();
         $pegawai  = $user->pegawai;
         $search   = $request->search;
@@ -55,8 +54,7 @@ class BimbinganPesertaController extends Controller
         return view('pembimbing.bimbingan-peserta.index', compact('pembimbing','tahunList'));
     }
 
-    public function show($id)
-    {
+    public function show($id) {
         $pegawai = Auth::user()->pegawai;
         if (!$pegawai) {
             abort(403, 'Pegawai tidak ditemukan untuk user login.');
@@ -70,4 +68,5 @@ class BimbinganPesertaController extends Controller
 
         return view('pembimbing.bimbingan-peserta.show', compact('pembimbing'));
     }
+
 }

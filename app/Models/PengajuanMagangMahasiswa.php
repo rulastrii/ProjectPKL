@@ -46,29 +46,24 @@ class PengajuanMagangMahasiswa extends Model
         'deleted_date'   => 'datetime',
         'is_active'      => 'boolean',
     ];
-
     
     /**
      * Tentukan email tujuan notifikasi
      */
-    public function routeNotificationForMail()
-    {
+    public function routeNotificationForMail() {
         return $this->email_mahasiswa;
     }
     
-public function pembimbing()
-{
-    return $this->morphMany(Pembimbing::class, 'pengajuan');
-}
+    public function pembimbing() {
+        return $this->morphMany(Pembimbing::class, 'pengajuan');
+    }
+ 
+    public function siswaProfile() {
+        return $this->hasOne(SiswaProfile::class, 'pengajuan_id', 'id');
+    }
 
-    
-public function siswaProfile()
-{
-    return $this->hasOne(SiswaProfile::class, 'pengajuan_id', 'id');
-}
-    public function user()
-{
-    return $this->belongsTo(User::class);
-}
+        public function user() {
+        return $this->belongsTo(User::class);
+    }
 
 }

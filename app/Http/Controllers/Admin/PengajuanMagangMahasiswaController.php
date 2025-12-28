@@ -3,65 +3,56 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\PengajuanMagangMahasiswa;
 use Illuminate\Support\Facades\Auth;
-use App\Notifications\PengajuanMagangStatusNotification;
-use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Notifications\PengajuanMagangStatusNotification;
+use App\Models\PengajuanMagangMahasiswa;
+use App\Models\User;
 
 class PengajuanMagangMahasiswaController extends Controller
 {
     /**
      * List Pengajuan Magang Mahasiswa
      */
-    public function index(Request $request)
-{
-    $search      = $request->search;
-    $status      = $request->status;
-    $universitas = $request->universitas;
-    $per_page    = $request->per_page ?? 10;
+    public function index(Request $request) {
+        $search      = $request->search;
+        $status      = $request->status;
+        $universitas = $request->universitas;
+        $per_page    = $request->per_page ?? 10;
+        $pengajuan   = PengajuanMagangMahasiswa::whereNull('deleted_date')
 
-    $pengajuan = PengajuanMagangMahasiswa::whereNull('deleted_date')
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('nama_mahasiswa', 'like', "%$search%")
+                    ->orWhere('email_mahasiswa', 'like', "%$search%");
+                });
+            })->when($status, function ($q) use ($status) {
+                $q->where('status', $status);
+            })->when($universitas, function ($q) use ($universitas) {
+                $q->where('universitas', $universitas);
+            }) ->orderByDesc('created_date')
+               ->paginate($per_page)
+               ->appends($request->query());
 
-        ->when($search, function ($q) use ($search) {
-            $q->where(function ($qq) use ($search) {
-                $qq->where('nama_mahasiswa', 'like', "%$search%")
-                   ->orWhere('email_mahasiswa', 'like', "%$search%");
-            });
-        })
+        // data dropdown
+        $listUniversitas = PengajuanMagangMahasiswa::whereNull('deleted_date')
+            ->select('universitas')
+            ->distinct()
+            ->orderBy('universitas')
+            ->pluck('universitas');
 
-        ->when($status, function ($q) use ($status) {
-            $q->where('status', $status);
-        })
-
-        ->when($universitas, function ($q) use ($universitas) {
-            $q->where('universitas', $universitas);
-        })
-
-        ->orderByDesc('created_date')
-        ->paginate($per_page)
-        ->appends($request->query());
-
-    // data dropdown
-    $listUniversitas = PengajuanMagangMahasiswa::whereNull('deleted_date')
-        ->select('universitas')
-        ->distinct()
-        ->orderBy('universitas')
-        ->pluck('universitas');
-
-    return view('admin.pengajuan-magang.index', compact(
-        'pengajuan',
-        'listUniversitas'
-    ));
-}
+        return view('admin.pengajuan-magang.index', compact(
+            'pengajuan',
+            'listUniversitas'
+        ));
+    }
 
     /**
      * Detail Pengajuan
      */
-    public function show($id)
-    {
+    public function show($id) {
         $pengajuan = PengajuanMagangMahasiswa::findOrFail($id);
         return view('admin.pengajuan-magang.show', compact('pengajuan'));
     }
@@ -69,16 +60,14 @@ class PengajuanMagangMahasiswaController extends Controller
     /**
      * Form Create
      */
-    public function create()
-    {
+    public function create() {
         return view('admin.pengajuan-magang.create');
     }
 
     /**
      * Simpan Pengajuan Baru
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
             'nama_mahasiswa'  => 'required|string|max:100',
             'email_mahasiswa' => 'required|email|unique:pengajuan_magang_mahasiswa,email_mahasiswa',
@@ -126,8 +115,7 @@ class PengajuanMagangMahasiswaController extends Controller
     /**
      * Form Edit
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         $pengajuan = PengajuanMagangMahasiswa::findOrFail($id);
         return view('admin.pengajuan-magang.edit', compact('pengajuan'));
     }
@@ -135,10 +123,8 @@ class PengajuanMagangMahasiswaController extends Controller
     /**
      * Update Pengajuan
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $pengajuan = PengajuanMagangMahasiswa::findOrFail($id);
-
         $request->validate([
             'nama_mahasiswa'  => 'required|string|max:100',
             'email_mahasiswa' => 'required|email|unique:pengajuan_magang_mahasiswa,email_mahasiswa,' . $id,
@@ -194,10 +180,8 @@ class PengajuanMagangMahasiswaController extends Controller
     /**
      * Soft Delete
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $pengajuan = PengajuanMagangMahasiswa::findOrFail($id);
-
         $pengajuan->update([
             'deleted_date' => now(),
             'deleted_id'   => Auth::id(),
@@ -206,40 +190,38 @@ class PengajuanMagangMahasiswaController extends Controller
         return back()->with('success', 'Pengajuan berhasil dihapus.');
     }
 
-    public function approve(PengajuanMagangMahasiswa $pengajuan)
-{
-    $pengajuan->update([
-        'status'        => 'diterima',
-        'approved_id'   => auth()->id(),
-        'approved_date' => now(),
-    ]);
+    public function approve(PengajuanMagangMahasiswa $pengajuan) {
+        $pengajuan->update([
+            'status'        => 'diterima',
+            'approved_id'   => auth()->id(),
+            'approved_date' => now(),
+        ]);
 
-    // Email pemberitahuan SAJA
-    $pengajuan->notify(
-        new PengajuanMagangStatusNotification('diterima')
-    );
+        // Email pemberitahuan SAJA
+        $pengajuan->notify(
+            new PengajuanMagangStatusNotification('diterima')
+        );
 
-    return back()->with('success', 'Pengajuan diterima. Silakan buat akun magang.');
-}
+        return back()->with('success', 'Pengajuan diterima. Silakan buat akun magang.');
+    }
 
-public function reject(Request $request, PengajuanMagangMahasiswa $pengajuan)
-{
-    $request->validate([
-        'reason' => 'required|string|max:255'
-    ]);
+    public function reject(Request $request, PengajuanMagangMahasiswa $pengajuan) {
+        $request->validate([
+            'reason' => 'required|string|max:255'
+        ]);
 
-    $pengajuan->update([
-        'status'        => 'ditolak',
-        'reject_reason' => $request->reason,
-        'rejected_id'   => auth()->id(),
-        'rejected_date' => now(),
-    ]);
+        $pengajuan->update([
+            'status'        => 'ditolak',
+            'reject_reason' => $request->reason,
+            'rejected_id'   => auth()->id(),
+            'rejected_date' => now(),
+        ]);
 
-    $pengajuan->notify(
-        new PengajuanMagangStatusNotification('ditolak', $request->reason)
-    );
+        $pengajuan->notify(
+            new PengajuanMagangStatusNotification('ditolak', $request->reason)
+        );
 
-    return back()->with('success', 'Pengajuan magang ditolak dan email dikirim.');
-}
+        return back()->with('success', 'Pengajuan magang ditolak dan email dikirim.');
+    }
 
 }

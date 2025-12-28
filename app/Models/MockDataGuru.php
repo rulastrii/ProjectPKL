@@ -10,7 +10,6 @@ class MockDataGuru extends Model
     use HasFactory;
 
     protected $table = 'data_referensi_guru';
-
     public $timestamps = false;
 
     protected $fillable = [
@@ -29,4 +28,5 @@ class MockDataGuru extends Model
         'tanggal_lahir' => 'date:Y-m-d',
         'is_active'     => 'boolean',
     ];
+    
 }

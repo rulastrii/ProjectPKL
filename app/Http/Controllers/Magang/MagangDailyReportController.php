@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Magang;
 
 use App\Http\Controllers\Controller;
-use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\DailyReport;
+use App\Models\Aktivitas;
 use Carbon\Carbon;
 
 class MagangDailyReportController extends Controller
@@ -13,8 +14,7 @@ class MagangDailyReportController extends Controller
     /**
      * R - List laporan harian milik magang
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $perPage = $request->per_page ?? 10;
 
         $reports = DailyReport::with('siswa')
@@ -30,8 +30,7 @@ class MagangDailyReportController extends Controller
     /**
      * C - Form buat laporan
      */
-    public function create()
-    {
+    public function create() {
         $siswa = Auth::user()->siswaProfile;
 
         if (!$siswa || !$siswa->isLengkap()) {
@@ -44,8 +43,7 @@ class MagangDailyReportController extends Controller
     /**
      * C - Simpan laporan
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $siswa = Auth::user()->siswaProfile;
 
         if (!$siswa || !$siswa->isLengkap()) {
@@ -67,7 +65,7 @@ class MagangDailyReportController extends Controller
             $file->move(public_path('uploads/daily-report'), $filename);
         }
 
-        DailyReport::create([
+        $dailyReport = DailyReport::create([
             'siswa_id'     => $siswa->id,
             'tanggal'      => $request->tanggal,
             'ringkasan'    => $request->ringkasan,
@@ -78,6 +76,20 @@ class MagangDailyReportController extends Controller
             'is_active'    => 1,
         ]);
 
+        $pembimbing = optional(
+            $siswa->pengajuan->first()
+        )->pembimbing->first();
+
+        Aktivitas::create([
+            'pegawai_id' => $pembimbing?->pegawai_id,
+            'siswa_id'   => $siswa->id,
+            'nama'       => $siswa->nama,
+            'aksi'       => 'mengisi laporan harian',
+            'sumber'     => 'laporan',
+            'ref_id'     => $dailyReport->id,
+            'created_at' => now(),
+        ]);
+
         return redirect()
             ->route('magang.daily-report.index')
             ->with('success', 'Laporan harian berhasil disimpan.');
@@ -86,8 +98,7 @@ class MagangDailyReportController extends Controller
     /**
      * R - Detail laporan
      */
-    public function show($id)
-    {
+    public function show($id) {
         $report = DailyReport::with('siswa')
             ->where('id', $id)
             ->where('created_id', Auth::id())
@@ -100,8 +111,7 @@ class MagangDailyReportController extends Controller
     /**
      * U - Form edit laporan
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         $report = DailyReport::where('id', $id)
             ->where('created_id', Auth::id())
             ->where('is_active', 1)
@@ -117,8 +127,7 @@ class MagangDailyReportController extends Controller
     /**
      * U - Update laporan
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $report = DailyReport::where('id', $id)
             ->where('created_id', Auth::id())
             ->where('is_active', 1)
@@ -150,8 +159,23 @@ class MagangDailyReportController extends Controller
             'updated_date' => Carbon::now(),
         ]);
 
+        $pembimbing = optional(
+            $report->siswa->pengajuan->first()
+        )->pembimbing->first();
+
+        Aktivitas::create([
+            'pegawai_id' => $pembimbing?->pegawai_id,
+            'siswa_id'   => $report->siswa_id,
+            'nama'       => $report->siswa->nama,
+            'aksi'       => 'memperbarui laporan harian',
+            'sumber'     => 'laporan',
+            'ref_id'     => $report->id,
+            'created_at' => now(),
+        ]);
+
         return redirect()
             ->route('magang.daily-report.index')
             ->with('success', 'Laporan harian berhasil diperbarui.');
     }
+
 }

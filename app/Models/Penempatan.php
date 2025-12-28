@@ -26,13 +26,12 @@ class Penempatan extends Model
     /**
      * Relasi polymorphic ke pengajuan (PKL atau Mahasiswa)
      */
-    public function pengajuan()
-    {
+    public function pengajuan() {
         return $this->morphTo();
     }
 
-    public function bidang()
-    {
+    public function bidang() {
         return $this->belongsTo(Bidang::class,'bidang_id');
     }
+    
 }

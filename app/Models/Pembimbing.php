@@ -35,24 +35,22 @@ class Pembimbing extends Model
     ];
 
     /** Polymorphic pengajuan (PKL / Mahasiswa) */
-    public function pengajuan()
-    {
+    public function pengajuan() {
         return $this->morphTo();
     }
-public function bidang()
-{
-    return $this->belongsTo(Bidang::class, 'bidang_id');
-}
+
+    public function bidang() {
+        return $this->belongsTo(Bidang::class, 'bidang_id');
+    }
 
     /** Relasi ke pegawai */
-    public function pegawai()
-    {
+    public function pegawai() {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
 
     /** Relasi ke user (akun pembimbing) */
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
+    
 }

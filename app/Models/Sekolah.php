@@ -10,7 +10,6 @@ class Sekolah extends Model
     use HasFactory;
 
     protected $table = 'sekolah';
-
     // Timestamps dinonaktifkan karena kita pakai custom timestamps
     public $timestamps = false;
 
@@ -40,8 +39,8 @@ class Sekolah extends Model
     /**
      * Scope untuk data aktif
      */
-    public function scopeActive($query)
-    {
+    public function scopeActive($query) {
         return $query->where('is_active', true);
     }
+    
 }

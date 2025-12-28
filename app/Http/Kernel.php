@@ -70,4 +70,5 @@ class Kernel extends HttpKernel
         'guru_verified' => \App\Http\Middleware\GuruVerified::class,
         'magang_verified' => \App\Http\Middleware\MagangVerified::class,
     ];
+
 }

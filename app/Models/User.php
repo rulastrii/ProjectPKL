@@ -1,20 +1,19 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Notifications\AdminCreateUserVerification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
+use App\Notifications\AdminCreateUserVerification;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
     protected $table = 'users';
-
-    // Timestamps dinonaktifkan karena kita pakai custom timestamps
     public $timestamps = false;
 
     // Fields yang bisa diisi secara massal
@@ -38,55 +37,47 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     protected $casts = [
-    'created_date' => 'datetime',
-    'updated_date' => 'datetime',
-    'deleted_date' => 'datetime',
-    'is_active'    => 'boolean',
-];
+        'created_date' => 'datetime',
+        'updated_date' => 'datetime',
+        'deleted_date' => 'datetime',
+        'is_active'    => 'boolean',
+    ];
 
     /**
      * Relasi ke role
      */
-    public function role()
-    {
+    public function role() {
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    public function siswaProfile()
-    {
+    public function siswaProfile() {
         return $this->hasOne(SiswaProfile::class,'user_id');
     }
 
-    public function creator()
-    {
+    public function creator() {
         return $this->belongsTo(User::class, 'created_id');
     }
 
-    public function updater()
-    {
+    public function updater() {
         return $this->belongsTo(User::class, 'updated_id');
     }
 
-    public function deleter()
-    {
+    public function deleter() {
         return $this->belongsTo(User::class, 'deleted_id');
     }
 
-    public function pegawai()
-{
-    return $this->hasOne(Pegawai::class, 'user_id');
-}
-public function pembimbing()
-{
-    return $this->hasMany(Pembimbing::class, 'user_id');
-}
+    public function pegawai() {
+        return $this->hasOne(Pegawai::class, 'user_id');
+    }
 
+    public function pembimbing() {
+        return $this->hasMany(Pembimbing::class, 'user_id');
+    }
 
     /**
      * Mutator untuk hash password otomatis saat diset
      */
-    public function setPasswordAttribute($value)
-    {
+    public function setPasswordAttribute($value) {
         if ($value) {
             $this->attributes['password'] = Hash::make($value);
         }
@@ -95,20 +86,16 @@ public function pembimbing()
     /**
      * Scope untuk data aktif
      */
-    public function scopeActive($query)
-    {
+    public function scopeActive($query) {
         return $query->where('is_active', true);
     }
 
-    public function pengajuanMagang()
-    {
+    public function pengajuanMagang() {
         return $this->hasOne(PengajuanMagangMahasiswa::class);
     }
 
-    public function sendEmailVerificationNotification()
-    {
-        // JANGAN kirim default VerifyEmail
-        // biar admin yang kontrol notifikasinya
+    public function sendEmailVerificationNotification() {
+        //
     }
 
 }

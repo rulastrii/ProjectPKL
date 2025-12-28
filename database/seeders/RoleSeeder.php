@@ -11,8 +11,7 @@ class RoleSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         $now = Carbon::now();
 
         $roles = [
@@ -33,4 +32,5 @@ class RoleSeeder extends Seeder
             ]);
         }
     }
+    
 }

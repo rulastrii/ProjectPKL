@@ -37,19 +37,16 @@ class Bidang extends Model
     /**
      * Scope untuk data aktif
      */
-    public function scopeActive($query)
-    {
+    public function scopeActive($query) {
         return $query->where('is_active', true);
     }
 
-    public function creator()
-{
-    return $this->belongsTo(User::class, 'created_id');
-}
+    public function creator() {
+        return $this->belongsTo(User::class, 'created_id');
+    }
 
-public function updater()
-{
-    return $this->belongsTo(User::class, 'updated_id');
-}
+    public function updater() {
+        return $this->belongsTo(User::class, 'updated_id');
+    }
 
 }

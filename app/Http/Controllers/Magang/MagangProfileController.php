@@ -13,41 +13,39 @@ class MagangProfileController extends Controller
     /**
      * Tampilkan profile mahasiswa magang
      */
-    public function index()
-{
-    $user = Auth::user();
+    public function index() {
+        $user = Auth::user();
 
-    // Ambil pengajuan magang yang sudah diterima dan terkait user ini
-    $pengajuan = PengajuanMagangMahasiswa::where('user_id', $user->id)->first();
+        // Ambil pengajuan magang yang sudah diterima dan terkait user ini
+        $pengajuan = PengajuanMagangMahasiswa::where('user_id', $user->id)->first();
 
-    // Ambil atau buat profile gabungan
-    $profile = SiswaProfile::firstOrCreate(
-        ['user_id' => $user->id],
-        [
-            'pengajuan_id' => $pengajuan?->id,
-            'nama'        => '',
-            'nim'         => '',
-            'jurusan'     => $pengajuan?->jurusan ?? '',
-            'universitas' => $pengajuan?->universitas ?? '',
-            'foto'        => '',
-            'is_active'   => true,
-            'created_date'=> now(),
-            'created_id'  => $user->id
-        ]
-    );
+        // Ambil atau buat profile gabungan
+        $profile = SiswaProfile::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'pengajuan_id' => $pengajuan?->id,
+                'nama'        => '',
+                'nim'         => '',
+                'jurusan'     => $pengajuan?->jurusan ?? '',
+                'universitas' => $pengajuan?->universitas ?? '',
+                'foto'        => '',
+                'is_active'   => true,
+                'created_date'=> now(),
+                'created_id'  => $user->id
+            ]
+        );
 
-    $statusProfile = $profile->isLengkap();
-    $email = $user->email; // Tambahkan email user
+        $statusProfile = $profile->isLengkap();
+        $email = $user->email; // Tambahkan email user
 
-    return view('magang.profile.index', compact('profile', 'statusProfile', 'email'));
-}
+        return view('magang.profile.index', compact('profile', 'statusProfile', 'email'));
+    }
 
 
     /**
      * Update profile mahasiswa magang + optional password
      */
-    public function update(Request $request)
-    {
+    public function update(Request $request) {
         $user = Auth::user();
 
         // Ambil pengajuan magang yang sudah diterima dan terkait user ini
@@ -87,10 +85,10 @@ class MagangProfileController extends Controller
         }
 
         // Update profile
-        $validated['pengajuan_id'] = $pengajuan?->id;
-        $validated['updated_date'] = now();
-        $validated['updated_id']   = $user->id;
-        $profile->update($validated);
+            $validated['pengajuan_id'] = $pengajuan?->id;
+            $validated['updated_date'] = now();
+            $validated['updated_id']   = $user->id;
+            $profile->update($validated);
 
         // Update password jika diisi (mutator otomatis hash)
         if (!empty($request->password)) {
@@ -105,4 +103,5 @@ class MagangProfileController extends Controller
 
         return redirect()->back()->with('success', 'Profile dan password berhasil disimpan!');
     }
+
 }

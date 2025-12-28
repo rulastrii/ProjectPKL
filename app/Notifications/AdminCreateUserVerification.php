@@ -11,13 +11,11 @@ class AdminCreateUserVerification extends VerifyEmail
 {
     protected ?string $plainPassword;
 
-    public function __construct(?string $plainPassword = null)
-    {
+    public function __construct(?string $plainPassword = null) {
         $this->plainPassword = $plainPassword;
     }
 
-    protected function verificationUrl($notifiable)
-    {
+    protected function verificationUrl($notifiable) {
         return URL::temporarySignedRoute(
             'verification.verify',
             Carbon::now()->addMinutes(60),
@@ -28,8 +26,7 @@ class AdminCreateUserVerification extends VerifyEmail
         );
     }
 
-    protected function resolveRole($user): array
-    {
+    protected function resolveRole($user): array {
         return match ((int) $user->role_id) {
             3 => [
                 'label' => 'Guru',
@@ -50,8 +47,7 @@ class AdminCreateUserVerification extends VerifyEmail
         };
     }
 
-    public function toMail($notifiable)
-    {
+    public function toMail($notifiable) {
         $role = $this->resolveRole($notifiable);
 
         return (new MailMessage)
@@ -64,4 +60,5 @@ class AdminCreateUserVerification extends VerifyEmail
                 'title'     => $role['title'],
             ]);
     }
+    
 }

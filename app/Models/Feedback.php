@@ -22,8 +22,8 @@ class Feedback extends Model
     ];
 
     // Relasi ke user
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
+    
 }

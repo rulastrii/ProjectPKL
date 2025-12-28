@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Bidang;
-use Illuminate\Support\Facades\Auth;
 
 class BidangController extends Controller
 {
     // Tampilkan daftar bidang
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $search   = $request->search;
         $is_active = $request->is_active;
         $per_page = $request->per_page ?? 10;
@@ -27,21 +26,18 @@ class BidangController extends Controller
     }
 
     // Menampilkan detail bidang
-    public function show($id)
-    {
+    public function show($id) {
         $bidang = Bidang::findOrFail($id);
         return view('admin.bidang.show', compact('bidang'));
     }
 
     // Form tambah bidang
-    public function create()
-    {
+    public function create() {
         return view('admin.bidang.create');
     }
 
     // Simpan bidang baru
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
             'nama' => 'required|string|max:100',
             'kode' => 'nullable|string|max:20',
@@ -59,15 +55,13 @@ class BidangController extends Controller
     }
 
     // Form edit bidang
-    public function edit($id)
-    {
+    public function edit($id) {
         $bidang = Bidang::findOrFail($id);
         return view('admin.bidang.edit', compact('bidang'));
     }
 
     // Update bidang
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $bidang = Bidang::findOrFail($id);
 
         $request->validate([
@@ -87,8 +81,7 @@ class BidangController extends Controller
     }
 
     // Hapus bidang (soft delete)
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $bidang = Bidang::findOrFail($id);
         $bidang->deleted_date = now();
         $bidang->deleted_id = Auth::id();
@@ -96,4 +89,5 @@ class BidangController extends Controller
 
         return redirect()->route('admin.bidang.index')->with('success', 'Bidang berhasil dihapus.');
     }
+
 }

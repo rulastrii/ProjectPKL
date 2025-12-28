@@ -28,24 +28,21 @@ class DailyReport extends Model
     /**
      * Relasi ke siswa profile (many to one)
      */
-    public function siswa()
-    {
+    public function siswa() {
         return $this->belongsTo(SiswaProfile::class, 'siswa_id');
     }
 
     // Optional accessor agar tanggal lebih enak ditampilkan
-    public function getTanggalFormattedAttribute()
-    {
+    public function getTanggalFormattedAttribute() {
         return $this->tanggal ? \Carbon\Carbon::parse($this->tanggal)->format('d M Y') : '-';
     }
 
-    public function getStatusVerifikasiLabelAttribute()
-{
-    return match ($this->status_verifikasi) {
-        'terverifikasi' => 'Terverifikasi',
-        'ditolak'       => 'Ditolak',
-        default         => 'Belum Diverifikasi',
-    };
-}
+    public function getStatusVerifikasiLabelAttribute() {
+        return match ($this->status_verifikasi) {
+            'terverifikasi' => 'Terverifikasi',
+            'ditolak'       => 'Ditolak',
+            default         => 'Belum Diverifikasi',
+        };
+    }
 
 }

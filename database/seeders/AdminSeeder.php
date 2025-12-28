@@ -11,8 +11,7 @@ class AdminSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         $now = Carbon::now();
 
         User::create([
@@ -26,4 +25,5 @@ class AdminSeeder extends Seeder
             'is_active' => 1,
         ]);
     }
+    
 }

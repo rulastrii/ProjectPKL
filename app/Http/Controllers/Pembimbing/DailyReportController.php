@@ -3,19 +3,18 @@
 namespace App\Http\Controllers\Pembimbing;
 
 use App\Http\Controllers\Controller;
-use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
+use App\Models\DailyReport;
+use Carbon\Carbon;
 
 class DailyReportController extends Controller
 {
     /**
      * Tampilkan daftar laporan harian untuk verifikasi
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $perPage = $request->per_page ?? 10;
         $search  = $request->search;
 
@@ -45,26 +44,24 @@ class DailyReportController extends Controller
      * Verifikasi laporan harian
      */
 
-public function update(Request $request, $id)
-{
-    $request->validate([
-        'status_verifikasi' => 'required|in:terverifikasi,ditolak'
-    ]);
+    public function update(Request $request, $id) {
+        $request->validate([
+            'status_verifikasi' => 'required|in:terverifikasi,ditolak'
+        ]);
 
-    $report = DailyReport::with('siswa')
-        ->where('is_active', 1)
-        ->findOrFail($id);
+        $report = DailyReport::with('siswa')
+            ->where('is_active', 1)
+            ->findOrFail($id);
 
-    $this->authorize('verify', $report);
+        $this->authorize('verify', $report);
 
-    $report->update([
-        'status_verifikasi' => $request->status_verifikasi,
-        'updated_id'   => Auth::id(),
-        'updated_date' => Carbon::now()
-    ]);
+        $report->update([
+            'status_verifikasi' => $request->status_verifikasi,
+            'updated_id'   => Auth::id(),
+            'updated_date' => Carbon::now()
+        ]);
 
-    return back()->with('success', 'Laporan berhasil diverifikasi.');
-}
-
+        return back()->with('success', 'Laporan berhasil diverifikasi.');
+    }
 
 }

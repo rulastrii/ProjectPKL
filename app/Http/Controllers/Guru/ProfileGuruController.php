@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProfileGuru;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ProfileGuru;
 
 class ProfileGuruController extends Controller
 {
     /* =========================
      * INDEX
      * ========================= */
-    public function index()
-    {
+    public function index() {
         $data = ProfileGuru::active()
             ->orderBy('nama_lengkap')
             ->get();
@@ -24,8 +23,7 @@ class ProfileGuruController extends Controller
     /* =========================
      * STORE
      * ========================= */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
             'nip'                => 'required|string|max:20|unique:profile_guru,nip',
             'nama_lengkap'       => 'required|string|max:100',
@@ -62,8 +60,7 @@ class ProfileGuruController extends Controller
     /* =========================
      * SHOW
      * ========================= */
-    public function show($id)
-    {
+    public function show($id) {
         $guru = ProfileGuru::active()->findOrFail($id);
 
         return response()->json($guru);
@@ -72,8 +69,7 @@ class ProfileGuruController extends Controller
     /* =========================
      * UPDATE
      * ========================= */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $guru = ProfileGuru::active()->findOrFail($id);
 
         $request->validate([
@@ -101,8 +97,7 @@ class ProfileGuruController extends Controller
     /* =========================
      * DELETE (SOFT)
      * ========================= */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $guru = ProfileGuru::active()->findOrFail($id);
 
         $guru->update([
@@ -115,4 +110,5 @@ class ProfileGuruController extends Controller
             'message' => 'Data guru berhasil dihapus'
         ]);
     }
+
 }

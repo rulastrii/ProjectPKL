@@ -1,3 +1,30 @@
+@php
+use App\Models\PengajuanPklmagang;
+use App\Models\PengajuanMagangMahasiswa;
+
+$user = auth()->user();
+$showFeedback = false;
+
+if ($user) {
+
+    // ROLE 4 → SISWA PKL
+    if ($user->role_id == 4) {
+        $showFeedback = PengajuanPklmagang::where('created_id', $user->id)
+            ->where('status', 'selesai')
+            ->whereNull('deleted_date')
+            ->exists();
+    }
+
+    // ROLE 5 → MAHASISWA MAGANG
+    if ($user->role_id == 5) {
+        $showFeedback = PengajuanMagangMahasiswa::where('email_mahasiswa', $user->email)
+            ->where('status', 'selesai')
+            ->whereNull('deleted_date')
+            ->exists();
+    }
+}
+@endphp
+
 <!-- Sidebar -->
 <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
   <div class="container-fluid">
@@ -103,48 +130,49 @@
         </li>
 
         <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.tugas.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard"></i></span><span class="nav-link-title">Tugas</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.penilaian_akhir.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-award"></i></span><span class="nav-link-title">Penilaian Akhir</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.penilaian-akhir.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-award"></i></span><span class="nav-link-title">Penilaian Akhir</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.sertifikat.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-certificate"></i></span><span class="nav-link-title">Sertifikat</span></a></li>
         <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-report"></i></span><span class="nav-link-title">Rekap</span></a></li>
         @endif
 
         {{-- ==================== GURU (ROLE 3) ==================== --}}
         @if(auth()->user()->role_id == 3)
-        <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-list"></i></span><span class="nav-link-title">Pengajuan PKL</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('guru.pengajuan.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-list"></i></span><span class="nav-link-title">Pengajuan PKL</span></a></li>
         <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-users"></i></span><span class="nav-link-title">Siswa PKL</span></a></li>
         <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-text"></i></span><span class="nav-link-title">Cetak Surat Pengantar</span></a></li>
         @endif
 
         {{-- ==================== SISWA (ROLE 4) ==================== --}}
         @if(auth()->user()->role_id == 4)
-        @php
-          $pengajuan = \App\Models\PengajuanPklmagang::where('created_id', auth()->id())->orderByDesc('created_date')->first();
-          $isApproved = $pengajuan && $pengajuan->status === 'diterima';
-        @endphp
-        <li class="nav-item"><a class="nav-link" href="{{ route('siswa.pengajuan.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-list"></i></span><span class="nav-link-title">Pengajuan PKL/Magang</span></a></li>
-
-        @if($isApproved)
-        <li class="nav-item"><a class="nav-link" href="{{ route('siswa.presensi.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar-time"></i></span><span class="nav-link-title">Presensi Harian</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-list"></i></span><span class="nav-link-title">Status Pengajuan PKL</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar-time"></i></span><span class="nav-link-title">Presensi Harian</span></a></li>
         <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-notebook"></i></span><span class="nav-link-title">Laporan Harian</span></a></li>
         <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard"></i></span><span class="nav-link-title">Tugas & Evaluasi</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-award"></i></span><span class="nav-link-title">Nilai Akhir & Sertifikat</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-certificate"></i></span><span class="nav-link-title">Nilai Akhir & Sertifikat</span></a></li>
         <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-text"></i></span><span class="nav-link-title">Riwayat PKL</span></a></li>
-        @endif
         @endif
 
         {{-- ==================== MAGANG (ROLE 5) ==================== --}}
         @if(auth()->user()->role_id == 5)
+        <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-list"></i></span><span class="nav-link-title">Status Pengajuan Magang</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('magang.presensi.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar-time"></i></span><span class="nav-link-title">Presensi Harian</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('magang.daily-report.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-notebook"></i></span><span class="nav-link-title">Laporan Harian</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('magang.tugas.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard"></i></span><span class="nav-link-title">Tugas & Evaluasi</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-award"></i></span><span class="nav-link-title">Nilai Akhir & Sertifikat</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('magang.penilaian-akhir.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-certificate"></i></span><span class="nav-link-title">Nilai Akhir & Sertifikat</span></a></li>
         <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-text"></i></span><span class="nav-link-title">Riwayat Magang</span></a></li>
+        @endif
+
+        @if($showFeedback)
         <li class="nav-item">
             <a class="nav-link" href="{{ route('magang.feedback.index') }}">
-                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-message-circle"></i></span>
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <i class="ti ti-message-circle"></i>
+                </span>
                 <span class="nav-link-title">Feedback</span>
             </a>
         </li>
         @endif
+
 
       </ul>
     </div>

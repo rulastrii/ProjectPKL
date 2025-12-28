@@ -10,8 +10,7 @@ class WelcomeController extends Controller
     /**
      * Tampilkan halaman welcome dengan testimonial feedback
      */
-    public function index()
-    {
+    public function index() {
         // Ambil feedback aktif terbaru dari tabel feedback
         $feedbacks = Feedback::where('status', 'aktif')
                              ->orderByDesc('created_at')
@@ -20,4 +19,5 @@ class WelcomeController extends Controller
         // Kirim ke view
         return view('welcome', compact('feedbacks'));
     }
+    
 }

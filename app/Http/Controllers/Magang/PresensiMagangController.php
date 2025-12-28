@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Magang;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Presensi;
 use App\Models\SiswaProfile;
+use App\Models\Presensi;
+use App\Models\Aktivitas;
 use Carbon\Carbon;
 
 class PresensiMagangController extends Controller
@@ -14,8 +15,7 @@ class PresensiMagangController extends Controller
      * Tampilkan daftar presensi magang
      *  TIDAK DIUBAH SESUAI PERMINTAAN
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $user = auth()->user();
 
         if ($user->role_id != 5) {
@@ -56,8 +56,7 @@ class PresensiMagangController extends Controller
     /**
      * Halaman absensi hari ini
      */
-    public function create()
-    {
+    public function create() {
         $user = auth()->user();
         if ($user->role_id != 5) abort(403);
 
@@ -73,8 +72,7 @@ class PresensiMagangController extends Controller
     /**
      * Simpan absensi masuk / pulang
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $user = auth()->user();
         if ($user->role_id != 5) abort(403);
 
@@ -128,14 +126,14 @@ class PresensiMagangController extends Controller
          */
         if ($request->tab === 'pulang') {
 
-            // ⏰ BATAS JAM PULANG 17.00
+            //  BATAS JAM PULANG 17.00
             if ($now->gt(Carbon::createFromTime(17, 0))) {
                 return back()->withErrors([
                     'msg' => 'Absen pulang melewati jam 17.00.'
                 ]);
             }
 
-            // ✅ BOLEH PULANG WALAU LUPA MASUK
+            //  BOLEH PULANG WALAU LUPA MASUK
             $presensi = Presensi::firstOrNew([
                 'siswa_id' => $siswa->id,
                 'tanggal'  => $tanggal
@@ -147,7 +145,7 @@ class PresensiMagangController extends Controller
 
             $presensi->jam_keluar = $now->format('H:i:s');
 
-            // 🔎 TENTUKAN STATUS & KELENGKAPAN
+            //  TENTUKAN STATUS & KELENGKAPAN
             if ($presensi->jam_masuk) {
                 $presensi->status      = $presensi->status ?? 'hadir';
                 $presensi->kelengkapan = 'lengkap';
@@ -167,7 +165,26 @@ class PresensiMagangController extends Controller
             $presensi->save();
         }
 
+            $pembimbing = optional(
+            $siswa->pengajuan->first()
+                 )->pembimbing->first();
+
+            $aksi = $request->tab === 'masuk'
+                ? 'melakukan presensi masuk'
+                : 'melakukan presensi pulang';
+
+            Aktivitas::create([
+                'pegawai_id' => $pembimbing?->pegawai_id,
+                'siswa_id'   => $siswa->id,
+                'nama'       => $siswa->nama,
+                'aksi'       => $aksi,
+                'sumber'     => 'presensi',
+                'ref_id'     => $presensi->id,
+                'created_at' => now(),
+            ]);
+
         return redirect()->route('magang.presensi.index')
             ->with('success', 'Presensi berhasil disimpan.');
     }
+
 }

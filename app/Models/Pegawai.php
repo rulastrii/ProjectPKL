@@ -26,42 +26,34 @@ class Pegawai extends Model
     ];
 
     // Relasi ke User
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
 
     //user yang membuat/menginput data pegawai.
-    public function createdBy()
-{
-    return $this->belongsTo(User::class, 'created_id');
-}
-
+    public function createdBy() {
+        return $this->belongsTo(User::class, 'created_id');
+    }
 
     // Relasi ke Bidang
-    public function bidang()
-    {
+    public function bidang() {
         return $this->belongsTo(Bidang::class, 'bidang_id');
     }
 
     // Scope untuk data aktif
-    public function scopeActive($query)
-    {
+    public function scopeActive($query) {
         return $query->where('is_active', true);
     }
 
-    public function pembimbing()
-{
-    return $this->hasMany(Pembimbing::class, 'pegawai_id');
-}
+    public function pembimbing() {
+        return $this->hasMany(Pembimbing::class, 'pegawai_id');
+    }
 
-/** relasi langsung ke pengajuan melalui pivot pembimbing */
-public function pengajuan()
-{
-    return $this->belongsToMany(PengajuanPklmagang::class, 'pembimbing', 'pegawai_id', 'pengajuan_id')
-                ->withPivot('tahun')
-                ->withTimestamps();
-}
-
+    /** relasi langsung ke pengajuan melalui pivot pembimbing */
+    /**public function pengajuan() {
+        return $this->belongsToMany(PengajuanPklmagang::class, 'pembimbing', 'pegawai_id', 'pengajuan_id')
+                    ->withPivot('tahun')
+                    ->withTimestamps();
+    }*/
 
 }

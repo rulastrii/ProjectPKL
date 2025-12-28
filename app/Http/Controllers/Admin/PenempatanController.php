@@ -3,20 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Penempatan;
 use App\Models\PengajuanPklmagang;
 use App\Models\PengajuanMagangMahasiswa;
 use App\Models\Bidang;
-use Illuminate\Support\Facades\Auth;
 
 class PenempatanController extends Controller
 {
     // ===============================
     // INDEX
     // ===============================
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $search    = $request->search;
         $is_active = $request->is_active;
         $per_page  = $request->per_page ?? 10;
@@ -39,31 +38,31 @@ class PenempatanController extends Controller
             ->appends($request->query());
 
         $pengajuanPkl = PengajuanPklmagang::with('siswaProfile')
-    ->where('status', 'diterima')
-    ->whereNull('deleted_date')
-    ->where('is_active', true)
-    ->get()
-    ->map(function($p) {
-        return [
-            'id' => $p->id,
-            'siswaProfile' => [
-                'nama' => $p->siswaProfile->nama ?? null,
-                'kelas' => $p->siswaProfile->kelas ?? null
-            ]
-        ];
-    });
+            ->where('status', 'diterima')
+            ->whereNull('deleted_date')
+            ->where('is_active', true)
+            ->get()
+            ->map(function($p) {
+                return [
+                    'id' => $p->id,
+                    'siswaProfile' => [
+                        'nama' => $p->siswaProfile->nama ?? null,
+                        'kelas' => $p->siswaProfile->kelas ?? null
+                    ]
+                ];
+            });
 
         $pengajuanMahasiswa = PengajuanMagangMahasiswa::where('status', 'diterima')
-    ->whereNull('deleted_date')
-    ->where('is_active', true)
-    ->get()
-    ->map(function($m) {
-        return [
-            'id' => $m->id,
-            'nama_mahasiswa' => $m->nama_mahasiswa,
-            'email_mahasiswa' => $m->email_mahasiswa,
-        ];
-    });
+            ->whereNull('deleted_date')
+            ->where('is_active', true)
+            ->get()
+            ->map(function($m) {
+                return [
+                    'id' => $m->id,
+                    'nama_mahasiswa' => $m->nama_mahasiswa,
+                    'email_mahasiswa' => $m->email_mahasiswa,
+                ];
+            });
 
         $bidang = Bidang::whereNull('deleted_date')
             ->where('is_active', true)
@@ -80,8 +79,7 @@ class PenempatanController extends Controller
     // ===============================
     // STORE
     // ===============================
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
             'pengajuan_id'   => 'required',
             'pengajuan_type' => 'required|in:App\Models\PengajuanPklmagang,App\Models\PengajuanMagangMahasiswa',
@@ -111,8 +109,7 @@ class PenempatanController extends Controller
     // ===============================
     // UPDATE
     // ===============================
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $penempatan = Penempatan::findOrFail($id);
 
         $request->validate([
@@ -145,8 +142,7 @@ class PenempatanController extends Controller
     // ===============================
     // DELETE (SOFT)
     // ===============================
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $penempatan = Penempatan::findOrFail($id);
         $penempatan->update([
             'deleted_date' => now(),
@@ -157,4 +153,5 @@ class PenempatanController extends Controller
             ->route('admin.penempatan.index')
             ->with('success', 'Penempatan berhasil dihapus');
     }
+
 }

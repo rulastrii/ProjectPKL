@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Pembimbing;
 
 use App\Http\Controllers\Controller;
-use App\Models\Presensi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Presensi;
 use Carbon\Carbon;
 
 class PembimbingPresensiController extends Controller
 {
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $perPage = $request->per_page ?? 10;
         $search  = $request->search;
 
@@ -37,8 +36,7 @@ class PembimbingPresensiController extends Controller
         return view('pembimbing.verifikasi-presensi.index', compact('presensi'));
     }
 
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $request->validate([
             'status' => 'required|in:hadir,izin,sakit,absen'
         ]);
@@ -62,4 +60,5 @@ class PembimbingPresensiController extends Controller
 
         return back()->with('success', 'Presensi berhasil diverifikasi.');
     }
+
 }

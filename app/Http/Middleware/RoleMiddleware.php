@@ -13,8 +13,7 @@ class RoleMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, ...$roles): Response
-    {
+    public function handle(Request $request, Closure $next, ...$roles): Response {
         $userRole = auth()->user()->role_id;
 
         // Jika role tidak sesuai
@@ -35,4 +34,5 @@ class RoleMiddleware
 
         return $next($request);
     }
+
 }

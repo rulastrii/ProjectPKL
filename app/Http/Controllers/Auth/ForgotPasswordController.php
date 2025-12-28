@@ -4,22 +4,20 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use App\Models\User;
 
 class ForgotPasswordController extends Controller
 {
     // Form forgot password
-    public function showForm()
-    {
+    public function showForm() {
         return view('auth.forgot-password');
     }
 
     // Proses kirim kode ke email
-    public function sendResetCode(Request $request)
-    {
+    public function sendResetCode(Request $request) {
         $request->validate([
             'email' => 'required|email|exists:users,email',
         ]);
@@ -47,43 +45,41 @@ class ForgotPasswordController extends Controller
     }
 
     // Form reset password
-    public function showResetForm()
-    {
+    public function showResetForm() {
         return view('auth.reset-password');
     }
 
-    public function resetPassword(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email|exists:users,email',
-        'token' => 'required|string',
-        'password' => 'required|confirmed|min:6',
-    ]);
+    public function resetPassword(Request $request) {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string',
+            'password' => 'required|confirmed|min:6',
+        ]);
 
-    // Ambil token dari DB dan cek validitas
-    $reset = DB::table('password_resets')
-            ->where('email', $request->email)
-            ->where('token', $request->token)
-            ->first();
+        // Ambil token dari DB dan cek validitas
+        $reset = DB::table('password_resets')
+                ->where('email', $request->email)
+                ->where('token', $request->token)
+                ->first();
 
-    if (!$reset) {
-        return back()->withInput()->with('error', 'Invalid reset code.');
+        if (!$reset) {
+            return back()->withInput()->with('error', 'Invalid reset code.');
+        }
+
+        // Cek waktu kadaluarsa token 15 menit
+        if (\Carbon\Carbon::parse($reset->created_at)->lt(now()->subMinutes(15))) {
+            return back()->withInput()->with('error', 'Reset code has expired.');
+        }
+
+        // Update password di tabel users (mutator otomatis hash)
+        $user = User::where('email', $request->email)->first();
+        $user->password = $request->password;
+        $user->save();
+
+        // Hapus token setelah berhasil reset
+        DB::table('password_resets')->where('email', $request->email)->delete();
+
+        return redirect()->route('login')->with('success', 'Password has been reset. You can login now.');
     }
-
-    // Cek waktu kadaluarsa token 15 menit
-    if (\Carbon\Carbon::parse($reset->created_at)->lt(now()->subMinutes(15))) {
-        return back()->withInput()->with('error', 'Reset code has expired.');
-    }
-
-    // Update password di tabel users (mutator otomatis hash)
-    $user = User::where('email', $request->email)->first();
-    $user->password = $request->password;
-    $user->save();
-
-    // Hapus token setelah berhasil reset
-    DB::table('password_resets')->where('email', $request->email)->delete();
-
-    return redirect()->route('login')->with('success', 'Password has been reset. You can login now.');
-}
 
 }

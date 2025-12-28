@@ -8,8 +8,7 @@ use App\Models\PengajuanMagangMahasiswa;
 
 class MagangVerified
 {
-    public function handle(Request $request, Closure $next)
-    {
+    public function handle(Request $request, Closure $next) {
         $user = auth()->user();
 
         // Belum login
@@ -35,4 +34,5 @@ class MagangVerified
 
         return $next($request);
     }
+
 }

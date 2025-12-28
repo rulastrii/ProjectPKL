@@ -30,32 +30,29 @@ class PengajuanPklmagang extends Model
         'deleted_id',
         'deleted_date',
         'is_active',
+        'email_guru', // tetap ada
     ];
 
     protected $casts = [
         'created_date' => 'datetime',
         'updated_date' => 'datetime',
         'deleted_date' => 'datetime',
+        'periode_mulai' => 'datetime',
+        'periode_selesai' => 'datetime',
     ];
 
     /** Relasi ke tabel sekolah */
-    public function sekolah()
-    {
-        return $this->belongsTo(Sekolah::class,'sekolah_id');
+    public function sekolah() {
+        return $this->belongsTo(Sekolah::class, 'sekolah_id');
     }
 
+    /** Relasi ke siswa per pengajuan */
+    public function siswa() {
+        return $this->hasMany(PengajuanPklSiswa::class, 'pengajuan_id', 'id');
+    }
 
-public function siswaProfile()
-{
-    return $this->hasOne(SiswaProfile::class, 'pengajuan_id', 'id');
-}
-
-
-
-    public function pembimbing()
-{
-    return $this->morphMany(Pembimbing::class, 'pengajuan');
-}
-
-
+    /** Relasi ke Pembimbing */
+    public function pembimbing() {
+        return $this->morphMany(Pembimbing::class, 'pengajuan');
+    }
 }

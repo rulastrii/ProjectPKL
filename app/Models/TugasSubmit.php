@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TugasSubmit extends Model
 {
     protected $table = 'tugas_submit';
-    public $timestamps = false; // memakai custom created_date & updated_date
+    public $timestamps = false; 
 
     protected $fillable = [
         'tugas_id',
@@ -28,14 +28,13 @@ class TugasSubmit extends Model
         'is_active',
     ];
 
-    public function tugas()
-    {
+    public function tugas() {
         return $this->belongsTo(Tugas::class, 'tugas_id');
     }
 
-    public function siswa()
-    {
+    public function siswa() {
         return $this->belongsTo(SiswaProfile::class, 'siswa_id');
     }
+    
 }
 

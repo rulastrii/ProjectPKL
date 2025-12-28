@@ -10,7 +10,7 @@ class Role extends Model
     use HasFactory;
 
     protected $table = 'roles';
-    public $timestamps = false; // karena kamu pakai timestamp custom
+    public $timestamps = false;
 
     protected $fillable = [
         'name',
@@ -25,8 +25,8 @@ class Role extends Model
     ];
 
     // Relasi ke users
-    public function users()
-    {
+    public function users() {
         return $this->hasMany(User::class, 'role_id');
     }
+    
 }

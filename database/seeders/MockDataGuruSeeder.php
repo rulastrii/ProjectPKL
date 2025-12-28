@@ -7,8 +7,7 @@ use App\Models\MockDataGuru;
 
 class MockDataGuruSeeder extends Seeder
 {
-    public function run(): void
-    {
+    public function run(): void {
         MockDataGuru::insert([
             [
                 'nip' => '197812312005011001',
@@ -34,4 +33,5 @@ class MockDataGuruSeeder extends Seeder
             ],
         ]);
     }
+    
 }

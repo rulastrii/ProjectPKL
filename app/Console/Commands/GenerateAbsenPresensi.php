@@ -12,24 +12,23 @@ class GenerateAbsenPresensi extends Command
     protected $signature = 'app:generate-absen-presensi';
     protected $description = 'Generate presensi absen otomatis';
 
-    public function handle()
-    {
+    public function handle() {
         $today = Carbon::today('Asia/Jakarta');
 
         /**
          * =====================
-         * 1️⃣ SKIP WEEKEND
+         * SKIP WEEKEND
          * =====================
          */
         // sementara comment
-// if ($today->isWeekend()) {
-            // $this->info('Weekend, presensi tidak dibuat.');
-            // return;
-       // }
+        // if ($today->isWeekend()) {
+                    // $this->info('Weekend, presensi tidak dibuat.');
+                    // return;
+        // }
 
         /**
          * =====================
-         * 2️⃣ PROSES SISWA AKTIF
+         *  PROSES SISWA AKTIF
          * =====================
          */
         $siswaList = SiswaProfile::where('is_active', 1)->get();
@@ -41,21 +40,21 @@ class GenerateAbsenPresensi extends Command
                 ->first();
 
             /**
-             * ✅ SUDAH ADA PRESENSI
+             *  SUDAH ADA PRESENSI
              */
             if ($presensi) {
 
-                // 🛡️ JANGAN OVERRIDE IZIN / SAKIT
+                //  JANGAN OVERRIDE IZIN / SAKIT
                 if (in_array($presensi->status, ['izin', 'sakit'])) {
                     continue;
                 }
 
-                // 🛡️ SUDAH HADIR
+                //  SUDAH HADIR
                 if ($presensi->jam_masuk) {
                     continue;
                 }
 
-                // ❌ Tidak absen sama sekali
+                //  Tidak absen sama sekali
                 $presensi->update([
                     'status'      => 'absen',
                     'kelengkapan' => 'tidak_lengkap'
@@ -65,7 +64,7 @@ class GenerateAbsenPresensi extends Command
             }
 
             /**
-             * ❌ BELUM ADA RECORD → BUAT BARU
+             *  BELUM ADA RECORD → BUAT BARU
              */
             Presensi::create([
                 'siswa_id'    => $siswa->id,
@@ -78,4 +77,5 @@ class GenerateAbsenPresensi extends Command
 
         $this->info('Generate presensi otomatis selesai.');
     }
+
 }

@@ -11,14 +11,12 @@ use App\Models\User;
 class LoginController extends Controller
 {
     // Halaman Login
-    public function showLoginForm()
-    {
+    public function showLoginForm() {
         return view('auth.login');
     }
 
     // Proses Login
-    public function login(Request $request)
-    {
+    public function login(Request $request) {
         $request->validate([
             'email'     => 'required|email',
             'password'  => 'required|min:6',
@@ -54,31 +52,30 @@ class LoginController extends Controller
         // Login berhasil
         Auth::login($user);
 
-        // Cek apakah user harus ganti password (hanya role 4,5,2 misal)
-// Cek apakah user harus ganti password
-$rolesForceChange = [2,4,5]; // role yang wajib ganti password
-if (in_array($user->role_id, $rolesForceChange) && $user->force_change_password) {
-    return redirect()->route('auth.change-password')
-        ->with('info', 'Anda harus mengganti password terlebih dahulu.');
-}
+        // Cek apakah user harus ganti password
+        $rolesForceChange = [2,4,5]; // role yang wajib ganti password
+        if (in_array($user->role_id, $rolesForceChange) && $user->force_change_password) {
+            return redirect()->route('auth.change-password')
+                ->with('info', 'Anda harus mengganti password terlebih dahulu.');
+        }
 
         // Arahkan dashboard sesuai role
-        return match($user->role_id) {
-            1 => redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!'),
-            2 => redirect()->route('pembimbing.dashboard')->with('success', 'Selamat datang Pembimbing!'),
-            3 => redirect()->route('guru.dashboard')->with('success', 'Selamat datang Guru!'),
-            4 => redirect()->route('siswa.dashboard')->with('success', 'Selamat datang Siswa!'),
-            5 => redirect()->route('magang.dashboard')->with('success', 'Selamat datang Magang!'),
-            default => redirect()->route('login')->with('success', 'Selamat datang!'),
-        };
+            return match($user->role_id) {
+                1 => redirect()->route('admin.dashboard')->with('success', 'Selamat datang Admin!'),
+                2 => redirect()->route('pembimbing.dashboard')->with('success', 'Selamat datang Pembimbing!'),
+                3 => redirect()->route('guru.dashboard')->with('success', 'Selamat datang Guru!'),
+                4 => redirect()->route('siswa.dashboard')->with('success', 'Selamat datang Siswa!'),
+                5 => redirect()->route('magang.dashboard')->with('success', 'Selamat datang Magang!'),
+                default => redirect()->route('login')->with('success', 'Selamat datang!'),
+            };
     }
 
     // Logout
-    public function logout(Request $request)
-    {
+    public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login')->with('success', 'Berhasil logout.');
     }
+
 }

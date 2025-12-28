@@ -8,8 +8,7 @@ use App\Models\ProfileGuru;
 
 class GuruVerified
 {
-    public function handle(Request $request, Closure $next)
-    {
+    public function handle(Request $request, Closure $next) {
         $user = auth()->user();
 
         if (!$user) {
@@ -34,4 +33,5 @@ class GuruVerified
 
         return $next($request);
     }
+
 }

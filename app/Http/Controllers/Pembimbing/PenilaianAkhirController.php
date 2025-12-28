@@ -3,107 +3,141 @@
 namespace App\Http\Controllers\Pembimbing;
 
 use App\Http\Controllers\Controller;
-use App\Models\PenilaianAkhir;
-use App\Models\SiswaProfile;
-use App\Models\Penempatan;
-use App\Models\Pembimbing;
 use Illuminate\Http\Request;
+use App\Models\SiswaProfile;
+use App\Models\PenilaianAkhir;
 
 class PenilaianAkhirController extends Controller
 {
-    /**
-     * List peserta bimbingan
-     */
-    public function index()
-{
-    $pembimbing = Pembimbing::where('user_id', auth()->id())->firstOrFail();
-
-    $siswa = SiswaProfile::whereHas('penempatan.bidang', function ($q) use ($pembimbing) {
-        $q->where('id', $pembimbing->bidang_id);
-    })
-    ->with('penilaianAkhir')
-    ->get();
-
-    return view('pembimbing.penilaian_akhir.index', compact('siswa'));
-}
-
-
-    /**
-     * Form input / edit nilai akhir
-     */
-    public function form($siswa_id)
+    public function index(Request $request)
     {
-        $siswa = SiswaProfile::findOrFail($siswa_id);
+        $search  = $request->input('search');
+        $perPage = $request->input('per_page', 10);
 
-        $penilaian = PenilaianAkhir::firstOrNew([
-            'siswa_id' => $siswa->id
-        ]);
+        $query = SiswaProfile::where('is_active', 1)
+            ->with([
+                'tugasSubmit' => function ($q) {
+                    $q->where('status', 'sudah dinilai');
+                },
+                'laporan',
+                'penilaianAkhir',
+                'pengajuan.pembimbing'
+            ]);
 
-        return view('pembimbing.penilaian_akhir.form', compact('siswa', 'penilaian'));
+        if ($search) {
+            $query->where('nama', 'like', "%{$search}%");
+        }
+
+        $siswaPaginated = $query->paginate($perPage)->withQueryString();
+
+        foreach ($siswaPaginated as $s) {
+
+            /** ================= NILAI ================= */
+            $tugasAvg = $s->tugasSubmit->avg('skor') ?? 0;
+
+            $totalLaporan = $s->laporan()->count();
+            $laporanTerverifikasi = $s->laporan
+                ->where('status_verifikasi', 'terverifikasi')
+                ->count();
+
+            $laporanAvg = $totalLaporan > 0
+                ? ($laporanTerverifikasi / $totalLaporan) * 100
+                : 0;
+
+            $keaktifan = $s->penilaianAkhir->nilai_keaktifan ?? 0;
+            $sikap     = $s->penilaianAkhir->nilai_sikap ?? 0;
+
+            /** ================= PEMBIMBING ================= */
+            $pembimbing = $s->pengajuan
+                ? $s->pengajuan->pembimbing()
+                    ->where('is_active', 1)
+                    ->first()
+                : null;
+
+            $pembimbingId = $pembimbing?->id;
+
+            /** ================= PERIODE ================= */
+            $periodeMulai = $s->penilaianAkhir->periode_mulai
+    ?? $s->pengajuan?->periode_mulai;
+
+$periodeSelesai = $s->penilaianAkhir->periode_selesai
+    ?? $s->pengajuan?->periode_selesai;
+
+
+            /** ================= SIMPAN ================= */
+            if (!$s->penilaianAkhir) {
+
+                $penilaian = new PenilaianAkhir([
+                    'periode_mulai'   => $periodeMulai,
+                    'periode_selesai' => $periodeSelesai,
+                    'nilai_tugas'     => $tugasAvg,
+                    'nilai_laporan'   => $laporanAvg,
+                    'nilai_keaktifan' => $keaktifan,
+                    'nilai_sikap'     => $sikap,
+                    'nilai_akhir'     => ($tugasAvg * 0.5)
+                                        + ($laporanAvg * 0.3)
+                                        + ($keaktifan * 0.1)
+                                        + ($sikap * 0.1),
+                    'pembimbing_id'   => $pembimbingId,
+                ]);
+
+                $s->penilaianAkhir()->save($penilaian);
+
+            } else {
+
+                $s->penilaianAkhir->update([
+                    'periode_mulai'   => $periodeMulai,
+                    'periode_selesai' => $periodeSelesai,
+                    'nilai_tugas'     => $tugasAvg,
+                    'nilai_laporan'   => $laporanAvg,
+                    'pembimbing_id'   => $pembimbingId,
+                ]);
+
+                $s->penilaianAkhir->hitungNilaiAkhir();
+            }
+        }
+
+        $penilaian = PenilaianAkhir::with('siswa')
+            ->whereIn('siswa_id', $siswaPaginated->pluck('id'))
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('pembimbing.penilaian-akhir.index', compact('penilaian'));
     }
 
-    /**
-     * Simpan & hitung nilai akhir
-     */
-    public function store(Request $request, $siswa_id)
+    public function edit($id)
+    {
+        $penilaian = PenilaianAkhir::findOrFail($id);
+        return view('pembimbing.penilaian-akhir.edit', compact('penilaian'));
+    }
+
+    public function update(Request $request, $id)
     {
         $request->validate([
             'nilai_keaktifan' => 'required|numeric|min:0|max:100',
             'nilai_sikap'     => 'required|numeric|min:0|max:100',
         ]);
 
-        $pembimbing = Pembimbing::where('user_id', auth()->id())->firstOrFail();
+        $penilaian = PenilaianAkhir::with('siswa.sertifikat')->findOrFail($id);
 
-        // 🔹 Hitung otomatis
-        $nilaiTugas   = $this->hitungNilaiTugas($siswa_id);
-        $nilaiLaporan = $this->hitungNilaiLaporan($siswa_id);
+        if ($penilaian->siswa->sertifikat) {
+            return redirect()
+                ->route('pembimbing.penilaian-akhir.index')
+                ->with('error', 'Nilai tidak dapat diubah karena sertifikat sudah diterbitkan.');
+        }
 
-        $nilaiAkhir =
-            ($nilaiTugas * 0.5) +
-            ($nilaiLaporan * 0.3) +
-            ($request->nilai_keaktifan * 0.1) +
-            ($request->nilai_sikap * 0.1);
-
-        PenilaianAkhir::updateOrCreate(
-            [
-                'siswa_id' => $siswa_id
-            ],
-            [
-                'pembimbing_id'   => $pembimbing->id,
-                'nilai_tugas'     => $nilaiTugas,
-                'nilai_laporan'   => $nilaiLaporan,
-                'nilai_keaktifan' => $request->nilai_keaktifan,
-                'nilai_sikap'     => $request->nilai_sikap,
-                'nilai_akhir'     => round($nilaiAkhir, 2),
-                'periode_mulai'   => $request->periode_mulai,
-                'periode_selesai' => $request->periode_selesai,
-            ]
-        );
+        $penilaian->nilai_keaktifan = $request->nilai_keaktifan;
+        $penilaian->nilai_sikap     = $request->nilai_sikap;
+        $penilaian->hitungNilaiAkhir();
 
         return redirect()
-            ->route('pembimbing.penilaian_akhir.index')
-            ->with('success', 'Nilai akhir berhasil disimpan');
+            ->route('pembimbing.penilaian-akhir.index')
+            ->with('success', 'Nilai berhasil diperbarui!');
     }
 
-    /**
-     * Hitung rata-rata semua tugas
-     */
-    private function hitungNilaiTugas($siswa_id)
+    public function show($id)
     {
-        return \DB::table('tugas_submit')
-            ->where('siswa_id', $siswa_id)
-            ->whereNotNull('skor')
-            ->avg('skor') ?? 0;
-    }
-
-    /**
-     * Hitung nilai laporan (contoh dari daily_report)
-     */
-    private function hitungNilaiLaporan($siswa_id)
-    {
-        return \DB::table('daily_report')
-            ->where('siswa_id', $siswa_id)
-            ->whereNotNull('nilai')
-            ->avg('nilai') ?? 0;
+        $penilaian = PenilaianAkhir::with('siswa')->findOrFail($id);
+        return view('pembimbing.penilaian-akhir.show', compact('penilaian'));
     }
 }

@@ -11,8 +11,6 @@ class ProfileGuru extends Model
 
     protected $table = 'profile_guru';
     protected $primaryKey = 'id_guru';
-
-    // Karena tidak pakai timestamps bawaan Laravel
     public $timestamps = false;
 
     /* =========================
@@ -53,24 +51,20 @@ class ProfileGuru extends Model
      * ========================= */
 
     // Relasi ke akun user
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
 
     // Audit relations
-    public function creator()
-    {
+    public function creator() {
         return $this->belongsTo(User::class, 'created_id');
     }
 
-    public function updater()
-    {
+    public function updater() {
         return $this->belongsTo(User::class, 'updated_id');
     }
 
-    public function deleter()
-    {
+    public function deleter() {
         return $this->belongsTo(User::class, 'deleted_id');
     }
 
@@ -79,20 +73,19 @@ class ProfileGuru extends Model
      * ========================= */
 
     // Data guru aktif
-    public function scopeActive($query)
-    {
+    public function scopeActive($query) {
         return $query
             ->where('is_active', true)
             ->whereNull('deleted_date');
     }
 
     // Guru yang boleh register (belum punya akun)
-    public function scopeCanRegister($query)
-    {
+    public function scopeCanRegister($query) {
         return $query
             ->active()
             ->where('jabatan', 'guru')
             ->where('status_kepegawaian', 'aktif')
             ->whereNull('user_id');
     }
+    
 }

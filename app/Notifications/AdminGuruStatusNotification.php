@@ -13,19 +13,16 @@ class AdminGuruStatusNotification extends Notification
     protected $status;
     protected $reason;
 
-    public function __construct(string $status, string $reason = null)
-    {
+    public function __construct(string $status, string $reason = null) {
         $this->status = $status;
         $this->reason = $reason;
     }
 
-    public function via($notifiable)
-    {
+    public function via($notifiable) {
         return ['mail'];
     }
 
-    public function toMail($notifiable)
-    {
+    public function toMail($notifiable) {
         return (new MailMessage)
             ->subject($this->status === 'approved' ? 'Akun Guru Disetujui' : 'Akun Guru Ditolak')
             ->view('auth.notifguru', [
@@ -35,4 +32,5 @@ class AdminGuruStatusNotification extends Notification
                 'title' => $this->status === 'approved' ? 'Akun Disetujui' : 'Akun Ditolak'
             ]);
     }
+    
 }

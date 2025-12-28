@@ -4,22 +4,20 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\ProfileGuru;
 use App\Models\MockDataGuru;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 
 class RegisterGuruController extends Controller
 {
-    public function showForm()
-    {
+    public function showForm() {
         return view('auth.register-guru');
     }
 
-    public function register(Request $request)
-    {
+    public function register(Request $request) {
         $request->validate([
             'nip'           => 'required|string',
             'tanggal_lahir' => 'required|date',
@@ -27,7 +25,7 @@ class RegisterGuruController extends Controller
             'password'      => 'required|string|min:6|confirmed',
         ]);
 
-        // 🔍 Validasi ke SISTEM DATA GURU (SIMULASI)
+        //  Validasi ke SISTEM DATA GURU (SIMULASI)
         $guru = MockDataGuru::where([
                 'nip'                => $request->nip,
                 'tanggal_lahir'      => $request->tanggal_lahir,
@@ -41,7 +39,7 @@ class RegisterGuruController extends Controller
             ]);
         }
 
-        // ❌ Cegah register ganda berdasarkan NIP
+        //  Cegah register ganda berdasarkan NIP
         if (ProfileGuru::where('nip', $guru->nip)->exists()) {
             return back()->withErrors([
                 'nip' => 'Guru dengan NIP ini sudah terdaftar'
@@ -51,7 +49,7 @@ class RegisterGuruController extends Controller
         DB::beginTransaction();
 
         try {
-            // 👤 Buat akun USER (email dari input guru)
+            //  Buat akun USER (email dari input guru)
             $user = User::create([
                 'name'         => $guru->nama_lengkap,
                 'email'        => $request->email,
@@ -61,7 +59,7 @@ class RegisterGuruController extends Controller
                 'created_date' => now(),
             ]);
 
-            // 🧾 Buat PROFILE GURU (data resmi)
+            //  Buat PROFILE GURU (data resmi)
             ProfileGuru::create([
                 'user_id'            => $user->id,
                 'nip'                => $guru->nip,
@@ -93,8 +91,7 @@ class RegisterGuruController extends Controller
     /**
      * Validasi data guru (AJAX)
      */
-    public function cekDataGuru(Request $request)
-    {
+    public function cekDataGuru(Request $request) {
         $request->validate([
             'nip'           => 'required',
             'tanggal_lahir' => 'required|date',
@@ -129,4 +126,5 @@ class RegisterGuruController extends Controller
             ]
         ]);
     }
+
 }
