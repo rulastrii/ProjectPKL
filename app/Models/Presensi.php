@@ -32,7 +32,12 @@ class Presensi extends Model
      * Relasi ke tabel siswa_profile (many to one)
      */
     public function siswa() {
-        return $this->belongsTo(SiswaProfile::class, 'siswa_id');
-    }
+    return $this->belongsTo(SiswaProfile::class, 'siswa_id');
+}
+
+public function getNamaAttribute() {
+    return $this->siswa->nama ?? 'Tidak diketahui';
+}
+
     
 }

@@ -30,7 +30,8 @@ class PengajuanPklmagang extends Model
         'deleted_id',
         'deleted_date',
         'is_active',
-        'email_guru', // tetap ada
+        'email_guru',
+        'user_id', // tetap ada
     ];
 
     protected $casts = [

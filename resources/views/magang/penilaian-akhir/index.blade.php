@@ -9,7 +9,7 @@
 
                     {{-- Card Header --}}
                     <div class="card-header d-flex align-items-center">
-                        <h3 class="card-title fw-bold">Nilai Akhir Magang / PKL</h3>
+                        <h3 class="card-title fw-bold">Nilai Akhir Magang</h3>
                     </div>
 
                     {{-- Card Body --}}

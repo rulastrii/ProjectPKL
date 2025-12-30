@@ -93,16 +93,6 @@
       </div>
      </div>
 
-     {{-- FOOTER --}}
-     <div class="card-footer text-end">
-        @if(!$report->status_verifikasi)
-          <a href="{{ route('magang.daily-report.edit', $report->id) }}"
-             class="btn btn-outline-warning btn-sm">
-            <i class="ti ti-pencil"></i> Edit
-          </a>
-        @endif
-     </div>
-
     </div>
    </div>
   </div>

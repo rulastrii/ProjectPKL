@@ -34,29 +34,27 @@
                                 <strong>{{ $roleLabel }}</strong>.
                             </p>
 
-                         @if(!empty($password))
-    <div style="background:#f8f9fa; border-left:4px solid #206bc4; padding:15px; border-radius:6px; margin:20px 0;">
-        <p style="margin:0 0 10px 0;">
-            Akun ini dibuat oleh <strong>Admin</strong>.
-        </p>
+                                @if(!empty($password))
+                                <div style="background:#f8f9fa; border-left:4px solid #206bc4; padding:15px; border-radius:6px; margin:20px 0;">
+                                    <p style="margin:0 0 10px 0;">
+                                        Akun ini dibuat oleh <strong>Admin</strong>.
+                                    </p>
 
-        <p style="margin:0;">
-            <strong>Email:</strong> {{ $user->email }}<br>
-            <strong>Password:</strong> {{ $password }}
-        </p>
-    </div>
+                                    <p style="margin:0;">
+                                        <strong>Email:</strong> {{ $user->email }}<br>
+                                        <strong>Password:</strong> {{ $password }}
+                                    </p>
+                                </div>
 
-    <p style="font-size:14px; color:#555;">
-        Demi keamanan, silakan login dan segera ubah kata sandi Anda.
-    </p>
-@else
-    <p>
-        Akun Anda berhasil dibuat. Silakan gunakan kata sandi yang Anda
-        buat saat pendaftaran untuk mengakses sistem.
-    </p>
-@endif
-
-
+                                <p style="font-size:14px; color:#555;">
+                                    Demi keamanan, silakan login dan segera ubah kata sandi Anda.
+                                </p>
+                            @else
+                                <p>
+                                    Akun Anda berhasil dibuat. Silakan gunakan kata sandi yang Anda
+                                    buat saat pendaftaran untuk mengakses sistem.
+                                </p>
+                            @endif
 
                             <!-- BUTTON -->
                             <div style="text-align:center; margin:30px 0;">

@@ -63,17 +63,20 @@ const pengajuanTypeInput = document.getElementById('pengajuanTypeInput');
 function loadPengajuan(type) {
     let options = '<option value="">-- Pilih Pengajuan --</option>';
 
-    if(type === 'pkl') {
-        pengajuanTypeInput.value = 'App\\Models\\PengajuanPklmagang';
+    if (type === 'pkl') {
+        pengajuanTypeInput.value = 'App\\Models\\PengajuanPklSiswa';
+
         pengajuanPKL.forEach(p => {
-            const nama = p.siswaProfile?.nama ?? 'Nama belum diisi';
-            const kelas = p.siswaProfile?.kelas ?? '-';
-            options += `<option value="${p.id}">${nama} | ${kelas}</option>`;
+            const nama  = p.nama ?? 'Nama belum diisi';
+            const email = p.email ?? '-';
+            options += `<option value="${p.id}">${nama} | ${email}</option>`;
         });
-    } else if(type === 'mahasiswa') {
+
+    } else if (type === 'mahasiswa') {
         pengajuanTypeInput.value = 'App\\Models\\PengajuanMagangMahasiswa';
+
         pengajuanMahasiswa.forEach(p => {
-            const nama = p.nama_mahasiswa ?? 'Nama belum diisi';
+            const nama  = p.nama_mahasiswa ?? 'Nama belum diisi';
             const email = p.email_mahasiswa ?? '-';
             options += `<option value="${p.id}">${nama} | ${email}</option>`;
         });
@@ -84,15 +87,16 @@ function loadPengajuan(type) {
     pengajuanSelect.innerHTML = options;
 }
 
-// Reset modal & select setiap kali dibuka
-document.getElementById('modalCreatePenempatan').addEventListener('show.bs.modal', function () {
-    jenisSelect.value = '';
-    pengajuanSelect.innerHTML = '<option value="">-- Pilih Pengajuan --</option>';
-    pengajuanTypeInput.value = '';
-});
+// Reset modal
+document.getElementById('modalCreatePenempatan')
+    .addEventListener('show.bs.modal', function () {
+        jenisSelect.value = '';
+        pengajuanSelect.innerHTML = '<option value="">-- Pilih Pengajuan --</option>';
+        pengajuanTypeInput.value = '';
+    });
 
-// Load pengajuan saat user memilih jenis
-jenisSelect.addEventListener('change', function() {
+jenisSelect.addEventListener('change', function () {
     loadPengajuan(this.value);
 });
 </script>
+

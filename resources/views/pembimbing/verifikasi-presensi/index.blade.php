@@ -123,7 +123,7 @@
 
             <div class="modal-body">
              <p class="mb-2">
-                <strong>{{ $p->siswa->nama }}</strong><br>
+                <strong>{{ optional($p->siswa)->nama ?? 'Tidak diketahui' }}</strong><br>
                 Tanggal: {{ $p->tanggal }}
              </p>
 

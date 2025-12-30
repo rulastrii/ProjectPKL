@@ -1,117 +1,143 @@
 @extends('layouts.app')
-@section('title','Data Presensi Siswa')
+@section('title','Data Presensi Siswa PKL')
 
 @section('content')
 <div class="page-body">
   <div class="container-xl">
-    {{-- INCLUDE FORM ABSENSI --}}
+
     @php
-      $siswa = auth()->user()->siswaProfile;
-      $todayPresensi = \App\Models\Presensi::where('siswa_id', $siswa->id)
-                        ->where('tanggal', date('Y-m-d'))
-                        ->first();
+        $siswa = auth()->user()->siswaProfile;
+
+        if(!$siswa) {
+            echo "<div class='alert alert-danger'>Profile siswa PKL tidak ditemukan.</div>";
+        } else {
+            $todayPresensi = $siswa->presensi()
+                                   ->where('tanggal', date('Y-m-d'))
+                                   ->first();
+            $jamMasuk = $todayPresensi->jam_masuk ?? null;
+            $jamPulang = $todayPresensi->jam_keluar ?? null;
+            $absenMasukSudah = !is_null($jamMasuk);
+            $absenPulangSudah = !is_null($jamPulang);
+        }
     @endphp
 
-<div class="mb-4"> {{-- <-- ini kasih jarak bawah --}}
-      @include('siswa.presensi._form')
-    </div>
-    <div class="row row-cards">
-      <div class="col-12">
-        <div class="card">
+    @if($siswa)
+      {{-- FORM ABSENSI --}}
+      <div class="mb-4">
+          @include('siswa.presensi._form', [
+              'siswa' => $siswa,
+              'todayPresensi' => $todayPresensi,
+              'jamMasuk' => $jamMasuk,
+              'jamPulang' => $jamPulang,
+              'absenMasukSudah' => $absenMasukSudah,
+              'absenPulangSudah' => $absenPulangSudah
+          ])
+      </div>
 
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title">Presensi Siswa</h3>
-          </div>
+      {{-- TABEL PRESENSI --}}
+      <div class="row row-cards">
+        <div class="col-12">
+          <div class="card">
 
-          <div class="card-body border-bottom py-3">
-            <form method="GET" class="d-flex w-100 gap-2">
-              <div class="d-flex align-items-center">
-                Show
-                <select name="per_page" class="form-select form-select-sm mx-2" onchange="this.form.submit()">
-                  @foreach([5,10,25,50] as $size)
-                    <option value="{{ $size }}" {{ request('per_page',10) == $size ? 'selected':'' }}>
-                      {{ $size }}
-                    </option>
-                  @endforeach
-                </select>
-                entries
-              </div>
-              
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="card-title">Presensi Siswa PKL</h3>
+            </div>
 
-    <div class="ms-2">
-      <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="form-control form-control-sm" onchange="this.form.submit()">
-    </div>
+            {{-- FILTER --}}
+            <div class="card-body border-bottom py-3">
+              <form method="GET" class="d-flex w-100 gap-2 flex-wrap">
+                <div class="d-flex align-items-center">
+                  Show
+                  <select name="per_page" class="form-select form-select-sm mx-2" onchange="this.form.submit()">
+                    @foreach([5,10,25,50] as $size)
+                      <option value="{{ $size }}" {{ request('per_page',10) == $size ? 'selected':'' }}>
+                        {{ $size }}
+                      </option>
+                    @endforeach
+                  </select>
+                  entries
+                </div>
 
-    <div class="ms-2">
-      <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-        <option value="">Semua Status</option>
-        <option value="hadir" {{ request('status')=='hadir'?'selected':'' }}>Hadir</option>
-        <option value="absen" {{ request('status')=='absen'?'selected':'' }}>Absen</option>
-        <option value="sakit" {{ request('status')=='sakit'?'selected':'' }}>Sakit</option>
-      </select>
-    </div>
-              <div class="ms-auto d-flex">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama / NISN..." class="form-control form-control-sm">
-                <button class="btn btn-sm btn-primary ms-2">Search</button>
-              </div>
-            </form>
-          </div>
+                <div class="ms-2">
+                  <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="form-control form-control-sm" onchange="this.form.submit()">
+                </div>
 
-          <div class="table-responsive">
-            <table class="table card-table table-vcenter text-nowrap table-hover">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Nama Siswa</th>
-                  <th>Tanggal</th>
-                  <th>Jam Masuk</th>
+                <div class="ms-2">
+                  <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">Semua Status</option>
+                    <option value="hadir" {{ request('status')=='hadir'?'selected':'' }}>Hadir</option>
+                    <option value="izin" {{ request('status')=='izin'?'selected':'' }}>Izin</option>
+                    <option value="sakit" {{ request('status')=='sakit'?'selected':'' }}>Sakit</option>
+                    <option value="absen" {{ request('status')=='absen'?'selected':'' }}>Absen</option>
+                  </select>
+                </div>
+
+                <div class="ms-auto d-flex">
+                  <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama / NISN..." class="form-control form-control-sm">
+                  <button class="btn btn-sm btn-primary ms-2">Search</button>
+                </div>
+              </form>
+            </div>
+
+            {{-- TABLE --}}
+            <div class="table-responsive">
+              <table class="table card-table table-vcenter text-nowrap table-hover">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama Siswa</th>
+                    <th>Tanggal</th>
+                    <th>Jam Masuk</th>
                     <th>Jam Keluar</th>
                     <th>Status</th>
                     <th>Foto Masuk</th>
                     <th>Foto Pulang</th>
-                </tr>
-              </thead>
-              <tbody>
-                @forelse($presensi as $i => $p)
-                  <tr>
-                    <td>{{ $presensi->firstItem() + $i }}</td>
-                    <td>{{ $p->siswa->nama ?? '-' }}</td>
-                    <td>{{ $p->tanggal }}</td>
-                    <td>{{ $p->jam_masuk ?? '-' }}</td>
-<td>{{ $p->jam_keluar ?? '-' }}</td>
-<td>{{ ucfirst($p->status) ?? '-' }}</td>
-<td>
-    @if($p->foto_masuk)
-      <img src="{{ asset('uploads/presensi/'.$p->foto_masuk) }}" width="50">
-    @else
-      -
-    @endif
-</td>
-<td>
-    @if($p->foto_pulang)
-      <img src="{{ asset('uploads/presensi/'.$p->foto_pulang) }}" width="50">
-    @else
-      -
-    @endif
-</td>
                   </tr>
-                @empty
-                  <tr>
-                    <td colspan="7" class="text-center">Data presensi belum tersedia</td>
-                  </tr>
-                @endforelse
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  @forelse($presensi as $i => $p)
+                    <tr>
+                      <td>{{ $presensi->firstItem() + $i }}</td>
+                      <td>{{ $p->siswa->nama ?? '-' }}</td>
+                      <td>{{ $p->tanggal }}</td>
+                      <td>{{ $p->jam_masuk ?? '-' }}</td>
+                      <td>{{ $p->jam_keluar ?? '-' }}</td>
+                      <td>{{ ucfirst($p->status) ?? '-' }}</td>
+                      <td>
+                        @if($p->foto_masuk)
+                          <img src="{{ asset('uploads/presensi/'.$p->foto_masuk) }}" width="50" class="rounded">
+                        @else
+                          -
+                        @endif
+                      </td>
+                      <td>
+                        @if($p->foto_pulang)
+                          <img src="{{ asset('uploads/presensi/'.$p->foto_pulang) }}" width="50" class="rounded">
+                        @else
+                          -
+                        @endif
+                      </td>
+                    </tr>
+                  @empty
+                    <tr>
+                      <td colspan="8" class="text-center">Data presensi belum tersedia</td>
+                    </tr>
+                  @endforelse
+                </tbody>
+              </table>
+            </div>
 
-          <div class="card-footer d-flex justify-content-between">
-            <p class="m-0 text-secondary">Showing {{ $presensi->firstItem() }} to {{ $presensi->lastItem() }} of {{ $presensi->total() }}</p>
-            {{ $presensi->links() }}
-          </div>
+            {{-- PAGINATION --}}
+            <div class="card-footer d-flex justify-content-between align-items-center">
+              <p class="m-0 text-secondary">Showing {{ $presensi->firstItem() ?? 0 }} to {{ $presensi->lastItem() ?? 0 }} of {{ $presensi->total() ?? 0 }}</p>
+              {{ $presensi->links() }}
+            </div>
 
+          </div>
         </div>
       </div>
-    </div>
+    @endif
+
   </div>
 </div>
 @endsection

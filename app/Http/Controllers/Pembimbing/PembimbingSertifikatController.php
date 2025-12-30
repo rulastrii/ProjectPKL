@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\SiswaProfile;
-use App\Models\PengajuanPklmagang;
+use App\Models\PengajuanPklSiswa;
 use App\Models\PengajuanMagangMahasiswa;
 use App\Models\Sertifikat;
 use PDF;
@@ -85,12 +85,21 @@ class PembimbingSertifikatController extends Controller
          *  Tentukan jenis & pengajuan berdasarkan role
          */
         if ($role == 4) {
-            // PKL (SISWA)
-            $jenis = 'PKL';
+    // PKL (SISWA)
+    $jenis = 'PKL';
 
-            $pengajuan = PengajuanPklmagang::whereHas('siswaProfile', function ($q) use ($siswa) {
-                $q->where('id', $siswa->id);
-            })->firstOrFail();
+    // Ambil pengajuan siswa, jika ada
+    $pengajuanSiswa = PengajuanPklSiswa::where('siswa_id', $siswa->id)
+        ->with('pengajuan')
+        ->first();
+
+    if (!$pengajuanSiswa || !$pengajuanSiswa->pengajuan) {
+        return redirect()->back()->withErrors([
+            'siswa_id' => 'Data pengajuan PKL untuk siswa ini belum tersedia.'
+        ])->withInput();
+    }
+
+    $pengajuan = $pengajuanSiswa->pengajuan;
 
         } elseif ($role == 5) {
             // MAGANG (MAHASISWA)

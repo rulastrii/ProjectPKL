@@ -13,6 +13,10 @@ use App\Http\Controllers\Admin\SekolahController;
 use App\Http\Controllers\Admin\BidangController;
 use App\Http\Controllers\Admin\PegawaiController;
 use App\Http\Controllers\Admin\PembimbingController;
+use App\Http\Controllers\Admin\MagangMahasiswaController;
+use App\Http\Controllers\Admin\PklSiswaController;
+use App\Http\Controllers\Admin\GuruController;
+
 use App\Http\Controllers\Admin\PengajuanPklController as AdminPengajuanController;
 use App\Http\Controllers\Admin\PengajuanMagangMahasiswaController;
 use App\Http\Controllers\Admin\PenempatanController;
@@ -25,9 +29,15 @@ use App\Http\Controllers\Pembimbing\PenilaianAkhirController;
 use App\Http\Controllers\Pembimbing\PembimbingSertifikatController;
 
 use App\Http\Controllers\Guru\PengajuanPklController as GuruPengajuanController;
+use App\Http\Controllers\Guru\SiswaPklController as SiswaPklController;
 
 use App\Http\Controllers\Siswa\SiswaProfileController;
 use App\Http\Controllers\Siswa\PresensiSiswaController;
+use App\Http\Controllers\Siswa\SiswaDailyReportController;
+use App\Http\Controllers\Siswa\SiswaTugasController;
+use App\Http\Controllers\Siswa\PenilaianController;
+use App\Http\Controllers\Siswa\SiswaSertifikatController;
+
 use App\Http\Controllers\Magang\PengajuanMagangController;
 use App\Http\Controllers\Magang\MagangProfileController;
 use App\Http\Controllers\Magang\PresensiMagangController;
@@ -37,10 +47,13 @@ use App\Http\Controllers\Magang\MagangPenilaianAkhirController;
 use App\Http\Controllers\Magang\MagangSertifikatController;
 use App\Http\Controllers\Magang\FeedbackController;
 
+
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\PembimbingDashboardController;
 use App\Http\Controllers\MagangDashboardController;
+use App\Http\Controllers\GuruDashboardController;
 use App\Http\Controllers\VerifikasiSertifikatController;
 
 
@@ -169,9 +182,9 @@ Route::middleware(['auth','role:1'])->get('/admin/dashboard', [AdminDashboardCon
 
 Route::middleware(['auth','role:2'])->get('/pembimbing/dashboard', [PembimbingDashboardController::class, 'index'])->name('pembimbing.dashboard');
 
-Route::middleware(['auth','verified','role:3','guru_verified'])->get('/guru/dashboard', function () {
-    return view('guru.dashboard');
-})->name('guru.dashboard');
+Route::middleware(['auth','verified','role:3','guru_verified'])
+    ->get('/guru/dashboard', [GuruDashboardController::class, 'index'])
+    ->name('guru.dashboard');
 
 Route::middleware(['auth','role:4'])->get('/siswa/dashboard', function () {
     return view('siswa.dashboard');
@@ -194,11 +207,57 @@ Route::middleware(['auth','role:4'])->prefix('siswa')->name('siswa.')->group(fun
         Route::put('/update', [SiswaProfileController::class,'update'])->name('update');
     });
 
-    // PRESENSI
+    // PRESENSI SISWA PKL
     Route::prefix('presensi')->name('presensi.')->group(function () {
+        // Daftar presensi
         Route::get('/', [PresensiSiswaController::class,'index'])->name('index');
+
+        // Form absensi hari ini
         Route::get('/create', [PresensiSiswaController::class,'create'])->name('create');
+
+        // Simpan presensi masuk / pulang
         Route::post('/store', [PresensiSiswaController::class,'store'])->name('store');
+    });
+
+    
+    // DAILY REPORT SISWA PKL
+    Route::prefix('daily-report')->name('daily-report.')->group(function () {
+        Route::get('/', [SiswaDailyReportController::class, 'index'])->name('index');
+        Route::get('/create', [SiswaDailyReportController::class, 'create'])->name('create');
+        Route::post('/', [SiswaDailyReportController::class, 'store'])->name('store');
+        Route::get('/{id}', [SiswaDailyReportController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [SiswaDailyReportController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [SiswaDailyReportController::class, 'update'])->name('update');
+    });
+
+      // TUGAS SISWA PKL
+    Route::prefix('tugas')->name('tugas.')->group(function () {
+        // Daftar tugas
+        Route::get('/', [SiswaTugasController::class, 'index'])->name('index');
+
+        // Detail tugas
+        Route::get('/{id}', [SiswaTugasController::class, 'show'])->name('show');
+
+        // Form submit tugas
+        Route::get('/{id}/submit', [SiswaTugasController::class, 'submitForm'])->name('submitForm');
+
+        // Proses submit tugas
+        Route::post('/{id}/submit', [SiswaTugasController::class, 'submit'])->name('submit');
+    });
+
+    Route::prefix('penilaian')->name('penilaian.')->group(function () {
+        // Daftar penilaian siswa sendiri
+        Route::get('/', [PenilaianController::class, 'index'])->name('index');
+
+        // Detail penilaian
+        Route::get('/{id}', [PenilaianController::class, 'show'])->name('show');
+    
+    });
+    
+    // Sertifikat Magang
+    Route::prefix('sertifikat')->name('sertifikat.')->group(function() {
+        Route::get('/', [SiswaSertifikatController::class, 'index'])->name('index');
+    
     });
 
 });
@@ -211,16 +270,23 @@ Route::middleware(['auth','role:4'])->prefix('siswa')->name('siswa.')->group(fun
 
 Route::middleware(['auth', 'role:3']) ->prefix('guru')->name('guru.')->group(function () {
 
-        Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+    Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+        Route::get('/', [GuruPengajuanController::class, 'index'])->name('index');
+        Route::get('/create', [GuruPengajuanController::class, 'create'])->name('create');
+        Route::post('/store', [GuruPengajuanController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [GuruPengajuanController::class, 'edit'])->name('edit');
+        Route::post('/{id}/add-siswa', [GuruPengajuanController::class, 'addSiswa'])->name('addSiswa');
+        Route::post('/{id}/submit', [GuruPengajuanController::class, 'submit'])->name('submit');
+        Route::get('/{id}', [GuruPengajuanController::class, 'show'])->name('show');   
+    });
 
-                Route::get('/', [GuruPengajuanController::class, 'index'])->name('index');
-    Route::get('/create', [GuruPengajuanController::class, 'create'])->name('create');
-    Route::post('/store', [GuruPengajuanController::class, 'store'])->name('store');
-    Route::get('/{id}/edit', [GuruPengajuanController::class, 'edit'])->name('edit');
-    Route::post('/{id}/add-siswa', [GuruPengajuanController::class, 'addSiswa'])->name('addSiswa');
-    Route::post('/{id}/submit', [GuruPengajuanController::class, 'submit'])->name('submit');
+    Route::prefix('siswa')->name('siswa.')->group(function () {
+        Route::get('/', [SiswaPklController::class, 'index'])->name('index');
+        Route::get('/{id}', [SiswaPklController::class, 'show'])->name('show');
         });
+
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -305,7 +371,8 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [AdminPengajuanController::class, 'index'])->name('index');
         Route::get('/{id}/edit', [AdminPengajuanController::class, 'edit'])->name('edit');
         Route::post('/{id}/update', [AdminPengajuanController::class, 'update'])->name('update');
-
+        Route::get('/{id}', [AdminPengajuanController::class, 'show'])->name('show'); 
+       
     });
 
     // ADMIN PENGAJUAN MAGANG MAHASISWA
@@ -321,7 +388,28 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/{pengajuan}/approve', [PengajuanMagangMahasiswaController::class, 'approve'])->name('approve');
         Route::post('/{pengajuan}/reject', [PengajuanMagangMahasiswaController::class, 'reject'])->name('reject');
     
+        
+    Route::get('magang-mahasiswa', [MagangMahasiswaController::class,'index'])->name('magang-mahasiswa.index');
+    Route::get('magang-mahasiswa/{id}', [MagangMahasiswaController::class,'show'])->name('magang-mahasiswa.show');
+
     });
+
+    Route::prefix('magang-mahasiswa')->name('magang-mahasiswa.')->group(function() {
+        Route::get('/', [MagangMahasiswaController::class,'index'])->name('index');
+        Route::get('/{id}', [MagangMahasiswaController::class,'show'])->name('show');
+
+    });
+
+    Route::prefix('pkl-siswa')->name('pkl-siswa.')->group(function() {
+        Route::get('/', [PklSiswaController::class, 'index'])->name('index');
+        Route::get('/{id}', [PklSiswaController::class, 'show'])->name('show');
+    });
+
+    Route::prefix('guru')->name('guru.')->group(function() {
+        Route::get('/', [GuruController::class, 'index'])->name('index');
+        Route::get('/{id}', [GuruController::class, 'show'])->name('show');
+    });
+
 
     // PEMBIMBING CRUD
     Route::prefix('pembimbing')->name('pembimbing.')->group(function () {
@@ -346,11 +434,21 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
     
     });
 
-    //
-    Route::get('/siswa', [AdminSiswaProfileController::class, 'index'])->name('siswa.index');
-    Route::get('/siswa/{id}', [AdminSiswaProfileController::class, 'show'])->name('siswa.show');
+    // Admin group (pastikan pakai auth middleware)
+    Route::prefix('pages')->name('pages.')->group(function () {
+        Route::get('/', [PageController::class, 'index'])->name('index');
+        Route::get('/create', [PageController::class, 'create'])->name('create');
+        Route::post('/', [PageController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PageController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PageController::class, 'update'])->name('update');
+    });
 
 });
+
+// Public page
+Route::get('/{slug}', [PageController::class, 'show'])->name('show');
+
+
 
 
 /*

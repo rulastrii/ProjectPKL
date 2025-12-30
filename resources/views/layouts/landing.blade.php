@@ -66,24 +66,30 @@
         <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
         <!-- Template Javascript -->
         <script src="{{ asset('js/main.js') }}"></script>
-            <script>
-                document.getElementById("helpToggle").addEventListener("click", function(){
-                document.querySelector(".help-floating").classList.toggle("active");
-            });
-            </script>
-                <script>
-                    document.getElementById("year").textContent = new Date().getFullYear();
-                </script>
-        <script>
-            document.addEventListener("scroll", function(){
-            const navbar = document.querySelector(".navbar");
             
-            if(window.scrollY > 50){
-                navbar.classList.add("scrolled");
-            } else {
-                navbar.classList.remove("scrolled");
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sections = document.querySelectorAll('div[id]');
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+            function onScroll() {
+                let scrollPos = window.scrollY + 100; // offset supaya link aktif sedikit lebih awal
+                sections.forEach(section => {
+                    if (scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === '#' + section.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
             }
+
+            window.addEventListener('scroll', onScroll);
+            onScroll(); // set aktif saat load halaman
         });
         </script>
+
     </body>
 </html>

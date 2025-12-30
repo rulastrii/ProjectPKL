@@ -54,8 +54,8 @@
        <thead>
         <tr>
          <th>No.</th>
-         <th>Nama Siswa</th>
-         <th>Kelas / Email</th>
+         <th>Nama Peserta</th>
+         <th>Email</th>
          <th>Bidang</th>
          <th>Status</th>
          <th>Created</th>
@@ -68,23 +68,37 @@
         <tr>
          <td>{{ $penempatan->firstItem() + $index }}</td>
 
-         {{-- Nama Siswa --}}
          <td>
-  @if($row->pengajuan_type === 'App\\Models\\PengajuanPklmagang')
-    {{ optional($row->pengajuan->siswaProfile)->nama ?? '-' }}
-  @else
-    {{ $row->pengajuan->nama_mahasiswa ?? '-' }}
-  @endif
+@php
+    $nama = '-';
+
+    if ($row->pengajuan) {
+        if ($row->pengajuan_type === \App\Models\PengajuanPklSiswa::class) {
+            $nama =
+                $row->pengajuan->siswaProfile->nama
+                ?? $row->pengajuan->nama_siswa
+                ?? '-';
+        } elseif ($row->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class) {
+            $nama = $row->pengajuan->nama_mahasiswa ?? '-';
+        }
+    }
+@endphp
+
+{{ $nama }}
+
 </td>
 
 
-         {{-- Kelas --}}
+
+         {{-- Email --}}
          <td>
-  @if($row->pengajuan_type === 'App\\Models\\PengajuanPklmagang')
-    {{ optional($row->pengajuan->siswaProfile)->kelas ?? '-' }}
-  @else
+@if($row->pengajuan && $row->pengajuan_type === \App\Models\PengajuanPklSiswa::class)
+    {{ $row->pengajuan->email_siswa ?? '-' }}
+@elseif($row->pengajuan && $row->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
     {{ $row->pengajuan->email_mahasiswa ?? '-' }}
-  @endif
+@else
+    -
+@endif
 </td>
 
 

@@ -13,14 +13,32 @@ use Illuminate\Support\Facades\DB;
 class PengajuanPklController extends Controller
 {
     // List pengajuan guru saat ini
-    public function index()
-    {
-        $guruId = Auth::id();
-        $pengajuans = PengajuanPklmagang::where('created_id', $guruId)
-            ->with('siswa')
-            ->get();
-        return view('guru.pengajuan.index', compact('pengajuans'));
+    public function index(Request $request)
+{
+    $guruId = Auth::id();
+    $query = PengajuanPklmagang::where('created_id', $guruId)->with('siswa');
+
+    if ($request->filled('search')) {
+        $query->where('no_surat', 'like', "%{$request->search}%")
+              ->orWhereHas('sekolah', function($q) use ($request) {
+                  $q->where('nama', 'like', "%{$request->search}%");
+              });
     }
+
+    $perPage = $request->per_page ?? 10;
+    $pengajuans = $query->paginate($perPage)->withQueryString();
+
+    return view('guru.pengajuan.index', compact('pengajuans'));
+}
+
+public function show($id)
+{
+    $pengajuan = PengajuanPklmagang::with(['siswa','sekolah'])
+        ->findOrFail($id);
+
+    return view('guru.pengajuan.show', compact('pengajuan'));
+}
+
 
     // Form create pengajuan
     public function create()

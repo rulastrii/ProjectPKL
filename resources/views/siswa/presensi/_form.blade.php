@@ -54,37 +54,30 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.addEventListener('click', function() {
       const target = document.querySelector(this.dataset.target);
       const allCollapses = document.querySelectorAll('.accordion-collapse');
-
-      // Tutup semua collapse lain
-      allCollapses.forEach(c => {
-        if(c !== target) c.classList.remove('show');
-      });
-
-      // Toggle collapse yang diklik
+      allCollapses.forEach(c => { if(c !== target) c.classList.remove('show'); });
       target.classList.toggle('show');
-
-      // Update tombol active
       toggles.forEach(b => b.classList.remove('active'));
-      if(target.classList.contains('show')) {
-        this.classList.add('active');
-      }
+      if(target.classList.contains('show')) this.classList.add('active');
     });
   });
 });
 
 // Jam otomatis update
 function updateClock() {
-  const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Jakarta"}));
-  const h12 = String(now.getHours() % 12 || 12).padStart(2,'0');
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+  const h = String(now.getHours()).padStart(2,'0');
   const m = String(now.getMinutes()).padStart(2,'0');
   const s = String(now.getSeconds()).padStart(2,'0');
-  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+  const timeString = `${h}:${m}:${s}`;
 
   @if(!$absenMasukSudah)
-    document.getElementById('jamMasuk').value = `${h12}:${m}:${s} ${ampm}`;
+    const masuk = document.getElementById('jamMasuk');
+    if(masuk) masuk.value = timeString;
   @endif
+
   @if(!$absenPulangSudah)
-    document.getElementById('jamPulang').value = `${h12}:${m}:${s} ${ampm}`;
+    const pulang = document.getElementById('jamPulang');
+    if(pulang) pulang.value = timeString;
   @endif
 }
 

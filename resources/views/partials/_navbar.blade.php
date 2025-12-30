@@ -10,11 +10,12 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto py-0">
                         <a href="{{ route('welcome') }}" class="nav-item nav-link active">Home</a>
-                        <a href="#" class="nav-item nav-link">Syarat Magang</a>
-                        <a href="#" class="nav-item nav-link">Dokumentasi</a>
-                        <a href="#" class="nav-item nav-link">About</a>
-                        <a href="#" class="nav-item nav-link">Kontak</a>
+                        <a href="#syarat-magang" class="nav-item nav-link">Syarat Magang</a>
+                        <a href="#dokumentasi" class="nav-item nav-link">Dokumentasi</a>
+                        <a href="#about" class="nav-item nav-link">About</a>
+                        <a href="#faqs" class="nav-item nav-link">FAQs</a>
                     </div>
+
                     <a href="{{ route('login') }}" class="btn btn-info text-white rounded-pill py-2 px-4 my-3 my-lg-0 me-2 flex-shrink-0">Masuk</a>
                     <a href="{{ route('magang.daftar') }}" class="btn btn-primary text-white rounded-pill py-2 px-4 my-3 my-lg-0 flex-shrink-0">Apply Magang</a>
                 </div>

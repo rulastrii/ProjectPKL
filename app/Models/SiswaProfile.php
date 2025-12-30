@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Tugas; // pastikan import model Tugas
+
 
 class SiswaProfile extends Model
 {
@@ -40,6 +42,12 @@ class SiswaProfile extends Model
         return $this->belongsTo(User::class,'user_id');
     }
 
+    public function presensi()
+    {
+        return $this->hasMany(\App\Models\Presensi::class, 'siswa_id', 'id');
+    }
+
+
     public function penilaianAkhir() {
         return $this->hasOne(PenilaianAkhir::class, 'siswa_id');
     }
@@ -56,19 +64,25 @@ class SiswaProfile extends Model
          * Relasi ke penempatan
          * 1 siswa punya 1 penempatan aktif
          */
-    /**public function penempatan() {
-        return $this->hasOne(Penempatan::class, 'pengajuan_id')
-                    ->where('pengajuan_type', 'siswa')
-                    ->where('is_active', 1);
-    }*/
+        
+     public function penempatan()
+    {
+        if ($this->pengajuanMahasiswa) {
+            return Penempatan::where('pengajuan_id', $this->pengajuanMahasiswa->id)
+                ->where('pengajuan_type', PengajuanMagangMahasiswa::class)
+                ->where('is_active', 1)
+                ->first();
+        }
 
+        if ($this->pengajuanPkl) {
+            return Penempatan::where('pengajuan_id', $this->pengajuanPkl->id)
+                ->where('pengajuan_type', PengajuanPklmagang::class)
+                ->where('is_active', 1)
+                ->first();
+        }
 
-    public function penempatan() {
-    return $this->hasOne(Penempatan::class, 'siswa_id')
-                ->where('is_active', 1);
-}
-
-    
+        return null;
+    }
 
     public function tugasSubmit() {
         return $this->hasMany(TugasSubmit::class, 'siswa_id');
