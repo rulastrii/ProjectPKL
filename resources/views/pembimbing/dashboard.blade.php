@@ -9,231 +9,231 @@
           <div class="container-xl">
             <div class="row row-deck row-cards">
             <div class="col-12 col-lg-6">
-  <div class="row row-cards">
+              <div class="row row-cards">
 
-    <!-- Card 1 -->
-    <div class="col-12 col-sm-6">
-      <div class="card card-sm h-100">
-        <div class="card-body d-flex align-items-center">
-          <span class="avatar bg-primary text-white me-3">
-            <i class="ti ti-users fs-1"></i>
-          </span>
-          <div>
-              <div class="fw-bold fs-3">{{ $jumlahSiswa }}</div>
-              <div class="text-secondary">Jumlah Siswa Bimbingan</div>
-          </div>
-        </div>
-      </div>
-    </div>
+                <!-- Card 1 -->
+                <div class="col-12 col-sm-6">
+                  <div class="card card-sm h-100">
+                    <div class="card-body d-flex align-items-center">
+                      <span class="avatar bg-primary text-white me-3">
+                        <i class="ti ti-users fs-1"></i>
+                      </span>
+                      <div>
+                          <div class="fw-bold fs-3">{{ $jumlahSiswa }}</div>
+                          <div class="text-secondary">Jumlah Siswa Bimbingan</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-    <!-- Card 2 : Laporan Belum Diverifikasi -->
-<div class="col-12 col-sm-6">
-  <div class="card card-sm h-100">
-    <div class="card-body d-flex align-items-center">
-      <span class="avatar bg-danger text-white me-3">
-        <i class="ti ti-file-description fs-1"></i>
-      </span>
-      <div>
-        <div class="fw-bold fs-3">
-          {{ $jumlahLaporanBelumVerifikasi }}
-        </div>
-        <div class="text-secondary">
-          Laporan Belum Diverifikasi
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                <!-- Card 2 : Laporan Belum Diverifikasi -->
+            <div class="col-12 col-sm-6">
+              <div class="card card-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                  <span class="avatar bg-danger text-white me-3">
+                    <i class="ti ti-file-description fs-1"></i>
+                  </span>
+                  <div>
+                    <div class="fw-bold fs-3">
+                      {{ $jumlahLaporanBelumVerifikasi }}
+                    </div>
+                    <div class="text-secondary">
+                      Laporan Belum Diverifikasi
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
 
-    <!-- Card 3 -->
-    <div class="col-12 col-sm-6">
-      <div class="card card-sm h-100">
-        <div class="card-body d-flex align-items-center">
-          <span class="avatar bg-yellow text-white me-3">
-            <i class="ti ti-clock fs-1"></i>
-          </span>
-          <div>
-            <div class="fw-bold fs-3">{{ $jumlahPresensiHadir }}</div>
-            <div class="text-secondary">Presensi Hadir</div>
-          </div>
-        </div>
-      </div>
-    </div>
+                <!-- Card 3 -->
+                <div class="col-12 col-sm-6">
+                  <div class="card card-sm h-100">
+                    <div class="card-body d-flex align-items-center">
+                      <span class="avatar bg-yellow text-white me-3">
+                        <i class="ti ti-clock fs-1"></i>
+                      </span>
+                      <div>
+                        <div class="fw-bold fs-3">{{ $jumlahPresensiHadir }}</div>
+                        <div class="text-secondary">Presensi Hadir</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-    <!-- Card 4 -->
-    <div class="col-12 col-sm-6">
-      <div class="card card-sm h-100">
-        <div class="card-body d-flex align-items-center">
-          <span class="avatar bg-green text-white me-3">
-            <i class="ti ti-book-2 fs-1"></i>
-          </span>
-          <div>
-            <div class="fw-bold fs-3">{{ $jumlahTugasBaru }}</div>
-            <div class="text-secondary">Submit Tugas Baru</div>
-          </div>
-        </div>
-      </div>
-    </div>
+                <!-- Card 4 -->
+                <div class="col-12 col-sm-6">
+                  <div class="card card-sm h-100">
+                    <div class="card-body d-flex align-items-center">
+                      <span class="avatar bg-green text-white me-3">
+                        <i class="ti ti-book-2 fs-1"></i>
+                      </span>
+                      <div>
+                        <div class="fw-bold fs-3">{{ $jumlahTugasBaru }}</div>
+                        <div class="text-secondary">Submit Tugas Baru</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-  </div>
-</div>
+              </div>
+            </div>
 
               <div class="col-md-6">
- <div class="card">
-  <div class="card-header">
-   <h3 class="card-title">Aktivitas Terbaru</h3>
-  </div>
+              <div class="card">
+                <div class="card-header">
+                <h3 class="card-title">Aktivitas Terbaru</h3>
+                </div>
 
-  <div class="table-responsive" style="max-height:260px;overflow-y:auto;">
-   <table class="table card-table table-vcenter">
-    <tbody>
+                <div class="table-responsive" style="max-height:260px;overflow-y:auto;">
+                <table class="table card-table table-vcenter">
+                  <tbody>
 
-@forelse($aktivitas as $i => $a)
-<tr>
-  <td class="w-1 text-secondary">{{ $i + 1 }}.</td>
-  <td>
-    <strong>{{ $a['nama'] }}</strong>
-    {{ $a['aksi'] }}
-  </td>
-  <td class="text-nowrap text-secondary">
-    {{ \Carbon\Carbon::parse($a['tanggal'])->format('d M Y H:i') }}
-  </td>
-</tr>
-@empty
-<tr>
-  <td colspan="3" class="text-center text-muted">
-    Belum ada aktivitas
-  </td>
-</tr>
-@endforelse
-
-
-    </tbody>
-   </table>
-  </div>
- </div>
-</div>
-
-
-{{-- DAFTAR SISWA BIMBINGAN --}}
-    <div class="col-md-6">
-      <div class="card">
-
-        {{-- HEADER --}}
-        <div class="card-header">
-          <h3 class="card-title">Daftar Siswa Bimbingan</h3>
-        </div>
-
-        {{-- TABLE --}}
-        <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
-          <table class="table card-table table-vcenter table-hover">
-            <thead class="sticky-top bg-white">
+              @forelse($aktivitas as $i => $a)
               <tr>
-                <th>Nama Siswa</th>
-                <th>Sekolah</th>
-                <th>Periode PKL</th>
-                <th class="text-center">Progress</th>
-                <th class="text-center">Aksi</th>
+                <td class="w-1 text-secondary">{{ $i + 1 }}.</td>
+                <td>
+                  <strong>{{ $a['nama'] }}</strong>
+                  {{ $a['aksi'] }}
+                </td>
+                <td class="text-nowrap text-secondary">
+                  {{ \Carbon\Carbon::parse($a['tanggal'])->format('d M Y H:i') }}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              @forelse($daftarSiswa as $s)
-                <tr style="cursor:pointer">
-                  <td>{{ $s->pengajuan->nama_mahasiswa ?? '-' }}</td>
-                  <td>{{ $s->pengajuan->sekolah->nama ?? $s->pengajuan->universitas ?? '-' }}</td>
-                  <td>
-                      @if($s->pengajuan)
-                          {{ \Carbon\Carbon::parse($s->pengajuan->periode_mulai)->translatedFormat('d M Y') ?? '-' }}
-                          –
-                          {{ \Carbon\Carbon::parse($s->pengajuan->periode_selesai)->translatedFormat('d M Y') ?? '-' }}
-                      @else
-                          -
-                      @endif
-                  </td>
+              @empty
+              <tr>
+                <td colspan="3" class="text-center text-muted">
+                  Belum ada aktivitas
+                </td>
+              </tr>
+              @endforelse
 
-                  <td class="text-center 
-                      @if(($s->pengajuan->progress ?? 0) < 60) text-danger
-                      @elseif(($s->pengajuan->progress ?? 0) < 80) text-warning
-                      @else text-success
-                      @endif
-                      fw-semibold">
-                    {{ $s->pengajuan->progress ?? 0 }}%
-                  </td>
-                  <td class="text-center">
-    <!-- Tombol Detail -->
-    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ $s->id }}">
-        Detail
-    </button>
 
-    <!-- Modal -->
-    <div class="modal fade" id="detailModal{{ $s->id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ $s->id }}" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title" id="detailModalLabel{{ $s->id }}">
-                <i class="ti ti-user-check me-2"></i>Detail Pembimbing
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <table class="table table-striped table-hover mb-0">
-                <tbody>
-                    <tr><th>ID</th><td>{{ $s->id }}</td></tr>
-                    <tr><th>Pembimbing</th><td>{{ $s->pegawai->nama ?? '-' }}</td></tr>
-                    <tr>
-                        <th>Jenis Pengajuan</th>
-                        <td>
-                            @if($s->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                                <span class="badge bg-info-soft text-info">Siswa PKL</span>
-                            @elseif($s->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
-                                <span class="badge bg-warning-soft text-warning">Magang Mahasiswa</span>
-                            @else
-                                -
-                            @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Pengajuan</th>
-                        <td>
-                            @if($s->pengajuan)
-                                <strong>No Surat:</strong> {{ $s->pengajuan->no_surat ?? '-' }} <br>
-                                @if($s->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                                    <small>Sekolah: {{ $s->pengajuan->sekolah->nama ?? '-' }}</small> <br>
-                                    <small>Periode: 
-                                        {{ \Carbon\Carbon::parse($s->pengajuan->periode_mulai)->format('M') }}
-                                        –
-                                        {{ \Carbon\Carbon::parse($s->pengajuan->periode_selesai)->format('M Y') }}
-                                    </small>
-                                @elseif($s->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
-                                    <small>Mahasiswa: {{ $s->pengajuan->nama_mahasiswa ?? '-' }}</small> <br>
-                                    <small>Universitas: {{ $s->pengajuan->universitas ?? '-' }}</small> <br>
-                                    <small>Periode: 
-                                        {{ \Carbon\Carbon::parse($s->pengajuan->periode_mulai)->format('M') }}
-                                        –
-                                        {{ \Carbon\Carbon::parse($s->pengajuan->periode_selesai)->format('M Y') }}
-                                    </small>
-                                @endif
-                            @else
-                                -
-                            @endif
-                        </td>
-                    </tr>
-                    <tr><th>Status</th>
-                        <td>{!! $s->is_active ? '<span class="badge bg-success-soft text-success">Aktif</span>' : '<span class="badge bg-danger-soft text-danger">Tidak Aktif</span>' !!}</td>
-                    </tr>
-                    <tr><th>Dibuat</th><td>{{ optional($s->created_date)->format('d M Y H:i') ?? '-' }}</td></tr>
-                    <tr><th>Diperbarui</th><td>{{ optional($s->updated_date)->format('d M Y H:i') ?? '-' }}</td></tr>
-                </tbody>
-            </table>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          </div>
-        </div>
-      </div>
-    </div>
-</td>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+              </div>
+
+
+            {{-- DAFTAR SISWA BIMBINGAN --}}
+                <div class="col-md-6">
+                  <div class="card">
+
+                    {{-- HEADER --}}
+                    <div class="card-header">
+                      <h3 class="card-title">Daftar Siswa Bimbingan</h3>
+                    </div>
+
+                    {{-- TABLE --}}
+                    <div class="table-responsive" style="max-height: 260px; overflow-y: auto;">
+                      <table class="table card-table table-vcenter table-hover">
+                        <thead class="sticky-top bg-white">
+                          <tr>
+                            <th>Nama Siswa</th>
+                            <th>Sekolah</th>
+                            <th>Periode PKL</th>
+                            <th class="text-center">Progress</th>
+                            <th class="text-center">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @forelse($daftarSiswa as $s)
+                            <tr style="cursor:pointer">
+                              <td>{{ $s->pengajuan->nama_mahasiswa ?? '-' }}</td>
+                              <td>{{ $s->pengajuan->sekolah->nama ?? $s->pengajuan->universitas ?? '-' }}</td>
+                              <td>
+                                  @if($s->pengajuan)
+                                      {{ \Carbon\Carbon::parse($s->pengajuan->periode_mulai)->translatedFormat('d M Y') ?? '-' }}
+                                      –
+                                      {{ \Carbon\Carbon::parse($s->pengajuan->periode_selesai)->translatedFormat('d M Y') ?? '-' }}
+                                  @else
+                                      -
+                                  @endif
+                              </td>
+
+                              <td class="text-center 
+                                  @if(($s->pengajuan->progress ?? 0) < 60) text-danger
+                                  @elseif(($s->pengajuan->progress ?? 0) < 80) text-warning
+                                  @else text-success
+                                  @endif
+                                  fw-semibold">
+                                {{ $s->pengajuan->progress ?? 0 }}%
+                              </td>
+                              <td class="text-center">
+                <!-- Tombol Detail -->
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ $s->id }}">
+                    Detail
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="detailModal{{ $s->id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ $s->id }}" aria-hidden="true">
+                  <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="detailModalLabel{{ $s->id }}">
+                            <i class="ti ti-user-check me-2"></i>Detail Pembimbing
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <table class="table table-striped table-hover mb-0">
+                            <tbody>
+                                <tr><th>ID</th><td>{{ $s->id }}</td></tr>
+                                <tr><th>Pembimbing</th><td>{{ $s->pegawai->nama ?? '-' }}</td></tr>
+                                <tr>
+                                    <th>Jenis Pengajuan</th>
+                                    <td>
+                                        @if($s->pengajuan_type === \App\Models\PengajuanPklmagang::class)
+                                            <span class="badge bg-info-soft text-info">Siswa PKL</span>
+                                        @elseif($s->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
+                                            <span class="badge bg-warning-soft text-warning">Magang Mahasiswa</span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Pengajuan</th>
+                                    <td>
+                                        @if($s->pengajuan)
+                                            <strong>No Surat:</strong> {{ $s->pengajuan->no_surat ?? '-' }} <br>
+                                            @if($s->pengajuan_type === \App\Models\PengajuanPklmagang::class)
+                                                <small>Sekolah: {{ $s->pengajuan->sekolah->nama ?? '-' }}</small> <br>
+                                                <small>Periode: 
+                                                    {{ \Carbon\Carbon::parse($s->pengajuan->periode_mulai)->format('M') }}
+                                                    –
+                                                    {{ \Carbon\Carbon::parse($s->pengajuan->periode_selesai)->format('M Y') }}
+                                                </small>
+                                            @elseif($s->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
+                                                <small>Mahasiswa: {{ $s->pengajuan->nama_mahasiswa ?? '-' }}</small> <br>
+                                                <small>Universitas: {{ $s->pengajuan->universitas ?? '-' }}</small> <br>
+                                                <small>Periode: 
+                                                    {{ \Carbon\Carbon::parse($s->pengajuan->periode_mulai)->format('M') }}
+                                                    –
+                                                    {{ \Carbon\Carbon::parse($s->pengajuan->periode_selesai)->format('M Y') }}
+                                                </small>
+                                            @endif
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr><th>Status</th>
+                                    <td>{!! $s->is_active ? '<span class="badge bg-success-soft text-success">Aktif</span>' : '<span class="badge bg-danger-soft text-danger">Tidak Aktif</span>' !!}</td>
+                                </tr>
+                                <tr><th>Dibuat</th><td>{{ optional($s->created_date)->format('d M Y H:i') ?? '-' }}</td></tr>
+                                <tr><th>Diperbarui</th><td>{{ optional($s->updated_date)->format('d M Y H:i') ?? '-' }}</td></tr>
+                            </tbody>
+                        </table>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </td>
 
                 </tr>
               @empty
@@ -248,7 +248,7 @@
       </div>
     </div>
 
-              <div class="col-md-6">
+  <div class="col-md-6">
   <div class="card">
     <div class="card-header">
       <h3 class="card-title">Aksi Cepat</h3>

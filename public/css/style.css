@@ -143,13 +143,18 @@
     transition: .5s;
 }
 
-.navbar.scrolled #logo-dark {
-    display: inline !important;
+/* ===== LOGO DKIS (Navbar & Footer) ===== */
+.logo-dkis {
+    height: 50px;
+    width: auto;
+    transition: all 0.3s ease;
 }
 
-.navbar.scrolled #logo-light {
-    display: none !important;
+/* Saat navbar sticky / scroll */
+.sticky-top .logo-dkis {
+    height: 45px;
 }
+
 
 .sticky-top.navbar-light .navbar-nav .nav-link,
 .sticky-top.navbar-light .navbar-nav .nav-item .nav-link {
@@ -835,6 +840,30 @@
     opacity: 1;
     pointer-events: auto;
     transform: translateY(-10px);
+}
+
+.search-box {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    width: 280px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    display: none;
+    z-index: 999;
+}
+
+#nav-search-results a {
+    display: block;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    text-decoration: none;
+}
+
+#nav-search-results a:hover {
+    background: #f5f5f5;
 }
 
 .child-btn{

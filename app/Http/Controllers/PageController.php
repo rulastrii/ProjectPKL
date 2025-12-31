@@ -7,72 +7,112 @@ use App\Models\Page;
 
 class PageController extends Controller
 {
-    // Public: tampilkan halaman
+    /**
+     * Public: tampilkan halaman berdasarkan slug
+     */
     public function show($slug)
     {
         $page = Page::where('slug', $slug)->firstOrFail();
-
         $items = json_decode($page->content, true) ?? [];
 
         return view('pages.show', compact('page', 'items'));
     }
 
-    // Admin: list semua halaman
-    public function index()
+    /**
+     * Admin: list semua halaman
+     */
+    public function index(Request $request)
     {
-        $pages = Page::all();
+        $query = Page::query();
+
+        // Search
+        if ($search = $request->input('search')) {
+            $query->where('title', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
+        }
+
+        // Pagination
+        $perPage = $request->input('per_page', 10);
+        $pages = $query->orderBy('created_at', 'desc')->paginate($perPage)->withQueryString();
+
         return view('admin.pages.index', compact('pages'));
     }
 
-    // Form create
+    /**
+     * Form create page
+     */
     public function create()
     {
         return view('admin.pages.create');
     }
 
-    // Simpan halaman baru
+    /**
+     * Simpan halaman baru
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug',
+            'title'   => 'required|string|max:255',
+            'slug'    => 'required|string|max:255|unique:pages,slug',
             'content' => 'required|string',
         ]);
 
         $items = $this->parseContentToItems($request->content);
 
         Page::create([
-            'title' => $request->title,
-            'slug' => $request->slug,
+            'title'   => $request->title,
+            'slug'    => $request->slug,
             'content' => json_encode($items, JSON_PRETTY_PRINT)
         ]);
 
         return redirect()->route('admin.pages.index')->with('success', 'Page berhasil dibuat!');
     }
 
-    // Edit page
+    /**
+     * Edit page
+     */
     public function edit($id)
     {
         $page = Page::findOrFail($id);
         return view('admin.pages.edit', compact('page'));
     }
 
-    // Update page
+    /**
+     * Update page
+     */
     public function update(Request $request, $id)
     {
         $page = Page::findOrFail($id);
 
+        $request->validate([
+            'title'   => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
         $items = $this->parseContentToItems($request->content);
 
         $page->update([
-            'title' => $request->title,
+            'title'   => $request->title,
             'content' => json_encode($items, JSON_PRETTY_PRINT)
         ]);
 
-        return redirect()->route('admin.pages.index')->with('success', 'Page updated!');
+        return redirect()->route('admin.pages.index')->with('success', 'Page berhasil diperbarui!');
     }
 
-    // Helper: convert teks ke array items
+    /**
+     * Hapus halaman
+     */
+    public function destroy($id)
+    {
+        $page = Page::findOrFail($id);
+        $page->delete();
+
+        return redirect()->route('admin.pages.index')->with('success', 'Page berhasil dihapus!');
+    }
+
+    /**
+     * Helper: convert teks ke array items
+     */
     private function parseContentToItems($content)
     {
         $lines = preg_split('/\r\n|\r|\n/', $content);
@@ -82,12 +122,12 @@ class PageController extends Controller
         while ($i < count($lines)) {
             if (trim($lines[$i]) !== '') {
                 $title = trim($lines[$i]);
-                $desc = isset($lines[$i+1]) ? trim($lines[$i+1]) : '';
+                $desc  = isset($lines[$i+1]) ? trim($lines[$i+1]) : '';
                 $items[] = [
-                    'icon' => 'fas fa-circle',
+                    'icon'  => 'fas fa-circle',
                     'title' => $title,
-                    'desc' => $desc,
-                    'link' => '#'
+                    'desc'  => $desc,
+                    'link'  => '#'
                 ];
                 $i += 2;
             } else {

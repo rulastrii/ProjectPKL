@@ -1,13 +1,16 @@
 <!-- Footer Start -->
         <div class="container-fluid footer py-5 wow fadeIn" data-wow-delay="0.2s">
-            <div class="container py-5" style="border-top: 1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1);">
+            <div class="container-fluid px-5 py-5" style="border-top: 1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1);">
                 <div class="row g-5 align-items-start">
 
                     <!-- Logo + Deskripsi -->
-                    <div class="col-lg-4 col-md-6">
-                        <a href="index.html" class="d-flex align-items-center mb-3">
-                            <img id="logo-light" src="img/logo-light.png" alt="Logo" style="height:50px;">
+                    <div class="col-lg-4 col-md-10">
+                        <a href="{{ route('welcome') }}" class="d-flex align-items-center mb-3">
+                            <img src="{{ asset('img/logo-dkis.png') }}" 
+                                alt="Logo DKIS" 
+                                class="logo-dkis">
                         </a>
+
                         <p class="text-white">
                             Dinas Komunikasi dan Informatika Kota Cirebon (DKIS) — pusat informasi, layanan digital,
                             serta pengembangan teknologi komunikasi pemerintahan Kota Cirebon.
@@ -19,7 +22,7 @@
                     </div>
 
                     <!-- Kontak -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-4 col-md-5">
                         <h4 class="text-white mb-4"><i class="fas fa-building text-white me-2"></i>Kontak & Alamat</h4>
 
                         <p class="text-white d-flex align-items-start">
@@ -31,7 +34,7 @@
                     </div>
 
                     <!-- Google Maps Dark -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-4 col-md-5">
                         <h4 class="text-white mb-4"><i class="fas fa-map text-white me-2"></i>Lokasi DKIS</h4>
                         <div class="map-darkmode">
                             <iframe width="100%" height="260" loading="lazy" allowfullscreen
@@ -48,7 +51,7 @@
 
        <!-- Copyright Start -->
         <div class="container-fluid copyright py-3" style="background:#000;">
-            <div class="container">
+            <div class="container-fluid px-5 py-3">
                 <div class="row g-3 align-items-center">
 
                     <div class="col-md-6 text-center text-md-start">

@@ -66,30 +66,41 @@
         <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
         <!-- Template Javascript -->
         <script src="{{ asset('js/main.js') }}"></script>
-            
-        <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const sections = document.querySelectorAll('div[id]');
-            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+       <script>
+document.addEventListener('DOMContentLoaded', function () {
+    // ======================
+    // Nav link aktif scroll
+    // ======================
+    const sections = document.querySelectorAll('div[id]');
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
-            function onScroll() {
-                let scrollPos = window.scrollY + 100; // offset supaya link aktif sedikit lebih awal
-                sections.forEach(section => {
-                    if (scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
-                        navLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href') === '#' + section.id) {
-                                link.classList.add('active');
-                            }
-                        });
+    function onScroll() {
+        let scrollPos = window.scrollY + 100;
+        sections.forEach(section => {
+            if (scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + section.id) {
+                        link.classList.add('active');
                     }
                 });
             }
-
-            window.addEventListener('scroll', onScroll);
-            onScroll(); // set aktif saat load halaman
         });
-        </script>
+    }
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+
+    // ======================
+    // Toggle Help Floating
+    // ======================
+    const helpToggle = document.getElementById('helpToggle');
+    const helpFloating = document.querySelector('.help-floating');
+
+    helpToggle.addEventListener('click', function() {
+        helpFloating.classList.toggle('active');
+    });
+});
+</script>
 
     </body>
 </html>

@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PembimbingController;
 use App\Http\Controllers\Admin\MagangMahasiswaController;
 use App\Http\Controllers\Admin\PklSiswaController;
 use App\Http\Controllers\Admin\GuruController;
+use App\Http\Controllers\Admin\PresensiRekapController;
 
 use App\Http\Controllers\Admin\PengajuanPklController as AdminPengajuanController;
 use App\Http\Controllers\Admin\PengajuanMagangMahasiswaController;
@@ -70,8 +71,7 @@ use App\Http\Controllers\VerifikasiSertifikatController;
         });
 
     Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
-
-
+   
 /*
 |--------------------------------------------------------------------------
 | Register Guru (Khusus)
@@ -441,12 +441,29 @@ Route::middleware(['auth','role:1'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/', [PageController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [PageController::class, 'edit'])->name('edit');
         Route::put('/{id}', [PageController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PageController::class, 'destroy'])->name('destroy');
     });
+
+    Route::prefix('presensi')->name('presensi.')->group(function () {
+        Route::get(
+            '/export-pdf',
+            [PresensiRekapController::class, 'exportPdf']
+        )->name('pdf');
+         Route::get('/export-excel', [PresensiRekapController::class, 'exportExcel'])
+        ->name('excel');
+
+        Route::get('/', 
+            [PresensiRekapController::class, 'index']
+        )->name('index');
+
+        Route::get('/{siswa_id}', 
+            [PresensiRekapController::class, 'detail']
+        )->name('detail');
+    });
+
 
 });
 
-// Public page
-Route::get('/{slug}', [PageController::class, 'show'])->name('show');
 
 
 
@@ -616,3 +633,7 @@ Route::middleware(['auth','role:5'])->prefix('magang')->name('magang.')->group(f
 */
 
     Route::get('/sertifikat/verifikasi/{token}', [VerifikasiSertifikatController::class, 'show'])->name('sertifikat.verifikasi');
+    Route::get('/search', [WelcomeController::class, 'search'])->name('search');
+
+    // Public page
+    Route::get('/{slug}', [PageController::class, 'show'])->name('show');

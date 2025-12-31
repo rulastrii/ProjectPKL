@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+    use App\Models\Penempatan;
 
 class PengajuanPklmagang extends Model
 {
@@ -52,8 +53,19 @@ class PengajuanPklmagang extends Model
         return $this->hasMany(PengajuanPklSiswa::class, 'pengajuan_id', 'id');
     }
 
-    /** Relasi ke Pembimbing */
+    public function penempatan()
+{
+    return $this->morphOne(
+        Penempatan::class,
+        'pengajuan',
+        'pengajuan_type',
+        'pengajuan_id'
+    )->where('is_active', 1);
+}
+
+
     public function pembimbing() {
         return $this->morphMany(Pembimbing::class, 'pengajuan');
     }
+    
 }

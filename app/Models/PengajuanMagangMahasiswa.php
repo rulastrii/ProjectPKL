@@ -66,4 +66,16 @@ class PengajuanMagangMahasiswa extends Model
         return $this->belongsTo(User::class);
     }
 
+
+public function penempatan()
+{
+    return $this->morphOne(
+        Penempatan::class,
+        'pengajuan',
+        'pengajuan_type',
+        'pengajuan_id'
+    )->where('is_active', 1);
+}
+
+
 }
