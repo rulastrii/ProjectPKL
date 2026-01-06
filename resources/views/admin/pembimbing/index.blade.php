@@ -71,7 +71,7 @@
             @if($b->pengajuan_type === \App\Models\PengajuanPklmagang::class)
                 <span class="badge bg-info-soft text-info">PKL</span>
             @else
-                <span class="badge bg-success-soft text-success">Magang</span>
+                <span class="badge bg-warning-soft text-warning">Magang</span>
             @endif
          </td>
 

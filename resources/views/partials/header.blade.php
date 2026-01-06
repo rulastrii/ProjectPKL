@@ -40,11 +40,17 @@
 
 
                   <div class="d-none d-xl-block ps-2">
-                      <div>{{ $user->name ?? 'Guest' }}</div>
-                      <div class="mt-1 small text-secondary">
-                          {{ $user->role->name ?? 'No Role' }}
-                      </div>
-                  </div>
+    <div>{{ $user->name ?? 'Guest' }}</div>
+
+    <div class="mt-1 small text-secondary">
+        {{ $user->role->name ?? 'No Role' }}
+
+        @if($user->role_id == 2 && $user->pegawai && $user->pegawai->bidang)
+            ({{ $user->pegawai->bidang->nama }})
+        @endif
+    </div>
+</div>
+
               </a>
 
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">

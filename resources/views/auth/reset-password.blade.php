@@ -34,7 +34,10 @@
 
             <div class="mb-3">
                 <label class="form-label">Reset Code</label>
-                <input type="text" name="token" class="form-control" placeholder="Enter reset code" required>
+                <input type="text" name="token"
+       class="form-control"
+       oninput="this.value = this.value.toUpperCase().replace(/\s/g,'')" placeholder="Enter reset code" required>
+
             </div>
 
             <div class="mb-2">

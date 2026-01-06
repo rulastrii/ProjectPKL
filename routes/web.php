@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Auth\Events\Verified;
 
 use App\Models\User;
 use App\Http\Controllers\Auth\LoginController;
@@ -56,6 +57,7 @@ use App\Http\Controllers\PembimbingDashboardController;
 use App\Http\Controllers\MagangDashboardController;
 use App\Http\Controllers\GuruDashboardController;
 use App\Http\Controllers\VerifikasiSertifikatController;
+
 
 
 /*
@@ -134,7 +136,9 @@ Route::middleware('guest')->group(function () {
         }
 
         // Tandai email sudah diverifikasi
-        $user->markEmailAsVerified();
+        if ($user->markEmailAsVerified()) {
+        event(new Verified($user));
+    }
 
         return redirect()->route('login')->with('success', 'Email berhasil diverifikasi! Silakan login.');
     })->name('verification.verify');

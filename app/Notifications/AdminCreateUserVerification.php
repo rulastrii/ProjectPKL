@@ -26,8 +26,13 @@ class AdminCreateUserVerification extends VerifyEmail
         );
     }
 
-    protected function resolveRole($user): array {
+   protected function resolveRole($user): array
+    {
         return match ((int) $user->role_id) {
+            2 => [
+                'label' => 'Pembimbing',
+                'title' => 'Akun Pembimbing Anda Telah Dibuat',
+            ],
             3 => [
                 'label' => 'Guru',
                 'title' => 'Akun Guru Anda Telah Dibuat',
@@ -41,11 +46,12 @@ class AdminCreateUserVerification extends VerifyEmail
                 'title' => 'Akun Peserta Magang Anda Telah Dibuat',
             ],
             default => [
-                'label' => 'Pengguna',
+                'label' => 'Akun',
                 'title' => 'Akun Anda Telah Dibuat',
             ],
         };
     }
+
 
     public function toMail($notifiable) {
         $role = $this->resolveRole($notifiable);

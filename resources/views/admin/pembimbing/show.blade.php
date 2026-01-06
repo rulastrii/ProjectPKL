@@ -32,9 +32,9 @@
                             <th>Jenis Pengajuan</th>
                             <td>
                                 @if($pembimbing->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                                    <span class="badge bg-info-soft text-info">PKL / Magang Siswa</span>
+                                    <span class="badge bg-info-soft text-info">Peserta PKL</span>
                                 @elseif($pembimbing->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
-                                    <span class="badge bg-warning-soft text-warning">Magang Mahasiswa</span>
+                                    <span class="badge bg-warning-soft text-warning">Peserta Magang</span>
                                 @else
                                     -
                                 @endif

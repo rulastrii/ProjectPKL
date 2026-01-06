@@ -65,7 +65,7 @@
             @if($b->pengajuan_type === \App\Models\PengajuanPklmagang::class)
                 <span class="badge bg-info-soft text-info">PKL</span>
             @elseif($b->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
-                <span class="badge bg-warning-soft text-warning">Mahasiswa</span>
+                <span class="badge bg-warning-soft text-warning">Magang</span>
             @else
                 <span class="badge bg-secondary-soft text-secondary">-</span>
             @endif
