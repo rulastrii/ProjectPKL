@@ -31,16 +31,24 @@ class MagangDashboardController extends Controller
         $serverTime = now('Asia/Jakarta')->format('H:i:s');
 
         if (!$magang) {
-            return view('magang.dashboard', [
-                'magang'              => null,
-                'todayPresensi'       => null,
-                'sudahPresensi'       => false,
-                'totalHariMagang'     => 0,
-                'jumlahPresensi'      => 0,
-                'prosentasePresensi'  => 0,
-                'serverTime'          => $serverTime,
-            ]);
-        }
+    return view('magang.dashboard', [
+        'magang'              => null,
+        'todayPresensi'       => null,
+        'sudahPresensi'       => false,
+        'totalHariMagang'     => 0,
+        'jumlahPresensi'      => 0,
+        'prosentasePresensi'  => 0,
+        'jumlahLaporanHariIni'=> 0,
+        'jumlahTugasPending'  => 0,
+        'totalTugas'          => 0,
+        'tugasSelesai'        => 0,
+        'prosentaseTugas'     => 0,
+        'tugasTerbaru'        => collect(),
+        'penilaian'           => null,
+        'serverTime'          => $serverTime,
+    ]);
+}
+
 
         // Ambil 3 tugas terbaru (dari tenggat terdekat) yang ditugaskan ke siswa ini
         $tugasTerbaru = Tugas::whereHas('tugasAssignees', function($q) use ($magang) {
@@ -56,7 +64,23 @@ class MagangDashboardController extends Controller
             ->where('tanggal', Carbon::today()->toDateString())
             ->first();
 
-        $sudahPresensi = $todayPresensi && $todayPresensi->jam_masuk;
+        $sudahPresensi = $todayPresensi 
+    && (
+        !is_null($todayPresensi->jam_masuk)
+        || !is_null($todayPresensi->jam_keluar)
+    );
+
+    $jamMasukNormal = Carbon::createFromTime(11, 0, 0, 'Asia/Jakarta');
+
+$telatMasuk = false;
+if ($todayPresensi && $todayPresensi->jam_masuk) {
+    $telatMasuk = Carbon::createFromFormat(
+        'H:i:s',
+        $todayPresensi->jam_masuk,
+        'Asia/Jakarta'
+    )->gt($jamMasukNormal);
+}
+
 
         // ================= HITUNG PROGRESS PRESENSI =================
         $tanggalMulai = optional($magang->pengajuan)->tanggal_mulai 
@@ -116,6 +140,7 @@ class MagangDashboardController extends Controller
                     'sudahPresensi',
                     'totalHariMagang',
                     'jumlahPresensi',
+                    'telatMasuk',
                     'prosentasePresensi',
                     'jumlahLaporanHariIni',
                     'jumlahTugasPending',

@@ -13,71 +13,100 @@ class PresensiMagangController extends Controller
 {
     /**
      * Tampilkan daftar presensi magang
-     *  TIDAK DIUBAH SESUAI PERMINTAAN
+     * (TIDAK DIUBAH LOGIKA)
      */
-    public function index(Request $request) {
-        $user = auth()->user();
+    public function index(Request $request)
+{
+    $user = auth()->user();
 
-        if ($user->role_id != 5) {
-            abort(403, 'Akses hanya untuk magang.');
-        }
-
-        $siswa = SiswaProfile::where('user_id', $user->id)->first();
-        if (!$siswa) {
-            abort(404, 'Profile magang tidak ditemukan.');
-        }
-
-        $query = Presensi::where('siswa_id', $siswa->id);
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('siswa', function ($q) use ($search) {
-                $q->where('nama', 'like', "%$search%")
-                  ->orWhere('nisn', 'like', "%$search%")
-                  ->orWhere('nim', 'like', "%$search%");
-            });
-        }
-
-        if ($request->filled('tanggal')) {
-            $query->where('tanggal', $request->tanggal);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $perPage = $request->input('per_page', 10);
-        $presensi = $query->orderBy('tanggal', 'desc')->paginate($perPage);
-        $presensi->appends($request->all());
-
-        return view('magang.presensi.index', compact('presensi', 'siswa'));
+    // ⛔ hanya untuk PKL / Magang
+    if (!in_array($user->role_id, [4, 5])) {
+        abort(403, 'Akses hanya untuk PKL dan Magang.');
     }
+
+    $siswa = SiswaProfile::where('user_id', $user->id)->first();
+
+    // ⛔ profile belum ada atau belum lengkap
+    if (!$siswa || !$siswa->isLengkap()) {
+        return redirect()
+            ->route('magang.profile.index')
+            ->with('warning', 'Silakan lengkapi profil terlebih dahulu sebelum melakukan presensi.');
+    }
+
+    // ================= QUERY PRESENSI =================
+
+    $query = Presensi::where('siswa_id', $siswa->id);
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->whereHas('siswa', function ($q) use ($search) {
+            $q->where('nama', 'like', "%{$search}%")
+              ->orWhere('nisn', 'like', "%{$search}%")
+              ->orWhere('nim', 'like', "%{$search}%");
+        });
+    }
+
+    if ($request->filled('tanggal')) {
+        $query->where('tanggal', $request->tanggal);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    $perPage  = $request->input('per_page', 10);
+    $presensi = $query->orderBy('tanggal', 'desc')->paginate($perPage);
+    $presensi->appends($request->all());
+
+    // ================= PRESENSI HARI INI =================
+
+    $todayPresensi = Presensi::where('siswa_id', $siswa->id)
+        ->where('tanggal', now()->toDateString())
+        ->first();
+
+    return view('magang.presensi.index', compact(
+        'siswa',
+        'presensi',
+        'todayPresensi'
+    ));
+}
+
 
     /**
      * Halaman absensi hari ini
+     * (tetap pakai view yang sama → data dibuat konsisten)
      */
-    public function create() {
+    public function create()
+    {
         $user = auth()->user();
         if ($user->role_id != 5) abort(403);
 
         $siswa = SiswaProfile::where('user_id', $user->id)->firstOrFail();
 
         $todayPresensi = Presensi::where('siswa_id', $siswa->id)
-            ->where('tanggal', date('Y-m-d'))
+            ->where('tanggal', now()->toDateString())
             ->first();
 
-        return view('magang.presensi.index', compact('siswa', 'todayPresensi'));
+        // supaya blade AMAN
+        $presensi = collect();
+
+        return view('magang.presensi.index', compact(
+            'siswa',
+            'todayPresensi',
+            'presensi'
+        ));
     }
 
     /**
      * Simpan absensi masuk / pulang
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $user = auth()->user();
         if ($user->role_id != 5) abort(403);
 
         $siswa   = SiswaProfile::where('user_id', $user->id)->firstOrFail();
-        $tanggal = date('Y-m-d');
+        $tanggal = now()->toDateString();
         $now     = Carbon::now('Asia/Jakarta');
 
         $request->validate([
@@ -91,10 +120,9 @@ class PresensiMagangController extends Controller
          */
         if ($request->tab === 'masuk') {
 
-            // ⏰ BATAS JAM MASUK 11.00
             if ($now->gt(Carbon::createFromTime(11, 0))) {
                 return back()->withErrors([
-                    'msg' => 'Absen masuk melewati jam 11.00, dianggap tidak hadir.'
+                    'msg' => 'Absen masuk melewati jam 11.00.'
                 ]);
             }
 
@@ -107,9 +135,9 @@ class PresensiMagangController extends Controller
                 return back()->withErrors(['msg' => 'Absensi masuk sudah dilakukan.']);
             }
 
-            $presensi->jam_masuk  = $now->format('H:i:s');
-            $presensi->status     = 'hadir';
-            $presensi->kelengkapan = 'tidak_lengkap'; // default
+            $presensi->jam_masuk   = $now->format('H:i:s');
+            $presensi->status      = 'hadir';
+            $presensi->kelengkapan = 'tidak_lengkap';
 
             if ($request->hasFile('foto_masuk')) {
                 $file = $request->file('foto_masuk');
@@ -126,14 +154,12 @@ class PresensiMagangController extends Controller
          */
         if ($request->tab === 'pulang') {
 
-            //  BATAS JAM PULANG 17.00
             if ($now->gt(Carbon::createFromTime(17, 0))) {
                 return back()->withErrors([
                     'msg' => 'Absen pulang melewati jam 17.00.'
                 ]);
             }
 
-            //  BOLEH PULANG WALAU LUPA MASUK
             $presensi = Presensi::firstOrNew([
                 'siswa_id' => $siswa->id,
                 'tanggal'  => $tanggal
@@ -145,12 +171,10 @@ class PresensiMagangController extends Controller
 
             $presensi->jam_keluar = $now->format('H:i:s');
 
-            //  TENTUKAN STATUS & KELENGKAPAN
             if ($presensi->jam_masuk) {
                 $presensi->status      = $presensi->status ?? 'hadir';
                 $presensi->kelengkapan = 'lengkap';
             } else {
-                // Pulang tanpa masuk
                 $presensi->status      = 'hadir';
                 $presensi->kelengkapan = 'tidak_lengkap';
             }
@@ -165,26 +189,26 @@ class PresensiMagangController extends Controller
             $presensi->save();
         }
 
-            $pembimbing = optional(
-            $siswa->pengajuan->first()
-                 )->pembimbing->first();
+        /**
+         * ================= AKTIVITAS =================
+         */
+        $pembimbing = optional($siswa->pengajuan)->pembimbing?->first();
 
-            $aksi = $request->tab === 'masuk'
-                ? 'melakukan presensi masuk'
-                : 'melakukan presensi pulang';
+        $aksi = $request->tab === 'masuk'
+            ? 'melakukan presensi masuk'
+            : 'melakukan presensi pulang';
 
-            Aktivitas::create([
-                'pegawai_id' => $pembimbing?->pegawai_id,
-                'siswa_id'   => $siswa->id,
-                'nama'       => $siswa->nama,
-                'aksi'       => $aksi,
-                'sumber'     => 'presensi',
-                'ref_id'     => $presensi->id,
-                'created_at' => now(),
-            ]);
+        Aktivitas::create([
+            'pegawai_id' => $pembimbing?->pegawai_id,
+            'siswa_id'   => $siswa->id,
+            'nama'       => $siswa->nama,
+            'aksi'       => $aksi,
+            'sumber'     => 'presensi',
+            'ref_id'     => $presensi->id,
+        ]);
 
-        return redirect()->route('magang.presensi.index')
+        return redirect()
+            ->route('magang.presensi.index')
             ->with('success', 'Presensi berhasil disimpan.');
     }
-
 }

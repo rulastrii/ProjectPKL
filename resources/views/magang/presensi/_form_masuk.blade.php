@@ -1,12 +1,16 @@
 @php
 use Carbon\Carbon;
 
-$sekarang = Carbon::now();
-$jamMasukNormal = Carbon::createFromTimeString('11:00:00');
+$sekarang = Carbon::now('Asia/Jakarta');
+$jamMasukNormal = Carbon::createFromTime(11, 0, 0, 'Asia/Jakarta');
 
-$telatMasuk = $sekarang->gt($jamMasukNormal) && !$absenMasukSudah;
+$absenMasukSudah = $absenMasukSudah ?? false;
 $sudahLewatMasuk = $sekarang->gt($jamMasukNormal);
+$telatMasuk = $sudahLewatMasuk && !$absenMasukSudah;
+
+$siswa = $siswa ?? auth()->user()->siswaProfile;
 @endphp
+
 
 @if($absenMasukSudah)
   <div class="alert alert-success">
@@ -22,11 +26,12 @@ $sudahLewatMasuk = $sekarang->gt($jamMasukNormal);
   @csrf
   <input type="hidden" name="tab" value="masuk">
 
-  <div class="mb-3">
+<div class="mb-3">
     <label>Nama Magang</label>
     <input class="form-control" readonly
-           value="{{ $magang->nama }} - {{ $magang->jurusan }} - {{ $magang->universitas }}">
-  </div>
+        value="{{ $siswa->nama ?? '-' }} - {{ $siswa->jurusan ?? '-' }} - {{ $siswa->universitas ?? '-' }}">
+</div>
+
 
   <div class="mb-3">
     <label>Tanggal</label>
@@ -41,12 +46,6 @@ $sudahLewatMasuk = $sekarang->gt($jamMasukNormal);
            value="{{ $jamMasuk
               ? \Carbon\Carbon::createFromFormat('H:i:s', $jamMasuk)->format('H:i:s')
               : '--:--:--' }}">
-  </div>
-
-  <div class="mb-3">
-    <label>Status</label>
-    <input type="text" class="form-control" value="Hadir" readonly>
-    <input type="hidden" name="status" value="hadir">
   </div>
 
   <div class="mb-3">

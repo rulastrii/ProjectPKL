@@ -20,9 +20,18 @@
                     </span>
                 </div>
                 <div class="col">
-                    <div class="font-weight-medium">
-                        {{ $sudahPresensi ? 'Sudah Presensi' : 'Belum Presensi' }}
-                    </div>
+                    <div class="font-weight-medium
+    {{ $sudahPresensi ? ($telatMasuk ? 'text-danger' : 'text-success') : 'text-secondary' }}">
+    
+    @if(!$sudahPresensi)
+        Belum Presensi
+    @elseif($telatMasuk)
+        Sudah Presensi (Telat)
+    @else
+        Sudah Presensi
+    @endif
+</div>
+
                     <div class="text-secondary">Status Presensi Hari Ini</div>
                 </div>
             </div>
@@ -420,9 +429,10 @@
       <div class="modal-body p-3 p-md-4">
 
         @php
-          $jamMasuk = $todayPresensi?->jam_masuk;
+          $jamMasuk  = $todayPresensi?->jam_masuk;
           $jamPulang = $todayPresensi?->jam_keluar;
-          $absenMasukSudah = !is_null($jamMasuk);
+
+          $absenMasukSudah  = !is_null($jamMasuk);
           $absenPulangSudah = !is_null($jamPulang);
         @endphp
 
@@ -430,19 +440,30 @@
         <div class="alert {{ $absenMasukSudah ? 'alert-success' : 'alert-warning' }} d-flex align-items-center gap-2">
           <i class="ti ti-clock"></i>
           <div>
-            <strong>Status Presensi</strong><br>
-            {{ $absenMasukSudah ? 'Sudah Absen Masuk' : 'Belum Absen Masuk' }}
-          </div>
+  <strong>Status Presensi</strong><br>
+
+  @if($absenMasukSudah && $absenPulangSudah)
+    <span class="text-success">Sudah Absen Masuk & Pulang</span>
+  @elseif($absenMasukSudah)
+    <span class="{{ $telatMasuk ? 'text-danger' : 'text-success' }}">
+      Sudah Absen Masuk {{ $telatMasuk ? '(Telat)' : '' }}
+    </span>
+  @elseif($absenPulangSudah)
+    <span class="text-warning">Absen Pulang Saja</span>
+  @else
+    <span class="text-secondary">Belum Presensi</span>
+  @endif
+</div>
+
         </div>
 
         {{-- PILIH AKSI --}}
         <div class="row g-3 mb-4">
           <div class="col-6">
             <button
-              class="btn w-100 py-3 {{ !$absenMasukSudah ? 'btn-primary' : 'btn-outline-secondary' }}"
-              data-bs-toggle="collapse"
-              data-bs-target="#formMasuk"
-              {{ $absenMasukSudah ? 'disabled' : '' }}>
+              type="button"
+              id="btnMasuk"
+              class="btn w-100 py-3 {{ !$absenMasukSudah ? 'btn-primary' : 'btn-outline-secondary' }}">
               <i class="ti ti-login fs-3"></i><br>
               <span class="fw-semibold">Absen Masuk</span>
             </button>
@@ -450,10 +471,9 @@
 
           <div class="col-6">
             <button
-              class="btn w-100 py-3 {{ $absenMasukSudah && !$absenPulangSudah ? 'btn-success' : 'btn-outline-secondary' }}"
-              data-bs-toggle="collapse"
-              data-bs-target="#formPulang"
-              {{ !$absenMasukSudah || $absenPulangSudah ? 'disabled' : '' }}>
+              type="button"
+              id="btnPulang"
+              class="btn w-100 py-3 {{ !$absenPulangSudah ? 'btn-success' : 'btn-outline-secondary' }}">
               <i class="ti ti-logout fs-3"></i><br>
               <span class="fw-semibold">Absen Pulang</span>
             </button>
@@ -494,11 +514,28 @@
         @endif
 
       </div>
-
     </div>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const formMasuk  = document.getElementById('formMasuk');
+  const formPulang = document.getElementById('formPulang');
 
+  const collapseMasuk  = new bootstrap.Collapse(formMasuk, { toggle: false });
+  const collapsePulang = new bootstrap.Collapse(formPulang, { toggle: false });
+
+  document.getElementById('btnMasuk').addEventListener('click', function () {
+    collapsePulang.hide();
+    collapseMasuk.toggle();
+  });
+
+  document.getElementById('btnPulang').addEventListener('click', function () {
+    collapseMasuk.hide();
+    collapsePulang.toggle();
+  });
+});
+</script>
 <script>
 function updateClock() {
   const now = new Date(new Date().toLocaleString("en-US", {
@@ -511,11 +548,9 @@ function updateClock() {
 
   const timeString = `${hh}:${mm}:${ss}`;
 
-  // Tampilkan ke UI
   const clockEl = document.getElementById('liveClock');
   if (clockEl) clockEl.textContent = timeString;
 
-  // Inject ke input (jika ada)
   @if(!$absenMasukSudah)
     const masuk = document.getElementById('jamMasuk');
     if (masuk) masuk.value = timeString;
@@ -530,5 +565,6 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 </script>
+
 
 @endsection

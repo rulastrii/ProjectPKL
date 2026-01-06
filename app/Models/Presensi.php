@@ -36,8 +36,9 @@ class Presensi extends Model
 }
 
 public function getNamaAttribute() {
-    return $this->siswa->nama ?? 'Tidak diketahui';
+    return optional($this->siswa)->nama ?? 'Tidak diketahui';
 }
+
 
     
 }
