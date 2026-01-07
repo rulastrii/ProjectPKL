@@ -31,8 +31,16 @@
                                 @if($pembimbing->pengajuan)
                                     <strong>No Surat:</strong> {{ $pembimbing->pengajuan->no_surat ?? '-' }} <br>
                                     @if($pembimbing->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                                        <small>Siswa: {{ $pembimbing->siswa->nama ?? '-' }} <br>
-                                        Sekolah: {{ $pembimbing->pengajuan->sekolah->nama ?? '-' }}</small>
+    <strong>Siswa:</strong>
+    <ul class="mb-1">
+        @forelse($pembimbing->pengajuan->siswa as $ps)
+            <li>{{ $ps->siswaProfile->nama ?? $ps->nama_siswa ?? '-' }}</li>
+        @empty
+            <li>-</li>
+        @endforelse
+    </ul>
+    <small>Sekolah: {{ $pembimbing->pengajuan->sekolah->nama ?? '-' }}</small>
+
                                     @elseif($pembimbing->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
                                         <small>Mahasiswa: {{ $pembimbing->pengajuan->nama_mahasiswa ?? '-' }} <br>
                                         Universitas: {{ $pembimbing->pengajuan->universitas ?? '-' }}</small>

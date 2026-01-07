@@ -99,6 +99,21 @@ class SiswaProfile extends Model
     return $this->belongsTo(PengajuanMagangMahasiswa::class, 'pengajuan_id');
 }
 
+public function pembimbingPkl()
+{
+    return $this->hasOne(Pembimbing::class, 'pengajuan_id', 'pengajuanpkl_id')
+        ->where('pengajuan_type', \App\Models\PengajuanPklmagang::class)
+        ->where('is_active', 1);
+}
+
+public function pembimbingMahasiswa()
+{
+    return $this->hasOne(Pembimbing::class, 'pengajuan_id', 'pengajuan_id')
+        ->where('pengajuan_type', \App\Models\PengajuanMagangMahasiswa::class)
+        ->where('is_active', 1);
+}
+
+
 public function pengajuanpkl() { 
     return $this->belongsTo(PengajuanPklmagang::class, 'pengajuanpkl_id'); 
 }

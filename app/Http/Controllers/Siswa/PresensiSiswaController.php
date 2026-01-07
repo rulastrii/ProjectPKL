@@ -17,13 +17,20 @@ class PresensiSiswaController extends Controller
     public function index(Request $request) {
         $user = auth()->user();
 
-        if ($user->role_id != 4) { // PKL
+
+        // ⛔ Hanya untuk siswa PKL
+        if ($user->role_id != 4) {
             abort(403, 'Akses hanya untuk siswa PKL.');
         }
 
+        // Ambil profile siswa
         $siswa = SiswaProfile::where('user_id', $user->id)->first();
-        if (!$siswa) {
-            abort(404, 'Profile siswa PKL tidak ditemukan.');
+
+        // ⛔ Profile belum ada atau belum lengkap
+        if (!$siswa || !$siswa->isLengkap()) {
+            return redirect()
+                ->route('siswa.profile.index') // ganti sesuai route profile siswa
+                ->with('warning', 'Silakan lengkapi profil terlebih dahulu sebelum melakukan presensi.');
         }
 
         $query = Presensi::where('siswa_id', $siswa->id);

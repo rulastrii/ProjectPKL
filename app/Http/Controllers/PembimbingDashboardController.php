@@ -28,10 +28,15 @@ class PembimbingDashboardController extends Controller
 
         } else {
             // Ambil semua bimbingan pegawai
-            $daftarSiswa = Pembimbing::with('pengajuan')
-                ->whereNull('deleted_date')
-                ->where('pegawai_id', $pegawai->id)
-                ->get();
+            $daftarSiswa = Pembimbing::with([
+                'pengajuan',
+                'pegawai'
+            ])
+            ->whereNull('deleted_date')
+            ->where('pegawai_id', $pegawai->id)
+            ->get();
+
+
 
             $jumlahSiswa = $daftarSiswa->count();
 

@@ -71,15 +71,31 @@
             @endif
          </td>
          <td>
-            <div class="fw-semibold">{{ $b->pengajuan->no_surat ?? '-' }}</div>
-            @if($b->pengajuan)
-                @if($b->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                    <small class="text-muted">{{ $b->pengajuan->sekolah->nama ?? '-' }}</small>
-                @elseif($b->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
-                    <small class="text-muted">{{ $b->pengajuan->nama_mahasiswa ?? '-' }} - {{ $b->pengajuan->universitas ?? '-' }}</small>
-                @endif
-            @endif
-         </td>
+    <div class="fw-semibold">{{ $b->pengajuan->no_surat ?? '-' }}</div>
+
+    @if($b->pengajuan)
+        @if($b->pengajuan_type === \App\Models\PengajuanPklmagang::class)
+            @php
+                $siswaPkl = $b->pengajuan->siswa->first()?->siswaProfile;
+            @endphp
+            <small class="text-muted">
+              <ul class="mb-0">
+            @forelse($b->pengajuan->siswa as $ps)
+                <li>{{ $ps->siswaProfile->nama ?? $ps->nama_siswa ?? '-' }}</li>
+            @empty
+                <li>-</li>
+            @endforelse
+        </ul>  
+                {{ $b->pengajuan->sekolah->nama ?? '-' }}
+            </small>
+        @elseif($b->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
+            <small class="text-muted">
+                {{ $b->pengajuan->nama_mahasiswa ?? '-' }} - {{ $b->pengajuan->universitas ?? '-' }}
+            </small>
+        @endif
+    @endif
+</td>
+
          <td>{{ $b->pegawai->nama ?? '-' }}</td>
          <td>{{ $b->tahun ?? '-' }}</td>
          <td>

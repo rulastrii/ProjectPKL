@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SiswaProfile;
 use App\Models\PenilaianAkhir;
+use App\Models\Pembimbing;
 
 class PenilaianAkhirController extends Controller
 {
@@ -14,27 +15,41 @@ class PenilaianAkhirController extends Controller
         $search  = $request->input('search');
         $perPage = $request->input('per_page', 10);
 
+        /** ================= PEMBIMBING LOGIN ================= */
+        $pembimbingLogin = Pembimbing::where('user_id', auth()->id())
+            ->where('is_active', 1)
+            ->whereNull('deleted_date')
+            ->firstOrFail();
+
+        /** ================= QUERY SISWA (HANYA BIMBINGAN) ================= */
         $query = SiswaProfile::where('is_active', 1)
+            ->whereHas('pengajuan.pembimbing', function ($q) use ($pembimbingLogin) {
+                $q->where('pembimbing.id', $pembimbingLogin->id)
+                  ->where('pembimbing.is_active', 1);
+            })
             ->with([
                 'tugasSubmit' => function ($q) {
                     $q->where('status', 'sudah dinilai');
                 },
                 'laporan',
                 'penilaianAkhir',
-                'pengajuan.pembimbing'
+                'pengajuan'
             ]);
 
+        /** ================= SEARCH ================= */
         if ($search) {
             $query->where('nama', 'like', "%{$search}%");
         }
 
         $siswaPaginated = $query->paginate($perPage)->withQueryString();
 
+        /** ================= PROSES NILAI ================= */
         foreach ($siswaPaginated as $s) {
 
-            /** ================= NILAI ================= */
+            /** ===== NILAI TUGAS ===== */
             $tugasAvg = $s->tugasSubmit->avg('skor') ?? 0;
 
+            /** ===== NILAI LAPORAN ===== */
             $totalLaporan = $s->laporan()->count();
             $laporanTerverifikasi = $s->laporan
                 ->where('status_verifikasi', 'terverifikasi')
@@ -44,27 +59,18 @@ class PenilaianAkhirController extends Controller
                 ? ($laporanTerverifikasi / $totalLaporan) * 100
                 : 0;
 
+            /** ===== NILAI MANUAL ===== */
             $keaktifan = $s->penilaianAkhir->nilai_keaktifan ?? 0;
             $sikap     = $s->penilaianAkhir->nilai_sikap ?? 0;
 
-            /** ================= PEMBIMBING ================= */
-            $pembimbing = $s->pengajuan
-                ? $s->pengajuan->pembimbing()
-                    ->where('is_active', 1)
-                    ->first()
-                : null;
-
-            $pembimbingId = $pembimbing?->id;
-
-            /** ================= PERIODE ================= */
+            /** ===== PERIODE ===== */
             $periodeMulai = $s->penilaianAkhir->periode_mulai
-    ?? $s->pengajuan?->periode_mulai;
+                ?? $s->pengajuan?->periode_mulai;
 
-$periodeSelesai = $s->penilaianAkhir->periode_selesai
-    ?? $s->pengajuan?->periode_selesai;
+            $periodeSelesai = $s->penilaianAkhir->periode_selesai
+                ?? $s->pengajuan?->periode_selesai;
 
-
-            /** ================= SIMPAN ================= */
+            /** ===== SIMPAN / UPDATE ===== */
             if (!$s->penilaianAkhir) {
 
                 $penilaian = new PenilaianAkhir([
@@ -78,7 +84,7 @@ $periodeSelesai = $s->penilaianAkhir->periode_selesai
                                         + ($laporanAvg * 0.3)
                                         + ($keaktifan * 0.1)
                                         + ($sikap * 0.1),
-                    'pembimbing_id'   => $pembimbingId,
+                    'pembimbing_id'   => $pembimbingLogin->id,
                 ]);
 
                 $s->penilaianAkhir()->save($penilaian);
@@ -90,13 +96,14 @@ $periodeSelesai = $s->penilaianAkhir->periode_selesai
                     'periode_selesai' => $periodeSelesai,
                     'nilai_tugas'     => $tugasAvg,
                     'nilai_laporan'   => $laporanAvg,
-                    'pembimbing_id'   => $pembimbingId,
+                    'pembimbing_id'   => $pembimbingLogin->id,
                 ]);
 
                 $s->penilaianAkhir->hitungNilaiAkhir();
             }
         }
 
+        /** ================= DATA UNTUK VIEW ================= */
         $penilaian = PenilaianAkhir::with('siswa')
             ->whereIn('siswa_id', $siswaPaginated->pluck('id'))
             ->paginate($perPage)

@@ -50,8 +50,9 @@
                             <div class="mb-3">
                                 <label class="form-label">Catatan / Keterangan</label>
                                 <textarea name="catatan"
-                                          rows="4"
-                                          class="form-control">{{ old('catatan', $submit->catatan ?? '') }}</textarea>
+                                        rows="4"
+                                        class="form-control"
+                                        placeholder="Tulis catatan atau keterangan tambahan di sini...">{{ old('catatan', $submit->catatan ?? '') }}</textarea>
                             </div>
 
                             {{-- FILE --}}

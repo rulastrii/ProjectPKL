@@ -28,19 +28,20 @@ class BimbinganPesertaController extends Controller
         }
 
         // Ambil data bimbingan pegawai login
-        $pembimbing = Pembimbing::with(['pengajuan', 'pegawai'])
-            ->whereNull('deleted_date')
-            ->where('pegawai_id', $pegawai->id)
-            ->when($tahun, fn($q) => $q->where('tahun', $tahun))
-            ->when($search, fn($q) => $q->whereHasMorph(
-                'pengajuan',
-                [PengajuanPklmagang::class, PengajuanMagangMahasiswa::class],
-                fn($q) => $q->where('no_surat', 'like', "%{$search}%")
-                           ->orWhere('nama_mahasiswa', 'like', "%{$search}%")
-            ))
-            ->orderBy('tahun', 'desc')
-            ->paginate($perPage)
-            ->appends($request->query());
+        $pembimbing = Pembimbing::with(['pegawai'])
+    ->whereNull('deleted_date')
+    ->where('pegawai_id', $pegawai->id)
+    ->when($tahun, fn($q) => $q->where('tahun', $tahun))
+    ->when($search, fn($q) => $q->whereHasMorph(
+        'pengajuan',
+        [PengajuanPklmagang::class, PengajuanMagangMahasiswa::class],
+        fn($q) => $q->where('no_surat', 'like', "%{$search}%")
+                     ->orWhere('nama_mahasiswa', 'like', "%{$search}%")
+    ))
+    ->orderBy('tahun', 'desc')
+    ->paginate($perPage)
+    ->appends($request->query());
+
 
         // list tahun untuk filter
         $tahunList = Pembimbing::whereNull('deleted_date')

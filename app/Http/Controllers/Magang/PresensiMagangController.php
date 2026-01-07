@@ -20,8 +20,8 @@ class PresensiMagangController extends Controller
     $user = auth()->user();
 
     // ⛔ hanya untuk PKL / Magang
-    if (!in_array($user->role_id, [4, 5])) {
-        abort(403, 'Akses hanya untuk PKL dan Magang.');
+    if (!in_array($user->role_id, [5])) {
+        abort(403, 'Akses hanya untuk Mahasiswa Magang.');
     }
 
     $siswa = SiswaProfile::where('user_id', $user->id)->first();

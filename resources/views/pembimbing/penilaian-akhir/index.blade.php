@@ -82,6 +82,9 @@
               title="Nilai terkunci karena sertifikat sudah diterbitkan">
             <i class="ti ti-lock"></i> Terkunci
         </span>
+        
+            {{-- Modal --}}
+            @include('pembimbing.penilaian-akhir.edit', ['item' => $item])
     @endif
 </td>
 
@@ -127,5 +130,4 @@
   </div>
  </div>
 </div>
-@include('pembimbing.penilaian-akhir.edit')
 @endsection

@@ -152,14 +152,35 @@
                                   @endif
                               </td>
 
-                              <td class="text-center 
-                                  @if(($s->pengajuan->progress ?? 0) < 60) text-danger
-                                  @elseif(($s->pengajuan->progress ?? 0) < 80) text-warning
+                              @php
+                                  $progress = 0;
+
+                                  // ================= MAGANG MAHASISWA =================
+                                  if ($s->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class) {
+                                      $progress = $s->pengajuan?->siswaProfile?->penilaianAkhir?->nilai_akhir ?? 0;
+                                  }
+
+                                  // ================= PKL SISWA =================
+                                  if ($s->pengajuan_type === \App\Models\PengajuanPklmagang::class) {
+                                      $progress = $s->pengajuan
+                                          ?->siswa
+                                          ?->first()
+                                          ?->siswaProfile
+                                          ?->penilaianAkhir
+                                          ?->nilai_akhir ?? 0;
+                                  }
+                              @endphp
+
+                              <td class="text-center
+                                  @if($progress < 60) text-danger
+                                  @elseif($progress < 80) text-warning
                                   @else text-success
                                   @endif
                                   fw-semibold">
-                                {{ $s->pengajuan->progress ?? 0 }}%
+                                  {{ number_format($progress, 0) }}%
                               </td>
+
+
                               <td class="text-center">
                 <!-- Tombol Detail -->
                 <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detailModal{{ $s->id }}">

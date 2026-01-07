@@ -10,15 +10,28 @@ use App\Models\SiswaProfile;
 use App\Models\PengajuanPklSiswa;
 use App\Models\PengajuanMagangMahasiswa;
 use App\Models\Sertifikat;
+use App\Models\Pembimbing;
 use PDF;
 
 class PembimbingSertifikatController extends Controller
 {
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $perPage = $request->per_page ?? 10;
         $search  = $request->search;
 
+        /** ================= PEMBIMBING LOGIN ================= */
+        $pembimbing = Pembimbing::where('user_id', auth()->id())
+            ->where('is_active', 1)
+            ->whereNull('deleted_date')
+            ->firstOrFail();
+
+        /** ================= SERTIFIKAT (HANYA BIMBINGAN) ================= */
         $sertifikat = Sertifikat::with('siswa.user')
+            ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pembimbing) {
+                $q->where('pembimbing.id', $pembimbing->id)
+                  ->where('pembimbing.is_active', 1);
+            })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->whereHas('siswa', function ($qs) use ($search) {
@@ -31,78 +44,111 @@ class PembimbingSertifikatController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        // hanya siswa yang BELUM punya sertifikat
+        /** ================= SISWA TANPA SERTIFIKAT (BIMBINGAN) ================= */
         $siswa = SiswaProfile::whereDoesntHave('sertifikat')
+            ->whereHas('pengajuan.pembimbing', function ($q) use ($pembimbing) {
+                $q->where('pembimbing.id', $pembimbing->id)
+                  ->where('pembimbing.is_active', 1);
+            })
             ->orderBy('nama')
             ->get();
 
         return view('pembimbing.sertifikat.index', compact('sertifikat', 'siswa'));
     }
 
-    public function create() {
+    public function create()
+    {
+        $pembimbing = Pembimbing::where('user_id', auth()->id())
+            ->where('is_active', 1)
+            ->whereNull('deleted_date')
+            ->firstOrFail();
+
         $siswa = SiswaProfile::whereHas('penilaianAkhir', function ($q) {
                 $q->whereNotNull('nilai_akhir');
             })
             ->whereDoesntHave('sertifikat')
+            ->whereHas('pengajuan.pembimbing', function ($q) use ($pembimbing) {
+                $q->where('pembimbing.id', $pembimbing->id)
+                  ->where('pembimbing.is_active', 1);
+            })
             ->orderBy('nama')
             ->get();
 
         return view('pembimbing.sertifikat.create', compact('siswa'));
     }
 
-    public function show($id) {
-        $sertifikat = Sertifikat::with('siswa.user')->findOrFail($id);
+    public function show($id)
+    {
+        $pembimbing = Pembimbing::where('user_id', auth()->id())
+            ->where('is_active', 1)
+            ->whereNull('deleted_date')
+            ->firstOrFail();
+
+        $sertifikat = Sertifikat::with('siswa.user')
+            ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pembimbing) {
+                $q->where('pembimbing.id', $pembimbing->id);
+            })
+            ->findOrFail($id);
 
         return view('pembimbing.sertifikat.show', compact('sertifikat'));
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $request->validate([
             'siswa_id' => 'required|exists:siswa_profile,id',
             'judul'    => 'nullable|string|max:255',
         ]);
 
-        $siswa = SiswaProfile::with('user')->findOrFail($request->siswa_id);
+        /** ================= PEMBIMBING LOGIN ================= */
+        $pembimbing = Pembimbing::where('user_id', auth()->id())
+            ->where('is_active', 1)
+            ->whereNull('deleted_date')
+            ->firstOrFail();
 
-        /**
-         *  CEGAH DUPLIKASI SERTIFIKAT (BACKEND)
-         * Walaupun UI sudah disaring
-         */
-        $alreadyHasCertificate = Sertifikat::where('siswa_id', $siswa->id)->exists();
+        $siswa = SiswaProfile::with(['user', 'pengajuan.pembimbing'])
+            ->findOrFail($request->siswa_id);
 
-        if ($alreadyHasCertificate) {
-            return redirect()
-                ->back()
-                ->withErrors([
-                    'siswa_id' => 'Sertifikat untuk peserta ini sudah diterbitkan.'
-                ])
-                ->withInput();
+        /** ================= VALIDASI KEPEMILIKAN ================= */
+        $isBimbingan = $siswa->pengajuan
+            ? $siswa->pengajuan->pembimbing
+                ->where('id', $pembimbing->id)
+                ->where('is_active', 1)
+                ->count() > 0
+            : false;
+
+        if (!$isBimbingan) {
+            abort(403, 'Anda tidak berhak menerbitkan sertifikat untuk peserta ini.');
+        }
+
+        /** ================= CEGAH DUPLIKASI ================= */
+        if (Sertifikat::where('siswa_id', $siswa->id)->exists()) {
+            return back()->withErrors([
+                'siswa_id' => 'Sertifikat untuk peserta ini sudah diterbitkan.'
+            ]);
         }
 
         $role = $siswa->user->role_id;
 
-        /**
-         *  Tentukan jenis & pengajuan berdasarkan role
-         */
+        /** ================= AMBIL PENGAJUAN ================= */
         if ($role == 4) {
-    // PKL (SISWA)
-    $jenis = 'PKL';
+            // PKL
+            $jenis = 'PKL';
 
-    // Ambil pengajuan siswa, jika ada
-    $pengajuanSiswa = PengajuanPklSiswa::where('siswa_id', $siswa->id)
-        ->with('pengajuan')
-        ->first();
+            $pengajuanSiswa = PengajuanPklSiswa::where('siswa_id', $siswa->id)
+                ->with('pengajuan')
+                ->first();
 
-    if (!$pengajuanSiswa || !$pengajuanSiswa->pengajuan) {
-        return redirect()->back()->withErrors([
-            'siswa_id' => 'Data pengajuan PKL untuk siswa ini belum tersedia.'
-        ])->withInput();
-    }
+            if (!$pengajuanSiswa || !$pengajuanSiswa->pengajuan) {
+                return back()->withErrors([
+                    'siswa_id' => 'Data pengajuan PKL belum tersedia.'
+                ]);
+            }
 
-    $pengajuan = $pengajuanSiswa->pengajuan;
+            $pengajuan = $pengajuanSiswa->pengajuan;
 
         } elseif ($role == 5) {
-            // MAGANG (MAHASISWA)
+            // MAGANG
             $jenis = 'MAGANG';
 
             $pengajuan = PengajuanMagangMahasiswa::where('user_id', $siswa->user_id)
@@ -113,12 +159,10 @@ class PembimbingSertifikatController extends Controller
 
         return DB::transaction(function () use ($request, $siswa, $pengajuan, $jenis) {
 
-            $tahun         = date('Y');
-            $kodeInstansi  = 'DKIS-KC';
+            $tahun        = date('Y');
+            $kodeInstansi = 'DKIS-KC';
 
-            /**
-             *  Nomor Sertifikat (urut per jenis per tahun)
-             */
+            /** ================= NOMOR SERTIFIKAT ================= */
             $last = Sertifikat::where('nomor_sertifikat', 'like', "%/{$jenis}/%")
                 ->whereYear('created_at', $tahun)
                 ->latest()
@@ -130,9 +174,7 @@ class PembimbingSertifikatController extends Controller
 
             $nomorSertifikat = "{$urut}/{$jenis}/{$kodeInstansi}/{$tahun}";
 
-            /**
-             *  Nomor Surat
-             */
+            /** ================= NOMOR SURAT ================= */
             $lastSurat = Sertifikat::whereYear('created_at', $tahun)->latest()->first();
             $noSurat   = $lastSurat
                 ? (int) explode('/', $lastSurat->nomor_surat)[1] + 1
@@ -140,28 +182,19 @@ class PembimbingSertifikatController extends Controller
 
             $nomorSurat = "800/{$noSurat}/DKIS/{$tahun}";
 
-            /**
-             *  QR Token
-             */
-            $qrToken = Str::uuid();
-
-            /**
-             *  Simpan Sertifikat (tanpa PDF dulu)
-             */
+            /** ================= SIMPAN ================= */
             $sertifikat = Sertifikat::create([
-                'siswa_id'        => $siswa->id,
-                'nomor_sertifikat'=> $nomorSertifikat,
-                'nomor_surat'     => $nomorSurat,
-                'judul'           => $request->judul ?? 'Sertifikat Penyelesaian',
-                'periode_mulai'   => $pengajuan->periode_mulai,
-                'periode_selesai' => $pengajuan->periode_selesai,
-                'tanggal_terbit'  => now(),
-                'qr_token'        => $qrToken,
+                'siswa_id'         => $siswa->id,
+                'nomor_sertifikat' => $nomorSertifikat,
+                'nomor_surat'      => $nomorSurat,
+                'judul'            => $request->judul ?? 'Sertifikat Penyelesaian',
+                'periode_mulai'    => $pengajuan->periode_mulai,
+                'periode_selesai'  => $pengajuan->periode_selesai,
+                'tanggal_terbit'   => now(),
+                'qr_token'         => Str::uuid(),
             ]);
 
-            /**
-             *  Generate PDF
-             */
+            /** ================= GENERATE PDF ================= */
             $pdf = PDF::loadView('sertifikat.pdf', compact('sertifikat'));
 
             $filename = 'sertifikat_' . $sertifikat->id . '.pdf';
@@ -175,8 +208,7 @@ class PembimbingSertifikatController extends Controller
 
             return redirect()
                 ->route('pembimbing.sertifikat.index')
-                ->with('success', 'Sertifikat berhasil diterbitkan');
+                ->with('success', 'Sertifikat berhasil diterbitkan.');
         });
     }
-
 }
