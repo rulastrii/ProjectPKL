@@ -11,45 +11,45 @@
               <div class="col-12">
                 <div class="row row-cards align-items-stretch">
                   @if($pembimbing)
-<div class="col-12 mb-3">
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
+                  <div class="col-12 mb-3">
+                      <div class="card border-0 shadow-sm">
+                          <div class="card-body">
 
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <span class="avatar bg-info text-white">
-                    <i class="ti ti-user"></i>
-                </span>
-                <div>
-                    <div class="fw-bold fs-5">Pembimbing Magang</div>
-                    <div class="text-secondary">
-                        {{ $pembimbing->pegawai->nama ?? '-' }} ( {{ $pembimbing->pegawai->nip ?? '-' }} )
-                    </div>
-                </div>
-            </div>
+                              <div class="d-flex align-items-center gap-3 mb-3">
+                                  <span class="avatar bg-info text-white">
+                                      <i class="ti ti-user"></i>
+                                  </span>
+                                  <div>
+                                      <div class="fw-bold fs-5">Pembimbing Magang</div>
+                                      <div class="text-secondary">
+                                          {{ $pembimbing->pegawai->nama ?? '-' }} ( {{ $pembimbing->pegawai->nip ?? '-' }} )
+                                      </div>
+                                  </div>
+                              </div>
 
-            <div class="row g-2 text-sm">
+                              <div class="row g-2 text-sm">
 
-                <div class="col-md-4">
-                    <strong>Jabatan</strong><br>
-                    {{ $pembimbing->pegawai->jabatan ?? '-' }}
-                </div>
+                                  <div class="col-md-4">
+                                      <strong>Jabatan</strong><br>
+                                      {{ $pembimbing->pegawai->jabatan ?? '-' }}
+                                  </div>
 
-                <div class="col-md-4">
-                    <strong>Email</strong><br>
-                    {{ $pembimbing->user->email ?? '-' }}
-                </div>
+                                  <div class="col-md-4">
+                                      <strong>Email</strong><br>
+                                      {{ $pembimbing->user->email ?? '-' }}
+                                  </div>
 
-                <div class="col-md-4">
-                    <strong>Bidang</strong><br>
-                    {{ $penempatan?->bidang?->nama ?? '-' }}
-                </div>
+                                  <div class="col-md-4">
+                                      <strong>Bidang</strong><br>
+                                      {{ $penempatan?->bidang?->nama ?? '-' }}
+                                  </div>
 
-            </div>
+                              </div>
 
-        </div>
-    </div>
-</div>
-@endif
+                          </div>
+                      </div>
+                  </div>
+                  @endif
 
                   <div class="col-4">
                       <div class="card card-sm h-100">
@@ -82,86 +82,86 @@
 
 
                   <div class="col-4">
-  <div class="card card-sm h-100">
-    <div class="card-body">
-      <div class="row align-items-center">
-        <div class="col-auto">
-          <span class="bg-green text-white avatar">
-            <i class="ti ti-list-check fs-1"></i>
-          </span>
-        </div>
-        <div class="col">
-          <div class="font-weight-medium">{{ $jumlahLaporanHariIni ?? 0 }}</div>
-          <div class="text-secondary">Jumlah Laporan Harian Dibuat Hari Ini</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                    <div class="card card-sm h-100">
+                      <div class="card-body">
+                        <div class="row align-items-center">
+                          <div class="col-auto">
+                            <span class="bg-green text-white avatar">
+                              <i class="ti ti-list-check fs-1"></i>
+                            </span>
+                          </div>
+                          <div class="col">
+                            <div class="font-weight-medium">{{ $jumlahLaporanHariIni ?? 0 }}</div>
+                            <div class="text-secondary">Jumlah Laporan Harian Dibuat Hari Ini</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
 
-                  <div class="col-4">
-  <div class="card card-sm h-100">
-    <div class="card-body">
-      <div class="row align-items-center">
-        <div class="col-auto">
-          <span class="bg-danger text-white avatar">
-            <i class="ti ti-alert-triangle fs-1"></i>
-          </span>
-        </div>
-        <div class="col">
-          <div class="font-weight-medium">{{ $jumlahTugasPending }}</div>
-          <div class="text-secondary">Jumlah Tugas Pending</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                                    <div class="col-4">
+                    <div class="card card-sm h-100">
+                      <div class="card-body">
+                        <div class="row align-items-center">
+                          <div class="col-auto">
+                            <span class="bg-danger text-white avatar">
+                              <i class="ti ti-alert-triangle fs-1"></i>
+                            </span>
+                          </div>
+                          <div class="col">
+                            <div class="font-weight-medium">{{ $jumlahTugasPending }}</div>
+                            <div class="text-secondary">Jumlah Tugas Pending</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
 
-                </div>
-              </div>
-             <div class="col-md-6 col-lg-12">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Progress Magang</h3>
-                </div>
-                <div class="card-body">
+                                  </div>
+                                </div>
+                              <div class="col-md-6 col-lg-12">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h3 class="card-title">Progress Magang</h3>
+                                  </div>
+                                  <div class="card-body">
 
-                  <!-- Presensi -->
-<div class="mb-3">
-    <div class="d-flex justify-content-between">
-        <span>Presensi</span>
-        <span>{{ $jumlahPresensi }}/{{ $totalHariMagang }} hari ({{ $prosentasePresensi }}%)</span>
-    </div>
-    <div class="progress" style="height:10px;">
-        <div class="progress-bar bg-primary" style="width:{{ $prosentasePresensi }}%;"></div>
-    </div>
-</div>
+                                    <!-- Presensi -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Presensi</span>
+                            <span>{{ $jumlahPresensi }}/{{ $totalHariMagang }} hari ({{ $prosentasePresensi }}%)</span>
+                        </div>
+                        <div class="progress" style="height:10px;">
+                            <div class="progress-bar bg-primary" style="width:{{ $prosentasePresensi }}%;"></div>
+                        </div>
+                    </div>
 
-<!-- Laporan Harian -->
-<div class="mb-3">
-  <div class="d-flex justify-content-between">
-    <span>Laporan Harian</span>
-    <span>{{ $jumlahLaporanHariIni }}/{{ $totalHariMagang }} hari ({{ $totalHariMagang > 0 ? round(($jumlahLaporanHariIni / $totalHariMagang) * 100) : 0 }}%)</span>
-  </div>
-  <div class="progress" style="height:10px;">
-    <div class="progress-bar bg-success" style="width:{{ $totalHariMagang > 0 ? round(($jumlahLaporanHariIni / $totalHariMagang) * 100) : 0 }}%;"></div>
-  </div>
-</div>
+                  <!-- Laporan Harian -->
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                      <span>Laporan Harian</span>
+                      <span>{{ $jumlahLaporanHariIni }}/{{ $totalHariMagang }} hari ({{ $totalHariMagang > 0 ? round(($jumlahLaporanHariIni / $totalHariMagang) * 100) : 0 }}%)</span>
+                    </div>
+                    <div class="progress" style="height:10px;">
+                      <div class="progress-bar bg-success" style="width:{{ $totalHariMagang > 0 ? round(($jumlahLaporanHariIni / $totalHariMagang) * 100) : 0 }}%;"></div>
+                    </div>
+                  </div>
 
 
 
                   <!-- Tugas -->
                   <div class="mb-3">
-  <div class="d-flex justify-content-between">
-    <span>Tugas</span>
-    <span>{{ $tugasSelesai }}/{{ $totalTugas }} selesai ({{ $prosentaseTugas }}%)</span>
-  </div>
-  <div class="progress" style="height:10px;">
-    <div class="progress-bar bg-warning" style="width:{{ $prosentaseTugas }}%;"></div>
-  </div>
-</div>
+                    <div class="d-flex justify-content-between">
+                      <span>Tugas</span>
+                      <span>{{ $tugasSelesai }}/{{ $totalTugas }} selesai ({{ $prosentaseTugas }}%)</span>
+                    </div>
+                    <div class="progress" style="height:10px;">
+                      <div class="progress-bar bg-warning" style="width:{{ $prosentaseTugas }}%;"></div>
+                    </div>
+                  </div>
 
 
                 </div>

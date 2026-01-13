@@ -11,7 +11,7 @@ use App\Notifications\AdminGuruStatusNotification;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\PengajuanMagangMahasiswa;
-use App\Models\ProfileGuru;
+use App\Models\GuruProfile;
 
 class UserController extends Controller
 {
@@ -88,6 +88,25 @@ class UserController extends Controller
             'is_active'    => true,
         ]);
 
+        // ==================================
+        // Buat GuruProfile otomatis jika role = Guru (role_id = 3)
+        // ==================================
+        if ($user->role_id == 3) {
+
+    // email dianggap valid karena dibuat admin
+    $user->update([
+        'email_verified_at' => now(),
+    ]);
+
+    GuruProfile::create([
+        'user_id'           => $user->id,
+        'sekolah'           => '-',
+        'status_verifikasi' => 'approved',
+        'verified_by'       => Auth::id(),
+        'verified_at'       => now(),
+    ]);
+}
+
         // HUBUNGKAN DENGAN PENGAJUAN MAGANG (JIKA ADA)
         PengajuanMagangMahasiswa::where('email_mahasiswa', $user->email)
             ->where('status', 'diterima')
@@ -101,7 +120,7 @@ class UserController extends Controller
         // ==========================
 
         // ROLE YANG PASSWORD-NYA DIKIRIM VIA EMAIL
-        $rolesWithPassword = [2, 4, 5];
+        $rolesWithPassword = [2, 3, 4, 5];
         // 4 = PKL
         // 5 = Magang
         // 2 = Pembimbing (sesuaikan jika beda)
@@ -188,49 +207,51 @@ class UserController extends Controller
         return back()->with('success', 'Email verifikasi berhasil dikirim.');
     }
 
-    public function approveGuru(User $user) {
-        DB::transaction(function () use ($user) {
-            // Aktifkan akun user
-            $user->is_active = true;
-            $user->save();
+    public function approveGuru(User $user)
+{
+    DB::transaction(function () use ($user) {
 
-            // Aktifkan profile guru
-            $profile = ProfileGuru::where('user_id', $user->id)->first();
-            if ($profile) {
-                $profile->is_active = true;
-                $profile->save();
-            }
-        });
-
-        $user->notify(new AdminGuruStatusNotification('approved'));
-
-        return back()->with('success', 'Guru telah di-approve dan notifikasi email dikirim.');
-    }
-
-    public function rejectGuru(Request $request, User $user) {
-        $request->validate([
-            'reason' => 'required|string|max:255',
+        $user->update([
+            'is_active' => true,
         ]);
 
-        DB::transaction(function () use ($user, $request) {
-            // Nonaktifkan akun user dan simpan alasan
-            $user->update([
-                'is_active'     => false,
-                'reject_reason' => $request->reason,
-            ]);
+        $user->guruProfile()->update([
+            'status_verifikasi' => 'approved',
+            'verified_by'       => Auth::id(),
+            'verified_at'       => now(),
+        ]);
+    });
 
-            // Nonaktifkan profile guru jika ada
-            $profile = ProfileGuru::where('user_id', $user->id)->first();
-            if ($profile) {
-                $profile->is_active = false;
-                $profile->save();
-            }
-        });
+    $user->notify(new AdminGuruStatusNotification('approved'));
 
-        $user->notify(new AdminGuruStatusNotification('rejected', $request->reason));
+    return back()->with('success', 'Guru telah di-approve dan notifikasi email dikirim.');
+}
 
-        return back()->with('success', 'Guru ditolak dan notifikasi email dikirim.');
-    }
+
+    public function rejectGuru(Request $request, User $user)
+{
+    $request->validate([
+        'reason' => 'required|string|max:255',
+    ]);
+
+    DB::transaction(function () use ($user, $request) {
+
+        $user->update([
+            'is_active' => false,
+        ]);
+
+        $user->guruProfile()->update([
+            'status_verifikasi' => 'rejected',
+            'verified_by'       => Auth::id(),
+            'verified_at'       => now(),
+        ]);
+    });
+
+    $user->notify(new AdminGuruStatusNotification('rejected', $request->reason));
+
+    return back()->with('success', 'Guru ditolak dan notifikasi email dikirim.');
+}
+
 
     public function showChangePasswordForm() {
         return view('auth.change-password');

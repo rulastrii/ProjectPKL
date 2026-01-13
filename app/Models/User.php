@@ -54,6 +54,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(SiswaProfile::class,'user_id');
     }
 
+    public function guruProfile()
+{
+    return $this->hasOne(GuruProfile::class, 'user_id');
+}
+
+public function isGuru(): bool
+{
+    return $this->role_id == 3;
+}
+
+
+
     public function creator() {
         return $this->belongsTo(User::class, 'created_id');
     }

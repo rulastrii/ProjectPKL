@@ -49,14 +49,17 @@
                                 <label class="form-label fw-bold">User Pembuat</label>
                                 <div class="text-body">
                                     @if($user->creator)
-                                        <strong>{{ $user->creator->name }}</strong> – 
+                                        <strong>{{ $user->creator->name }}</strong> –
                                         Sebagai <strong>{{ strtoupper($user->creator->role->name ?? '-') }}</strong><br>
-                                        <span class="text-body">{{ $user->creator->email }}</span>
+                                        <span class="text-muted">{{ $user->creator->email }}</span>
                                     @else
-                                        -
+                                        <span class="badge text-secondary">
+                                            Daftar Mandiri (Guru)
+                                        </span>
                                     @endif
                                 </div>
                             </div>
+
 
                             <!-- User Pengubah -->
                             <div class="col-md-6">

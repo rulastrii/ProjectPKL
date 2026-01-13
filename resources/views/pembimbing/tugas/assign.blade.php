@@ -16,19 +16,48 @@
                     <p class="text-muted mb-3">Pilih peserta yang akan ditugaskan ke tugas ini.</p>
 
                     <div class="mb-3">
-                        <label for="siswaSelect-{{ $t->id }}" class="form-label">Peserta</label>
-                        <select id="siswaSelect-{{ $t->id }}" name="siswa_id[]" multiple class="form-control" style="width:100%;">
-                            <optgroup label="PKL">
-                                @foreach($siswa->where('user.role_id', 4) as $s)
-                                    <option value="{{ $s->id }}">{{ $s->nama }}</option>
-                                @endforeach
-                            </optgroup>
-                            <optgroup label="Magang">
-                                @foreach($siswa->where('user.role_id', '!=', 4) as $s)
-                                    <option value="{{ $s->id }}">{{ $s->nama }}</option>
-                                @endforeach
-                            </optgroup>
-                        </select>
+                       @php
+    // PKL dari sekolah (via pengajuan_pkl_siswa)
+    $siswaPkl = $siswa->filter(function ($s) {
+        return $s->pklSekolah !== null;
+    });
+
+    // Magang mahasiswa
+    $siswaMagang = $siswa->filter(function ($s) {
+        return !is_null($s->pengajuan_id);
+    });
+@endphp
+
+
+<select id="siswaSelect-{{ $t->id }}"
+        name="siswa_id[]"
+        multiple
+        class="form-control"
+        style="width:100%;">
+
+    <optgroup label="PKL">
+        @forelse($siswaPkl as $s)
+            <option value="{{ $s->id }}">
+                {{ $s->nama }}
+            </option>
+        @empty
+            <option disabled>Tidak ada peserta PKL</option>
+        @endforelse
+    </optgroup>
+
+    <optgroup label="Magang">
+        @forelse($siswaMagang as $s)
+            <option value="{{ $s->id }}">
+                {{ $s->nama }}
+            </option>
+        @empty
+            <option disabled>Tidak ada peserta Magang</option>
+        @endforelse
+    </optgroup>
+
+</select>
+
+
                     </div>
 
                 </div>

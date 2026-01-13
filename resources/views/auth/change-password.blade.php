@@ -5,7 +5,7 @@
 @section('content')
 <div class="card card-md mx-auto" style="max-width: 480px;">
     <div class="card-body">
-        <h2 class="h2 text-center mb-4">Ganti Password</h2>
+        <h2 class="h2 text-center mb-4">Change Password</h2>
 
         @if(session('info'))
             <div class="alert alert-info">{{ session('info') }}</div>

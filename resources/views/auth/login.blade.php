@@ -73,7 +73,7 @@
     <a href="{{ route('register') }}">Daftar Guru</a>
     <div class="small mt-1">
         <span class="text-success">
-            ✔ Data guru divalidasi melalui sistem simulasi
+            ✔ Data guru akan diverifikasi oleh admin sebelum akun diaktifkan
         </span>
     </div>
 </div>

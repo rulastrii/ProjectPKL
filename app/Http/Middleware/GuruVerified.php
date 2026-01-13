@@ -4,34 +4,28 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\ProfileGuru;
 
 class GuruVerified
 {
-    public function handle(Request $request, Closure $next) {
+    public function handle(Request $request, Closure $next)
+    {
         $user = auth()->user();
 
-        if (!$user) {
-            return redirect()->route('login');
-        }
-
-        // Harus role guru
-        if ($user->role_id != 3) {
+        // bukan guru
+        if (! $user || ! $user->isGuru()) {
             abort(403);
         }
 
-        // Cek profile guru
-        $profile = ProfileGuru::where('user_id', $user->id)
-            ->where('is_active', true)
-            ->whereNull('deleted_date')
-            ->first();
-
-        if (!$profile) {
+        // belum diverifikasi admin
+        if (
+            ! $user->guruProfile ||
+            $user->guruProfile->status_verifikasi !== 'approved' ||
+            ! $user->is_active
+        ) {
             return redirect()->route('login')
-                ->with('error', 'Akun guru belum terverifikasi');
+                ->with('error', 'Akun guru belum diverifikasi oleh admin.');
         }
 
         return $next($request);
     }
-
 }

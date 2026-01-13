@@ -12,21 +12,41 @@ use App\Models\PengajuanPklSiswa;
 class SiswaProfileController extends Controller
 {
     /**
+     * Ambil pengajuan PKL (mandiri / sekolah)
+     */
+    private function resolvePengajuan($user)
+    {
+        // 1. PKL mandiri (login siswa)
+        $pengajuan = PengajuanPklmagang::where('user_id', $user->id)->first();
+        if ($pengajuan) {
+            return $pengajuan;
+        }
+
+        // 2. PKL sekolah (diajukan guru)
+        $pengajuanSiswa = PengajuanPklSiswa::where('email_siswa', $user->email)
+            ->whereIn('status', ['diterima', 'diproses'])
+            ->first();
+
+        if ($pengajuanSiswa) {
+            return PengajuanPklmagang::find($pengajuanSiswa->pengajuan_id);
+        }
+
+        return null;
+    }
+
+    /**
      * Tampilkan profile siswa PKL
      */
     public function index()
     {
         $user = Auth::user();
 
-        // Pastikan role PKL
         if ($user->role_id != 4) {
             abort(403, 'Akses hanya untuk siswa PKL.');
         }
 
-        // Ambil pengajuan PKL yang terkait user ini
-        $pengajuan = PengajuanPklmagang::where('user_id', $user->id)->first();
+        $pengajuan = $this->resolvePengajuan($user);
 
-        // Ambil atau buat profile
         $profile = SiswaProfile::firstOrCreate(
             ['user_id' => $user->id],
             [
@@ -34,23 +54,29 @@ class SiswaProfileController extends Controller
                 'nama'            => '',
                 'nisn'            => '',
                 'kelas'           => '',
-                'jurusan'         => $pengajuan?->jurusan ?? '',
+                'jurusan'         => '',
                 'foto'            => '',
                 'is_active'       => true,
                 'created_date'    => now(),
-                'created_id'      => $user->id
+                'created_id'      => $user->id,
             ]
         );
 
-        // Pastikan siswa_id di pengajuan_pkl_siswa terisi
+        // Sinkron siswa_id ke pengajuan_pkl_siswa
         if ($pengajuan) {
-            $pengajuanSiswa = PengajuanPklSiswa::where('email_siswa', $user->email)
-                ->whereNull('siswa_id')
+            $pengajuanSiswa = PengajuanPklSiswa::where('pengajuan_id', $pengajuan->id)
+                ->where('email_siswa', $user->email)
                 ->first();
 
-            if ($pengajuanSiswa) {
+            if ($pengajuanSiswa && $pengajuanSiswa->siswa_id !== $profile->id) {
                 $pengajuanSiswa->siswa_id = $profile->id;
                 $pengajuanSiswa->save();
+            }
+
+            // pastikan pengajuanpkl_id tersimpan
+            if ($profile->pengajuanpkl_id !== $pengajuan->id) {
+                $profile->pengajuanpkl_id = $pengajuan->id;
+                $profile->save();
             }
         }
 
@@ -61,7 +87,7 @@ class SiswaProfileController extends Controller
     }
 
     /**
-     * Update profile siswa PKL + optional password
+     * Update profile siswa PKL + password opsional
      */
     public function update(Request $request)
     {
@@ -71,7 +97,7 @@ class SiswaProfileController extends Controller
             abort(403, 'Akses hanya untuk siswa PKL.');
         }
 
-        $pengajuan = PengajuanPklmagang::where('user_id', $user->id)->first();
+        $pengajuan = $this->resolvePengajuan($user);
 
         $profile = SiswaProfile::firstOrCreate(
             ['user_id' => $user->id],
@@ -82,7 +108,6 @@ class SiswaProfileController extends Controller
             ]
         );
 
-        // Validasi input + password opsional
         $validated = $request->validate([
             'nama'             => 'required|string|max:255',
             'nisn'             => 'required|string|max:50',
@@ -93,40 +118,41 @@ class SiswaProfileController extends Controller
             'current_password' => 'nullable|required_with:password|string',
         ]);
 
-        // Handle upload foto
+        // Upload foto
         if ($request->hasFile('foto')) {
-            if ($profile->foto && file_exists(public_path('uploads/foto_siswa/'.$profile->foto))) {
-                unlink(public_path('uploads/foto_siswa/'.$profile->foto));
+            if ($profile->foto && file_exists(public_path('uploads/foto_siswa/' . $profile->foto))) {
+                unlink(public_path('uploads/foto_siswa/' . $profile->foto));
             }
 
             $file = $request->file('foto');
-            $filename = 'foto_'.$profile->id.'_'.time().'.'.$file->getClientOriginalExtension();
+            $filename = 'foto_' . $profile->id . '_' . time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/foto_siswa'), $filename);
             $validated['foto'] = $filename;
         }
 
-        // Update profile
         $validated['pengajuanpkl_id'] = $pengajuan?->id;
         $validated['updated_date'] = now();
-        $validated['updated_id']   = $user->id;
+        $validated['updated_id'] = $user->id;
         $profile->update($validated);
 
-        // Pastikan siswa_id di pengajuan_pkl_siswa tetap sinkron
+        // Sinkron siswa_id
         if ($pengajuan) {
-            $pengajuanSiswa = PengajuanPklSiswa::where('email_siswa', $user->email)
-                ->whereNull('siswa_id')
+            $pengajuanSiswa = PengajuanPklSiswa::where('pengajuan_id', $pengajuan->id)
+                ->where('email_siswa', $user->email)
                 ->first();
 
-            if ($pengajuanSiswa) {
+            if ($pengajuanSiswa && $pengajuanSiswa->siswa_id !== $profile->id) {
                 $pengajuanSiswa->siswa_id = $profile->id;
                 $pengajuanSiswa->save();
             }
         }
 
-        // Update password jika diisi
+        // Update password
         if (!empty($request->password)) {
             if (!password_verify($request->current_password, $user->password)) {
-                return redirect()->back()->withErrors(['current_password' => 'Password lama salah.']);
+                return redirect()->back()->withErrors([
+                    'current_password' => 'Password lama salah.'
+                ]);
             }
 
             $user->password = $request->password;

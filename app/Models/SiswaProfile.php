@@ -113,6 +113,15 @@ public function pembimbingMahasiswa()
         ->where('is_active', 1);
 }
 
+public function pklSekolah()
+{
+    return $this->hasOne(
+        \App\Models\PengajuanPklSiswa::class,
+        'siswa_id',
+        'id'
+    )->where('status', 'diterima');
+}
+
 
 public function pengajuanpkl() { 
     return $this->belongsTo(PengajuanPklmagang::class, 'pengajuanpkl_id'); 

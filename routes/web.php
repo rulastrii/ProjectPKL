@@ -32,6 +32,7 @@ use App\Http\Controllers\Pembimbing\PembimbingSertifikatController;
 
 use App\Http\Controllers\Guru\PengajuanPklController as GuruPengajuanController;
 use App\Http\Controllers\Guru\SiswaPklController as SiswaPklController;
+use App\Http\Controllers\Guru\GuruProfileController;
 
 use App\Http\Controllers\Siswa\SiswaProfileController;
 use App\Http\Controllers\Siswa\PresensiSiswaController;
@@ -82,11 +83,11 @@ use App\Http\Controllers\VerifikasiSertifikatController;
 
 Route::middleware('guest')->group(function () {
 
-    Route::get('/register', [RegisterGuruController::class, 'showForm'])->name('register');
+    Route::get('/register-guru', [RegisterGuruController::class, 'showForm'])
+        ->name('register');
 
-    Route::post('/register', [RegisterGuruController::class, 'register'])->name('register.store');
-
-    Route::post('/cek-guru', [RegisterGuruController::class, 'cekDataGuru'])->name('cek-guru');
+    Route::post('/register-guru', [RegisterGuruController::class, 'register'])
+        ->name('register.store');
 
 });
 
@@ -272,7 +273,7 @@ Route::middleware(['auth','role:4'])->prefix('siswa')->name('siswa.')->group(fun
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:3']) ->prefix('guru')->name('guru.')->group(function () {
+Route::middleware(['auth', 'role:3', 'guru_verified'])->prefix('guru')->name('guru.')->group(function () {
 
     Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
         Route::get('/', [GuruPengajuanController::class, 'index'])->name('index');
@@ -283,6 +284,14 @@ Route::middleware(['auth', 'role:3']) ->prefix('guru')->name('guru.')->group(fun
         Route::post('/{id}/submit', [GuruPengajuanController::class, 'submit'])->name('submit');
         Route::get('/{id}', [GuruPengajuanController::class, 'show'])->name('show');   
     });
+
+    Route::prefix('profile')->name('profile.')->middleware(['auth'])->group(function () {
+        Route::get('/', [GuruProfileController::class, 'index'])->name('index');
+        Route::put('/update', [GuruProfileController::class, 'update'])->name('update');
+        Route::post('/upload-dokumen', [GuruProfileController::class, 'uploadDokumen'])->name('uploadDokumen');
+    });
+
+
 
     Route::prefix('siswa')->name('siswa.')->group(function () {
         Route::get('/', [SiswaPklController::class, 'index'])->name('index');

@@ -63,6 +63,7 @@
          <td>{{ number_format($item->nilai_sikap,2) }}</td>
          <td>{{ number_format($item->nilai_akhir,2) }}</td>
          <td class="text-end">
+
     {{-- Detail --}}
     <a href="{{ route('pembimbing.penilaian-akhir.show', $item->id) }}"
        class="btn btn-info btn-sm me-1" title="Detail">
@@ -82,11 +83,13 @@
               title="Nilai terkunci karena sertifikat sudah diterbitkan">
             <i class="ti ti-lock"></i> Terkunci
         </span>
-        
-            {{-- Modal --}}
-            @include('pembimbing.penilaian-akhir.edit', ['item' => $item])
     @endif
+
 </td>
+
+{{-- MODAL HARUS DI LUAR IF --}}
+@include('pembimbing.penilaian-akhir.edit', ['item' => $item])
+
 
         </tr>
         @empty

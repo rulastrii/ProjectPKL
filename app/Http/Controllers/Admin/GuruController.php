@@ -4,37 +4,33 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\ProfileGuru;
+use App\Models\GuruProfile;
 
 class GuruController extends Controller
 {
-    /**
-     * List semua guru
-     */
     public function index(Request $request)
     {
         $perPage = $request->per_page ?? 10;
 
-        $gurus = ProfileGuru::active()
-            ->with('user')
-            ->when($request->search, function($q) use ($request) {
-                $q->where('nama_lengkap', 'like', '%'.$request->search.'%')
-                  ->orWhere('email_resmi', 'like', '%'.$request->search.'%')
-                  ->orWhere('nip', 'like', '%'.$request->search.'%');
+        $gurus = GuruProfile::with('user')
+            ->when($request->search, function ($q) use ($request) {
+                $q->where('sekolah', 'like', '%'.$request->search.'%')
+                  ->orWhere('nip', 'like', '%'.$request->search.'%')
+                  ->orWhereHas('user', function ($u) use ($request) {
+                      $u->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('email', 'like', '%'.$request->search.'%');
+                  });
             })
-            ->orderBy('nama_lengkap', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->withQueryString();
 
         return view('admin.guru.index', compact('gurus'));
     }
 
-    /**
-     * Detail guru
-     */
     public function show($id)
     {
-        $guru = ProfileGuru::with('user')->findOrFail($id);
+        $guru = GuruProfile::with('user')->findOrFail($id);
 
         return view('admin.guru.show', compact('guru'));
     }

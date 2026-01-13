@@ -28,30 +28,52 @@ class PembimbingSertifikatController extends Controller
 
         /** ================= SERTIFIKAT (HANYA BIMBINGAN) ================= */
         $sertifikat = Sertifikat::with('siswa.user')
-            ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pembimbing) {
-                $q->where('pembimbing.id', $pembimbing->id)
-                  ->where('pembimbing.is_active', 1);
+    ->whereHas('siswa', function ($qs) use ($pembimbing) {
+        $qs->where(function ($q) use ($pembimbing) {
+
+            // MAHASISWA
+            $q->whereHas('pembimbingMahasiswa', function ($pm) use ($pembimbing) {
+                $pm->where('pembimbing.id', $pembimbing->id);
+            });
+
+            // PKL
+            $q->orWhereHas('pembimbingPkl', function ($pp) use ($pembimbing) {
+                $pp->where('pembimbing.id', $pembimbing->id);
+            });
+
+        });
+    })
+    ->when($search, function ($query) use ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->whereHas('siswa', function ($qs) use ($search) {
+                $qs->where('nama', 'like', "%{$search}%");
             })
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->whereHas('siswa', function ($qs) use ($search) {
-                        $qs->where('nama', 'like', "%{$search}%");
-                    })
-                    ->orWhere('nomor_sertifikat', 'like', "%{$search}%");
-                });
-            })
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
+            ->orWhere('nomor_sertifikat', 'like', "%{$search}%");
+        });
+    })
+    ->latest()
+    ->paginate($perPage)
+    ->withQueryString();
+
 
         /** ================= SISWA TANPA SERTIFIKAT (BIMBINGAN) ================= */
         $siswa = SiswaProfile::whereDoesntHave('sertifikat')
-            ->whereHas('pengajuan.pembimbing', function ($q) use ($pembimbing) {
-                $q->where('pembimbing.id', $pembimbing->id)
-                  ->where('pembimbing.is_active', 1);
-            })
-            ->orderBy('nama')
-            ->get();
+    ->where(function ($q) use ($pembimbing) {
+
+        // MAHASISWA
+        $q->whereHas('pembimbingMahasiswa', function ($pm) use ($pembimbing) {
+            $pm->where('pembimbing.id', $pembimbing->id);
+        });
+
+        // PKL
+        $q->orWhereHas('pembimbingPkl', function ($pp) use ($pembimbing) {
+            $pp->where('pembimbing.id', $pembimbing->id);
+        });
+
+    })
+    ->orderBy('nama')
+    ->get();
+
 
         return view('pembimbing.sertifikat.index', compact('sertifikat', 'siswa'));
     }
@@ -64,15 +86,25 @@ class PembimbingSertifikatController extends Controller
             ->firstOrFail();
 
         $siswa = SiswaProfile::whereHas('penilaianAkhir', function ($q) {
-                $q->whereNotNull('nilai_akhir');
-            })
-            ->whereDoesntHave('sertifikat')
-            ->whereHas('pengajuan.pembimbing', function ($q) use ($pembimbing) {
-                $q->where('pembimbing.id', $pembimbing->id)
-                  ->where('pembimbing.is_active', 1);
-            })
-            ->orderBy('nama')
-            ->get();
+        $q->whereNotNull('nilai_akhir');
+    })
+    ->whereDoesntHave('sertifikat')
+    ->where(function ($q) use ($pembimbing) {
+
+        // MAHASISWA
+        $q->whereHas('pembimbingMahasiswa', function ($pm) use ($pembimbing) {
+            $pm->where('pembimbing.id', $pembimbing->id);
+        });
+
+        // PKL
+        $q->orWhereHas('pembimbingPkl', function ($pp) use ($pembimbing) {
+            $pp->where('pembimbing.id', $pembimbing->id);
+        });
+
+    })
+    ->orderBy('nama')
+    ->get();
+
 
         return view('pembimbing.sertifikat.create', compact('siswa'));
     }
@@ -85,13 +117,26 @@ class PembimbingSertifikatController extends Controller
             ->firstOrFail();
 
         $sertifikat = Sertifikat::with('siswa.user')
-            ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pembimbing) {
-                $q->where('pembimbing.id', $pembimbing->id);
+            ->whereHas('siswa', function ($qs) use ($pembimbing) {
+                $qs->where(function ($q) use ($pembimbing) {
+
+                    // MAHASISWA
+                    $q->whereHas('pembimbingMahasiswa', function ($pm) use ($pembimbing) {
+                        $pm->where('pembimbing.id', $pembimbing->id);
+                    });
+
+                    // PKL
+                    $q->orWhereHas('pembimbingPkl', function ($pp) use ($pembimbing) {
+                        $pp->where('pembimbing.id', $pembimbing->id);
+                    });
+
+                });
             })
             ->findOrFail($id);
 
         return view('pembimbing.sertifikat.show', compact('sertifikat'));
     }
+
 
     public function store(Request $request)
     {
@@ -110,16 +155,17 @@ class PembimbingSertifikatController extends Controller
             ->findOrFail($request->siswa_id);
 
         /** ================= VALIDASI KEPEMILIKAN ================= */
-        $isBimbingan = $siswa->pengajuan
-            ? $siswa->pengajuan->pembimbing
-                ->where('id', $pembimbing->id)
-                ->where('is_active', 1)
-                ->count() > 0
-            : false;
+        $isBimbingan =
+            ($siswa->pembimbingMahasiswa &&
+            $siswa->pembimbingMahasiswa->id == $pembimbing->id)
+            ||
+            ($siswa->pembimbingPkl &&
+            $siswa->pembimbingPkl->id == $pembimbing->id);
 
         if (!$isBimbingan) {
             abort(403, 'Anda tidak berhak menerbitkan sertifikat untuk peserta ini.');
         }
+
 
         /** ================= CEGAH DUPLIKASI ================= */
         if (Sertifikat::where('siswa_id', $siswa->id)->exists()) {

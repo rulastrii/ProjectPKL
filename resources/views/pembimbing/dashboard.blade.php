@@ -130,7 +130,7 @@
                       <table class="table card-table table-vcenter table-hover">
                         <thead class="sticky-top bg-white">
                           <tr>
-                            <th>Nama Siswa</th>
+                            <th>Nama Peserta</th>
                             <th>Sekolah</th>
                             <th>Periode PKL</th>
                             <th class="text-center">Progress</th>
@@ -140,7 +140,16 @@
                         <tbody>
                           @forelse($daftarSiswa as $s)
                             <tr style="cursor:pointer">
-                              <td>{{ $s->pengajuan->nama_mahasiswa ?? '-' }}</td>
+                              <td>
+    @if($s->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
+        {{ $s->pengajuan->nama_mahasiswa ?? '-' }}
+    @elseif($s->pengajuan_type === \App\Models\PengajuanPklmagang::class)
+        {{ $s->pengajuan->siswa->pluck('nama_siswa')->join(', ') ?? '-' }}
+    @else
+        -
+    @endif
+</td>
+
                               <td>{{ $s->pengajuan->sekolah->nama ?? $s->pengajuan->universitas ?? '-' }}</td>
                               <td>
                                   @if($s->pengajuan)

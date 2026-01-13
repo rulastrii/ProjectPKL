@@ -22,19 +22,30 @@ class PenilaianAkhirController extends Controller
             ->firstOrFail();
 
         /** ================= QUERY SISWA (HANYA BIMBINGAN) ================= */
-        $query = SiswaProfile::where('is_active', 1)
-            ->whereHas('pengajuan.pembimbing', function ($q) use ($pembimbingLogin) {
-                $q->where('pembimbing.id', $pembimbingLogin->id)
-                  ->where('pembimbing.is_active', 1);
-            })
-            ->with([
-                'tugasSubmit' => function ($q) {
-                    $q->where('status', 'sudah dinilai');
-                },
-                'laporan',
-                'penilaianAkhir',
-                'pengajuan'
-            ]);
+       $query = SiswaProfile::where('is_active', 1)
+    ->where(function ($q) use ($pembimbingLogin) {
+
+        // ================= MAHASISWA MAGANG =================
+        $q->whereHas('pembimbingMahasiswa', function ($pm) use ($pembimbingLogin) {
+            $pm->where('pembimbing.id', $pembimbingLogin->id);
+        });
+
+        // ================= SISWA PKL =================
+        $q->orWhereHas('pembimbingPkl', function ($pp) use ($pembimbingLogin) {
+            $pp->where('pembimbing.id', $pembimbingLogin->id);
+        });
+
+    })
+    ->with([
+        'tugasSubmit' => function ($q) {
+            $q->where('status', 'sudah dinilai');
+        },
+        'laporan',
+        'penilaianAkhir',
+        'pengajuan',
+        'pengajuanpkl',
+    ]);
+
 
         /** ================= SEARCH ================= */
         if ($search) {

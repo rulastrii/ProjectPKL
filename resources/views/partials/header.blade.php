@@ -56,6 +56,7 @@
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                 @php
     $profileRoute = match(auth()->user()->role_id) {
+        3 => route('guru.profile.index'),
         4 => route('siswa.profile.index'),
         5 => route('magang.profile.index'),
         default => '#',

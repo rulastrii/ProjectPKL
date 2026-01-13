@@ -92,79 +92,108 @@
            title="Belum Terverifikasi"></i>
     @endif
 </td>
-
-         <td>{{ $user->role->name ?? '-' }}</td>
+        <td>{{ $user->role->name ?? '-' }}</td>
         <td>
-    {!! $user->is_active 
-        ? '<span class="badge bg-success-soft text-success">Active</span>' 
-        : '<span class="badge bg-danger-soft text-danger">Inactive</span>' 
-    !!}
-</td>
+            @php
+                $statusBadge = '';
+                
+                // Khusus guru
+                if($user->role_id == 3 && $user->guruProfile && $user->guruProfile->status_verifikasi === 'rejected') {
+                    $statusBadge = '<span class="badge bg-danger-soft text-danger">Inactive (Ditolak)</span>';
+                } 
+                // Kalau user non-guru atau guru tapi bukan ditolak, pakai is_active
+                else {
+                    $statusBadge = $user->is_active
+                        ? '<span class="badge bg-success-soft text-success">Active</span>'
+                        : '<span class="badge bg-danger-soft text-danger">Inactive</span>';
+                }
+            @endphp
+
+            {!! $statusBadge !!}
+        </td>
+
          <td class="text-end">
 
-         {{-- Untuk Guru --}}
-@if($user->role_id == 3)
-    @if(!$user->is_active)
-        {{-- Form Approve Guru --}}
-        <form action="{{ route('admin.users.approve-guru', $user->id) }}" method="POST" class="d-inline">
-            @csrf
-            <button class="btn btn-outline-success btn-sm" title="Approve Guru">
-                <i class="ti ti-check"></i>
+            {{-- ======================= --}}
+            {{-- Untuk Guru (role_id = 3) --}}
+            {{-- ======================= --}}
+            @if($user->role_id == 3 && $user->guruProfile)
+                @php
+                    $statusGuru = $user->guruProfile->status_verifikasi;
+                @endphp
+
+                {{-- Jika status pending --}}
+                @if($statusGuru === 'pending')
+                    {{-- Form Approve Guru --}}
+                    <form action="{{ route('admin.users.approve-guru', $user->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button class="btn btn-outline-success btn-sm" title="Approve Guru">
+                            <i class="ti ti-check"></i>
+                        </button>
+                    </form>
+
+                    {{-- Form Reject Guru --}}
+                    <form action="{{ route('admin.users.reject-guru', $user->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        <input type="text" name="reason" placeholder="Alasan ditolak" class="form-control form-control-sm d-inline w-auto" required>
+                        <button class="btn btn-outline-danger btn-sm" title="Tolak Guru">
+                            <i class="ti ti-x"></i>
+                        </button>
+                    </form>
+                @endif
+            @endif
+
+            {{-- ===================================== --}}
+            {{-- Tombol Kirim Email Verifikasi --}}
+            {{-- Hanya muncul kalau email belum diverifikasi --}}
+            {{-- dan status guru tidak ditolak/rejected --}}
+            {{-- ===================================== --}}
+            @if(!$user->email_verified_at && (!$user->guruProfile || $user->guruProfile->status_verifikasi != 'rejected'))
+                <form action="{{ route('admin.users.sendVerify', $user->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button class="btn btn-outline-warning btn-sm" title="Kirim Email Verifikasi">
+                        <i class="ti ti-mail-forward"></i>
+                    </button>
+                </form>
+            @endif
+
+            {{-- ======================= --}}
+            {{-- Tombol Lainnya --}}
+            {{-- ======================= --}}
+            <!-- Show Button -->
+            <button 
+                type="button" 
+                class="btn btn-outline-info btn-sm me-1"
+                data-bs-toggle="modal"
+                data-bs-target="#modalShowUser-{{ $user->id }}"
+                title="View User">
+                <i class="ti ti-eye"></i>
             </button>
-        </form>
 
-        {{-- Form Reject Guru --}}
-        <form action="{{ route('admin.users.reject-guru', $user->id) }}" method="POST" class="d-inline">
-            @csrf
-            <input type="text" name="reason" placeholder="Alasan ditolak" class="form-control form-control-sm d-inline w-auto" required>
-            <button class="btn btn-outline-danger btn-sm" title="Tolak Guru">
-                <i class="ti ti-x"></i>
+            <!-- Edit Button -->
+            <button type="button" class="btn btn-outline-warning btn-sm me-1" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#modalEditUser-{{ $user->id }}" 
+                    title="Edit User">
+                <i class="ti ti-pencil"></i>
             </button>
-        </form>
-    @endif
 
-    @endif
-         @if(!$user->email_verified_at)
-    <form action="{{ route('admin.users.sendVerify', $user->id) }}" method="POST" class="d-inline">
-        @csrf
-        <button class="btn btn-outline-warning btn-sm" title="Kirim Email Verifikasi">
-            <i class="ti ti-mail-forward"></i>
-        </button>
-    </form>
-@endif
+            <!-- Delete Button -->
+            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" onclick="return confirm('Delete user?')" class="btn btn-outline-danger btn-sm" title="Delete User">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </form>
 
+        </td>
 
-          <!-- Show Button -->
-<button 
-    type="button" 
-    class="btn btn-outline-info btn-sm me-1"
-    data-bs-toggle="modal"
-    data-bs-target="#modalShowUser-{{ $user->id }}"
-    title="View User">
-    <i class="ti ti-eye"></i>
-</button>
-
-    <!-- Edit Button Outline (Trigger Modal) -->
-    <button type="button" class="btn btn-outline-warning btn-sm me-1" 
-            data-bs-toggle="modal" 
-            data-bs-target="#modalEditUser-{{ $user->id }}" 
-            title="Edit User">
-        <i class="ti ti-pencil"></i>
-    </button>
-
-    <!-- Delete Button Outline -->
-    <form action="{{ route('admin.users.destroy',$user->id) }}" method="POST" class="d-inline">
-        @csrf
-        @method('DELETE')
-        <button type="submit" onclick="return confirm('Delete user?')" class="btn btn-outline-danger btn-sm" title="Delete User">
-            <i class="ti ti-trash"></i>
-        </button>
-    </form>
-</td>
 
         </tr>
         @empty
-        <tr><td colspan="7" class="text-center">No users found</td></tr>
+        <tr>
+            <td colspan="7" class="text-center">No users found</td></tr>
         @endforelse
        </tbody>
 

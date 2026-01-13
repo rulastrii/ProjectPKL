@@ -53,7 +53,7 @@ class LoginController extends Controller
         Auth::login($user);
 
         // Cek apakah user harus ganti password
-        $rolesForceChange = [2,4,5]; // role yang wajib ganti password
+        $rolesForceChange = [2,3,4,5]; // role yang wajib ganti password
         if (in_array($user->role_id, $rolesForceChange) && $user->force_change_password) {
             return redirect()->route('auth.change-password')
                 ->with('info', 'Anda harus mengganti password terlebih dahulu.');
