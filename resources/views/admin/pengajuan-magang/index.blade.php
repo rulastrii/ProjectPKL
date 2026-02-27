@@ -110,9 +110,10 @@
   <form action="{{ route('admin.pengajuan-magang.approve', $p->id) }}"
         method="POST" class="d-inline">
     @csrf
-    <button class="btn btn-outline-success btn-sm" title="Terima Pengajuan">
+    <button class="btn btn-outline-success btn-sm" title="Terima Pengajuan & Kirim Surat Balasan">
       <i class="ti ti-check"></i>
     </button>
+
   </form>
 
   {{-- Reject --}}

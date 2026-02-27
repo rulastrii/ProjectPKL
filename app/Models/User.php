@@ -18,18 +18,20 @@ class User extends Authenticatable implements MustVerifyEmail
 
     // Fields yang bisa diisi secara massal
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role_id',
-        'created_date',
-        'created_id',
-        'updated_date',
-        'updated_id',
-        'deleted_id',
-        'deleted_date',
-        'is_active',
-    ];
+    'name',
+    'email',
+    'password',
+    'role_id',
+    'created_date',
+    'created_id',
+    'updated_date',
+    'updated_id',
+    'deleted_id',
+    'deleted_date',
+    'is_active',
+    'failed_login_attempts',
+];
+
 
     // Fields yang disembunyikan saat serialisasi
     protected $hidden = [

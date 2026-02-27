@@ -27,13 +27,15 @@ class PenilaianAkhirController extends Controller
 
         // ================= MAHASISWA MAGANG =================
         $q->whereHas('pembimbingMahasiswa', function ($pm) use ($pembimbingLogin) {
-            $pm->where('pembimbing.id', $pembimbingLogin->id);
+            $pm->where('user_id', $pembimbingLogin->user_id);
         });
+
 
         // ================= SISWA PKL =================
         $q->orWhereHas('pembimbingPkl', function ($pp) use ($pembimbingLogin) {
-            $pp->where('pembimbing.id', $pembimbingLogin->id);
+            $pp->where('user_id', $pembimbingLogin->user_id);
         });
+
 
     })
     ->with([

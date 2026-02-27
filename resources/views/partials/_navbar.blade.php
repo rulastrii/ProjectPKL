@@ -15,10 +15,10 @@
         <div class="navbar-nav ms-auto py-0 align-items-center">
 
             <a href="{{ route('welcome') }}" class="nav-item nav-link active">Home</a>
-            <a href="#syarat-magang" class="nav-item nav-link">Syarat Magang</a>
-            <a href="#dokumentasi" class="nav-item nav-link">Dokumentasi</a>
-            <a href="#about" class="nav-item nav-link">About</a>
-            <a href="#faqs" class="nav-item nav-link">FAQs</a>
+            <a href="{{ route('welcome') }}#syarat-magang" class="nav-item nav-link">Syarat Magang</a>
+            <!--<a href="{{ route('welcome') }}#dokumentasi" class="nav-item nav-link">Dokumentasi</a>-->
+            <a href="{{ route('welcome') }}#about" class="nav-item nav-link">About</a>
+            <a href="{{ route('welcome') }}#faqs" class="nav-item nav-link">FAQs</a>
 
             <!-- SEARCH ICON -->
             <div class="nav-item position-relative ms-3">

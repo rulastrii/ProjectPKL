@@ -100,7 +100,7 @@
                   </div>
 
 
-                                    <div class="col-4">
+                   <div class="col-4">
                     <div class="card card-sm h-100">
                       <div class="card-body">
                         <div class="row align-items-center">
@@ -116,19 +116,18 @@
                         </div>
                       </div>
                     </div>
-                  </div>
+                   </div>
 
 
-                                  </div>
-                                </div>
-                              <div class="col-md-6 col-lg-12">
-                                <div class="card">
-                                  <div class="card-header">
-                                    <h3 class="card-title">Progress Magang</h3>
-                                  </div>
-                                  <div class="card-body">
-
-                                    <!-- Presensi -->
+                 </div>
+                </div>
+                  <div class="col-md-6 col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Progress Magang</h3>
+                        </div>
+                      <div class="card-body">
+                    <!-- Presensi -->
                     <div class="mb-3">
                         <div class="d-flex justify-content-between">
                             <span>Presensi</span>
@@ -143,10 +142,10 @@
                   <div class="mb-3">
                     <div class="d-flex justify-content-between">
                       <span>Laporan Harian</span>
-                      <span>{{ $jumlahLaporanHariIni }}/{{ $totalHariMagang }} hari ({{ $totalHariMagang > 0 ? round(($jumlahLaporanHariIni / $totalHariMagang) * 100) : 0 }}%)</span>
+                      <span>{{ $jumlahLaporanHariIni }}/{{ $totalLaporan }} hari ({{ $prosentaseLaporan }}%)</span>
                     </div>
                     <div class="progress" style="height:10px;">
-                      <div class="progress-bar bg-success" style="width:{{ $totalHariMagang > 0 ? round(($jumlahLaporanHariIni / $totalHariMagang) * 100) : 0 }}%;"></div>
+                      <div class="progress-bar bg-success" style="width:{{ $prosentaseLaporan }}%;"></div>
                     </div>
                   </div>
 
@@ -215,232 +214,327 @@
     </div>
 </div>
 
-              <div class="col-md-12 col-lg-12">
-                <div class="card">
-                  <div class="card-header">
-                    <h3 class="card-title">Aksi Cepat</h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="row">
+                              <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h3 class="card-title">Aksi Cepat</h3>
+                                  </div>
+                                  <div class="card-body">
+                                    <div class="row">
 
-                      <!-- Card 1: Presensi -->
-<div class="col-md-3 mb-3">
-  <div class="card h-100 text-center bg-primary text-white" data-bs-toggle="modal" data-bs-target="#presensiModal" style="cursor:pointer;">
-    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-      <i class="ti ti-clock" style="font-size: 2rem;"></i>
-      <h5 class="card-title mt-2">Presensi Masuk / Keluar</h5>
-    </div>
+                                      <!-- Card 1: Presensi -->
+                                <div class="col-md-3 mb-3">
+                                  <div class="card h-100 text-center bg-primary text-white" data-bs-toggle="modal" data-bs-target="#presensiModal" style="cursor:pointer;">
+                                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                                      <i class="ti ti-clock" style="font-size: 2rem;"></i>
+                                      <h5 class="card-title mt-2">Presensi Masuk / Keluar</h5>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                    <!-- Card 2: Buat Laporan -->
+                                    <div class="col-md-3 mb-3">
+                                      <div class="card h-100 text-center bg-success text-white cursor-pointer"
+                                          role="button"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#modalCreateDailyReport">
+
+                                        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                                          <i class="ti ti-list-check" style="font-size: 2rem;"></i>
+                                          <h5 class="card-title mt-2">Buat Laporan Harian</h5>
+                                        </div>
+
+                                      </div>
+                                    </div>
+
+                                    <!-- Modal Create Daily Report -->
+<div class="modal fade" id="modalCreateDailyReport" tabindex="-1" aria-labelledby="modalCreateDailyReportLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <form action="{{ route('magang.daily-report.store') }}"
+          method="POST"
+          enctype="multipart/form-data"
+          class="modal-content">
+      @csrf
+
+      <!-- Modal Header -->
+<div class="modal-header bg-success text-white">
+  <h5 class="modal-title" id="modalCreateDailyReportLabel">Tambah Laporan Harian</h5>
+  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+
+      <div class="modal-body">
+        <div class="row g-3">
+
+          <!-- INFO SISWA (READ ONLY) -->
+          <div class="col-12">
+            <label class="form-label">Peserta</label>
+            <div class="form-control bg-light">
+              @php
+                $siswa = Auth::user()->siswaProfile;
+              @endphp
+
+              @if($siswa)
+                <strong>{{ $siswa->nama }}</strong><br>
+                {{ $siswa->nisn ?? $siswa->nim }}
+              @else
+                <span class="text-danger">Profil siswa belum tersedia</span>
+              @endif
+            </div>
+          </div>
+
+          <!-- Tanggal -->
+          <div class="col-md-6">
+            <label class="form-label">Tanggal</label>
+            <input type="date"
+                   name="tanggal"
+                   class="form-control"
+                   value="{{ date('Y-m-d') }}"
+                   required>
+          </div>
+
+          <!-- Ringkasan -->
+          <div class="col-12">
+            <label class="form-label">Ringkasan Kegiatan</label>
+            <textarea name="ringkasan"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Apa yang kamu kerjakan hari ini?"
+                      required></textarea>
+          </div>
+
+          <!-- Kendala -->
+          <div class="col-12">
+            <label class="form-label">Kendala</label>
+            <textarea name="kendala"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Jika ada kendala, tuliskan di sini"
+                      required></textarea>
+          </div>
+
+          <!-- Screenshot -->
+          <div class="col-12">
+            <label class="form-label">Screenshot</label>
+            <input type="file"
+                   name="screenshot"
+                   class="form-control"
+                   accept="image/*"
+                   required>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="reset" class="btn btn-secondary">Reset</button>
+        <button type="submit" class="btn btn-outline-primary ms-auto">
+          Simpan Laporan
+        </button>
+      </div>
+
+    </form>
   </div>
 </div>
 
-                     <!-- Card 2: Buat Laporan -->
-                      <div class="col-md-3 mb-3">
-                        <div class="card h-100 text-center bg-success text-white">
-                          <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                            <i class="ti ti-list-check" style="font-size: 2rem;"></i> <!-- Icon Input Buku -->
-                            <h5 class="card-title mt-2">Buat Laporan Harian</h5>
+
+                                      <!-- Card 3: Lihat Semua Tugas -->
+                                        <!-- Card 3: Lihat Semua Tugas -->
+                                      <div class="col-md-3 mb-3">
+                                        <div class="card h-100 text-center" style="background-color: #6f42c1; color: white; cursor:pointer;"
+                                            data-bs-toggle="modal" data-bs-target="#tugasModal">
+                                          <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                                            <i class="ti ti-book" style="font-size: 2rem;"></i>
+                                            <h5 class="card-title mt-2">Lihat Semua Tugas</h5>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <!-- Modal -->
+                                      <div class="modal fade" id="tugasModal" tabindex="-1" aria-labelledby="tugasModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                          <div class="modal-content">
+                                            
+                                            <!-- Modal Header -->
+                                            <div class="modal-header" style="background-color:#6f42c1; color:white;">
+                                              <h5 class="modal-title" id="tugasModalLabel">Tugas Saya</h5>
+                                              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            
+                                            <!-- Modal Body -->
+                                            <div class="modal-body">
+                                              <div class="table-responsive">
+                                                <table class="table table-bordered table-hover">
+                                                  <thead>
+                                                    <tr>
+                                                      <th>No.</th>
+                                                      <th>Judul</th>
+                                                      <th>Tenggat</th>
+                                                      <th>Status</th>
+                                                      <th>Aksi</th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    @forelse($tugasTerbaru as $index => $t)
+                                                    @php $submit = $t->submits->first(); @endphp
+                                                    <tr>
+                                                      <td>{{ $index + 1 }}</td>
+                                                      <td>{{ $t->judul }}</td>
+                                                      <td>{{ \Carbon\Carbon::parse($t->tenggat)->format('d M Y') }}</td>
+                                                      <td>
+                                          @if(!$submit)
+                                              <span class="badge badge-outline-secondary">Belum Submit</span>
+                                          @elseif($submit->status === 'pending')
+                                              <span class="badge badge-outline-warning">Sudah Submit</span>
+                                          @elseif($submit->status === 'sudah dinilai')
+                                              <span class="badge badge-outline-success">Sudah Dinilai</span>
+                                          @endif
+                                      </td>
+
+                                      <td class="text-end">
+                                          @if(!$submit)
+                                              <a href="{{ route('magang.tugas.submitForm', $t->id) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Submit Tugas">
+                                                  <i class="ti ti-upload"></i>
+                                              </a>
+
+                                          @elseif($submit->status === 'pending')
+                                              <a href="{{ route('magang.tugas.submitForm', $t->id) }}"
+                                                class="btn btn-sm btn-outline-warning"
+                                                title="Edit Submission">
+                                                  <i class="ti ti-edit"></i>
+                                              </a>
+
+                                          @elseif($submit->status === 'sudah dinilai')
+                                              <a href="{{ route('magang.tugas.show', $t->id) }}"
+                                                class="btn btn-sm btn-outline-success"
+                                                title="Lihat Submission">
+                                                  <i class="ti ti-eye"></i>
+                                              </a>
+                                          @endif
+                                      </td>
+
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                      <td colspan="5" class="text-center">Tidak ada tugas</td>
+                                    </tr>
+                                    @endforelse
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+
                           </div>
                         </div>
                       </div>
-                      <!-- Card 3: Lihat Semua Tugas -->
-                        <!-- Card 3: Lihat Semua Tugas -->
-<div class="col-md-3 mb-3">
-  <div class="card h-100 text-center" style="background-color: #6f42c1; color: white; cursor:pointer;"
-       data-bs-toggle="modal" data-bs-target="#tugasModal">
-    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-      <i class="ti ti-book" style="font-size: 2rem;"></i>
-      <h5 class="card-title mt-2">Lihat Semua Tugas</h5>
-    </div>
-  </div>
-</div>
-<!-- Modal -->
-<div class="modal fade" id="tugasModal" tabindex="-1" aria-labelledby="tugasModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      
-      <!-- Modal Header -->
-      <div class="modal-header" style="background-color:#6f42c1; color:white;">
-        <h5 class="modal-title" id="tugasModalLabel">Tugas Saya</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      
-      <!-- Modal Body -->
-      <div class="modal-body">
-        <div class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead>
-              <tr>
-                <th>No.</th>
-                <th>Judul</th>
-                <th>Tenggat</th>
-                <th>Status</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              @forelse($tugasTerbaru as $index => $t)
-              @php $submit = $t->submits->first(); @endphp
-              <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $t->judul }}</td>
-                <td>{{ \Carbon\Carbon::parse($t->tenggat)->format('d M Y') }}</td>
-                <td>
-    @if(!$submit)
-        <span class="badge badge-outline-secondary">Belum Submit</span>
-    @elseif($submit->status === 'pending')
-        <span class="badge badge-outline-warning">Sudah Submit</span>
-    @elseif($submit->status === 'sudah dinilai')
-        <span class="badge badge-outline-success">Sudah Dinilai</span>
-    @endif
-</td>
 
-<td class="text-end">
-    @if(!$submit)
-        <a href="{{ route('magang.tugas.submitForm', $t->id) }}"
-           class="btn btn-sm btn-outline-primary"
-           title="Submit Tugas">
-            <i class="ti ti-upload"></i>
-        </a>
+                      <!-- Card: Lihat Penilaian Akhir -->
+                      <div class="col-md-3 mb-3">
+                          <div class="card h-100 text-center bg-yellow text-white cursor-pointer"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modalPenilaianAkhir">
+                              <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                                  <i class="ti ti-star" style="font-size: 2rem;"></i>
+                                  <h5 class="card-title mt-2">Lihat Penilaian Akhir</h5>
+                              </div>
+                          </div>
+                      </div>
+                      <!-- Modal Penilaian Akhir -->
+                      <div class="modal fade" id="modalPenilaianAkhir" tabindex="-1" aria-hidden="true">
+                          <div class="modal-dialog modal-lg modal-dialog-centered">
+                              <div class="modal-content">
 
-    @elseif($submit->status === 'pending')
-        <a href="{{ route('magang.tugas.submitForm', $t->id) }}"
-           class="btn btn-sm btn-outline-warning"
-           title="Edit Submission">
-            <i class="ti ti-edit"></i>
-        </a>
+                                  <!-- Header -->
+                                  <div class="modal-header">
+                                      <h5 class="modal-title fw-bold">
+                                          Nilai Akhir PKL / Magang
+                                      </h5>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                  </div>
 
-    @elseif($submit->status === 'sudah dinilai')
-        <a href="{{ route('magang.tugas.show', $t->id) }}"
-           class="btn btn-sm btn-outline-success"
-           title="Lihat Submission">
-            <i class="ti ti-eye"></i>
-        </a>
-    @endif
-</td>
+                                  <!-- Body -->
+                                  <div class="modal-body">
 
-              </tr>
-              @empty
-              <tr>
-                <td colspan="5" class="text-center">Tidak ada tugas</td>
-              </tr>
-              @endforelse
-            </tbody>
-          </table>
-        </div>
-      </div>
+                                      @if(!$penilaian)
+                                          <div class="alert alert-warning text-center mb-0">
+                                              Nilai akhir belum tersedia
+                                          </div>
+                                      @else
+                                          <div class="table-responsive">
+                                              <table class="table table-bordered table-vcenter mb-0">
+                                                  <tbody>
+                                                      <tr>
+                                                          <th>Nilai Tugas</th>
+                                                          <td>
+                                                              {{ $penilaian->nilai_tugas !== null
+                                                                  ? number_format($penilaian->nilai_tugas, 2)
+                                                                  : '-' }}
+                                                          </td>
+                                                      </tr>
+                                                      <tr>
+                                                          <th>Nilai Laporan</th>
+                                                          <td>
+                                                              {{ $penilaian->nilai_laporan !== null
+                                                                  ? number_format($penilaian->nilai_laporan, 2)
+                                                                  : '-' }}
+                                                          </td>
+                                                      </tr>
+                                                      <tr>
+                                                          <th>Nilai Keaktifan</th>
+                                                          <td>
+                                                              {{ $penilaian->nilai_keaktifan !== null
+                                                                  ? number_format($penilaian->nilai_keaktifan, 2)
+                                                                  : '-' }}
+                                                          </td>
+                                                      </tr>
+                                                      <tr>
+                                                          <th>Nilai Sikap</th>
+                                                          <td>
+                                                              {{ $penilaian->nilai_sikap !== null
+                                                                  ? number_format($penilaian->nilai_sikap, 2)
+                                                                  : '-' }}
+                                                          </td>
+                                                      </tr>
 
-      <!-- Modal Footer -->
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-      </div>
+                                                      {{-- Nilai Akhir muncul hanya jika tugas & laporan sudah ada --}}
+                                                      @if($penilaian->nilai_tugas !== null && $penilaian->nilai_laporan !== null)
+                                                      <tr class="table-success fw-bold">
+                                                          <th>Nilai Akhir</th>
+                                                          <td>{{ number_format($penilaian->nilai_akhir, 2) }}</td>
+                                                      </tr>
+                                                      @endif
+                                                  </tbody>
+                                              </table>
+                                          </div>
+                                      @endif
 
-    </div>
-  </div>
-</div>
+                                  </div>
 
+                                  <!-- Footer -->
+                                  <div class="modal-footer">
 
+                                      {{-- Tombol Sertifikat hanya muncul jika nilai lengkap --}}
+                                      @if($penilaian && $penilaian->nilai_tugas !== null && $penilaian->nilai_laporan !== null)
+                                          <a href="{{ route('magang.sertifikat.index') }}"
+                                            class="btn btn-primary d-flex align-items-center gap-2">
+                                              <i class="ti ti-certificate"></i> Lihat Sertifikat
+                                          </a>
+                                      @endif
 
-                       <!-- Card: Lihat Penilaian Akhir -->
-<div class="col-md-3 mb-3">
-    <div class="card h-100 text-center bg-yellow text-white cursor-pointer"
-         data-bs-toggle="modal"
-         data-bs-target="#modalPenilaianAkhir">
-        <div class="card-body d-flex flex-column align-items-center justify-content-center">
-            <i class="ti ti-star" style="font-size: 2rem;"></i>
-            <h5 class="card-title mt-2">Lihat Penilaian Akhir</h5>
-        </div>
-    </div>
-</div>
-<!-- Modal Penilaian Akhir -->
-<div class="modal fade" id="modalPenilaianAkhir" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                          Tutup
+                                      </button>
+                                  </div>
 
-            <!-- Header -->
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">
-                    Nilai Akhir PKL / Magang
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <!-- Body -->
-            <div class="modal-body">
-
-                @if(!$penilaian)
-                    <div class="alert alert-warning text-center mb-0">
-                        Nilai akhir belum tersedia
-                    </div>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-vcenter mb-0">
-                            <tbody>
-                                <tr>
-                                    <th>Nilai Tugas</th>
-                                    <td>
-                                        {{ $penilaian->nilai_tugas !== null
-                                            ? number_format($penilaian->nilai_tugas, 2)
-                                            : '-' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Nilai Laporan</th>
-                                    <td>
-                                        {{ $penilaian->nilai_laporan !== null
-                                            ? number_format($penilaian->nilai_laporan, 2)
-                                            : '-' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Nilai Keaktifan</th>
-                                    <td>
-                                        {{ $penilaian->nilai_keaktifan !== null
-                                            ? number_format($penilaian->nilai_keaktifan, 2)
-                                            : '-' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Nilai Sikap</th>
-                                    <td>
-                                        {{ $penilaian->nilai_sikap !== null
-                                            ? number_format($penilaian->nilai_sikap, 2)
-                                            : '-' }}
-                                    </td>
-                                </tr>
-
-                                {{-- Nilai Akhir muncul hanya jika tugas & laporan sudah ada --}}
-                                @if($penilaian->nilai_tugas !== null && $penilaian->nilai_laporan !== null)
-                                <tr class="table-success fw-bold">
-                                    <th>Nilai Akhir</th>
-                                    <td>{{ number_format($penilaian->nilai_akhir, 2) }}</td>
-                                </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-
-            </div>
-
-            <!-- Footer -->
-            <div class="modal-footer">
-
-                {{-- Tombol Sertifikat hanya muncul jika nilai lengkap --}}
-                @if($penilaian && $penilaian->nilai_tugas !== null && $penilaian->nilai_laporan !== null)
-                    <a href="{{ route('magang.sertifikat.index') }}"
-                       class="btn btn-primary d-flex align-items-center gap-2">
-                        <i class="ti ti-certificate"></i> Lihat Sertifikat
-                    </a>
-                @endif
-
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Tutup
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
+                              </div>
+                          </div>
+                      </div>
 
 
                     </div> <!-- end row -->

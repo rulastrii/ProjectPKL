@@ -22,100 +22,21 @@
                                 <i class="{{ $item['icon'] }} fa-4x text-primary"></i>
                             </div>
                             <h4>{{ $item['title'] }}</h4>
-                            <p class="mb-4">{{ $item['desc'] }}</p>
-                            <a class="btn btn-primary rounded-pill py-2 px-4" href="{{ $item['link'] }}">Detail</a>
+                            <p class="mb-4">{!! nl2br(e($item['desc'])) !!}</p>
+                            @if(isset($item['link']) && $item['link'] !== '#')
+                            <a class="btn btn-primary rounded-pill py-2 px-4" href="{{ $item['link'] }}" target="_blank">
+                                Detail
+                            </a>
+                            @endif
                         </div>
                     </div>
                     @endforeach
+
                 </div>
             </div>
         </div>
         <!-- Syarat Magang End -->
 
-
-         <!-- Blog Start -->
-        <div class="container-fluid blog pb-5">
-            <div class="container pb-5">
-                <div class="text-center mx-auto pb-5 wow fadeInUp" data-wow-delay="0.2s" style="max-width: 800px;">
-                    <h4 class="text-primary">Dokumentasi Kegiatan</h4>
-                    <h1 class="display-5 mb-4">Kegiatan Magang/PKL Siswa</h1>
-                    <p class="mb-0">Dokumentasi kegiatan Praktik Kerja Lapangan yang dilakukan siswa selama masa magang.
-                        Kegiatan mencakup pembelajaran, praktik kerja, peyelesaian proyek, hingga penutupan program.
-                    </p>
-                </div>
-                <div class="owl-carousel blog-carousel wow fadeInUp" data-wow-delay="0.2s">
-                    <div class="blog-item p-4">
-                        <div class="blog-img mb-4">
-                            <img src="img/service-1.jpg" class="img-fluid w-100 rounded" alt="">
-                            <div class="blog-title">
-                                <a href="#" class="btn">Hari Pertama</a>
-                            </div>
-                        </div>
-                        <a href="#" class="h4 d-inline-block mb-3">Penerimaan & Perkenalan Tempat Magang</a>
-                        <p class="mb-4"> Siswa diperkenalkan dengan lingkungan kerja serta pembagian tugas pada awal kegiatan PKL.</p>
-                        <div class="d-flex align-items-center">
-                            <img src="img/testimonial-1.jpg" class="img-fluid rounded-circle" style="width: 60px; height: 60px;" alt="">
-                            <div class="ms-3">
-                                <h5>Pembimbing</h5>
-                                <p class="mb-0">October 9, 2025</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="blog-item p-4">
-                        <div class="blog-img mb-4">
-                            <img src="img/service-2.jpg" class="img-fluid w-100 rounded" alt="">
-                            <div class="blog-title">
-                                <a href="#" class="btn">Aktivitas Kerja</a>
-                            </div>
-                        </div>
-                        <a href="#" class="h4 d-inline-block mb-3">Pelaksanaan Tugas Harian</a>
-                        <p class="mb-4">Dokumentasi kegiatan siswa saat praktik kerja, seperti input data, produksi, atau pekerjaan teknis.</p>
-                        <div class="d-flex align-items-center">
-                            <img src="img/testimonial-2.jpg" class="img-fluid rounded-circle" style="width: 60px; height: 60px;" alt="">
-                            <div class="ms-3">
-                                <h5>Pembimbing</h5>
-                                <p class="mb-0">October 9, 2025</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="blog-item p-4">
-                        <div class="blog-img mb-4">
-                            <img src="img/service-3.jpg" class="img-fluid w-100 rounded" alt="">
-                            <div class="blog-title">
-                                <a href="#" class="btn">Proyek</a>
-                            </div>
-                        </div>
-                        <a href="#" class="h4 d-inline-block mb-3">Pengerjaan Proyek / Tugas</a>
-                        <p class="mb-4"> Siswa mengerjakan proyek yang diberikan sebagai bagian dari pelatihan dan penilaian.</p>
-                        <div class="d-flex align-items-center">
-                            <img src="img/testimonial-3.jpg" class="img-fluid rounded-circle" style="width: 60px; height: 60px;" alt="">
-                            <div class="ms-3">
-                                <h5>Pembimbing</h5>
-                                <p class="mb-0">October 9, 2025</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="blog-item p-4">
-                        <div class="blog-img mb-4">
-                            <img src="img/service-4.jpg" class="img-fluid w-100 rounded" alt="">
-                            <div class="blog-title">
-                                <a href="#" class="btn">Penutup</a>
-                            </div>
-                        </div>
-                        <a href="#" class="h4 d-inline-block mb-3">Akhir Kegiatan & Dokumentasi Penutupan</a>
-                        <p class="mb-4">Penyerahan sertifikat dan sesi dokumentasi sebagai tanda berakhirnya kegiatan magang/PKL.</p>
-                        <div class="d-flex align-items-center">
-                            <img src="img/testimonial-1.jpg" class="img-fluid rounded-circle" style="width: 60px; height: 60px;" alt="">
-                            <div class="ms-3">
-                                <h5>Pembimbing</h5>
-                                <p class="mb-0">October 9, 2025</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Blog End -->
 
         <!-- Testimonial Start -->
         <div class="container-fluid testimonial pb-5">

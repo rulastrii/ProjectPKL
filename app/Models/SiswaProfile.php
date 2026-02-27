@@ -102,9 +102,10 @@ class SiswaProfile extends Model
 public function pembimbingPkl()
 {
     return $this->hasOne(Pembimbing::class, 'pengajuan_id', 'pengajuanpkl_id')
-        ->where('pengajuan_type', \App\Models\PengajuanPklmagang::class)
+        ->where('pengajuan_type', \App\Models\PengajuanPklSiswa::class)
         ->where('is_active', 1);
 }
+
 
 public function pembimbingMahasiswa()
 {

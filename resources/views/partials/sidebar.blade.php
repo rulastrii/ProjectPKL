@@ -99,9 +99,16 @@ if ($user) {
           </a>
         </li>
 
-        <li class="nav-item"><a class="nav-link" href="{{ route('admin.presensi.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar"></i></span><span class="nav-link-title">Rekap Presensi</span></a></li>
-        <!--<li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-report"></i></span><span class="nav-link-title">Rekap Laporan</span></a>
-        <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-chart-pie"></i></span><span class="nav-link-title">Statistik PKL</span></a></li></li>-->
+        <li class="nav-item"><a class="nav-link" href="{{ route('admin.presensi.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-calendar"></i></span><span class="nav-link-title">Laporan Rekap Kehadiran Peserta</span></a></li>
+        <li class="nav-item">
+  <a class="nav-link" href="{{ route('admin.help.index') }}">
+    <span class="nav-link-icon d-md-none d-lg-inline-block">
+      <i class="ti ti-help"></i>
+    </span>
+    <span class="nav-link-title">Pusat Bantuan</span>
+  </a>
+</li>
+
         <li class="nav-item"><a class="nav-link" href="{{ route('admin.pages.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-settings"></i></span><span class="nav-link-title">Pengaturan</span></a></li>
         @endif
 
@@ -132,13 +139,13 @@ if ($user) {
         <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.tugas.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard"></i></span><span class="nav-link-title">Tugas</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.penilaian-akhir.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-award"></i></span><span class="nav-link-title">Penilaian Akhir</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('pembimbing.sertifikat.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-certificate"></i></span><span class="nav-link-title">Sertifikat</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="./form-elements.html"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-report"></i></span><span class="nav-link-title">Rekap</span></a></li>
         @endif
 
         {{-- ==================== GURU (ROLE 3) ==================== --}}
         @if(auth()->user()->role_id == 3)
         <li class="nav-item"><a class="nav-link" href="{{ route('guru.pengajuan.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-list"></i></span><span class="nav-link-title">Pengajuan PKL</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('guru.siswa.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-users"></i></span><span class="nav-link-title">Siswa PKL</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('guru.sekolah.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-school"></i></span><span class="nav-link-title">Data Sekolah</span></a></li>
         @endif
 
         {{-- ==================== SISWA (ROLE 4) ==================== --}}
@@ -156,7 +163,7 @@ if ($user) {
         <li class="nav-item"><a class="nav-link" href="{{ route('magang.daily-report.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-notebook"></i></span><span class="nav-link-title">Laporan Harian</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('magang.tugas.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-clipboard"></i></span><span class="nav-link-title">Tugas & Evaluasi</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{ route('magang.penilaian-akhir.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-certificate"></i></span><span class="nav-link-title">Nilai Akhir & Sertifikat</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="#"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-text"></i></span><span class="nav-link-title">Riwayat Magang</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('magang.riwayat.index') }}"><span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-file-text"></i></span><span class="nav-link-title">Riwayat Magang</span></a></li>
       
         <li class="nav-item">
             <a class="nav-link" href="{{ route('magang.feedback.index') }}">

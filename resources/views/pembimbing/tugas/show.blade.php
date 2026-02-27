@@ -83,6 +83,32 @@
             @endif
         </div>
 
+        {{-- INFO KETERLAMBATAN & POTONGAN --}}
+@if($submit->is_late)
+    <div class="alert alert-warning mt-2">
+        <strong>⚠ Dikumpulkan Terlambat</strong><br>
+
+        Terlambat
+        <b>{{ $submit->late_days }} hari</b>
+        dari tenggat.
+
+        @if($submit->late_penalty > 0)
+            <br>
+            <span class="text-danger">
+                Nilai telah dipotong
+                <b>{{ $submit->late_penalty }}%</b>
+                karena keterlambatan.
+            </span>
+        @else
+            <br>
+            <span class="text-muted">
+                Tidak ada penalti nilai.
+            </span>
+        @endif
+    </div>
+@endif
+
+
         {{-- File & Link Lampiran --}}
         <div class="col-md-6 mb-2">
             <strong>File:</strong>

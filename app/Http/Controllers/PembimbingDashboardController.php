@@ -7,103 +7,90 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Pembimbing;
 use App\Models\Presensi;
-use App\Models\PengajuanPklmagang;
-use App\Models\PengajuanMagangMahasiswa;
 use App\Models\Tugas;
 use App\Models\Aktivitas;
 use App\Models\DailyReport;
 
 class PembimbingDashboardController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         $pegawai = Auth::user()->pegawai;
 
-        if (!$pegawai) {
-            $jumlahSiswa = 0;
-            $jumlahLaporanBelumVerifikasi = 0;
-            $jumlahPending    = 0;
-            $daftarSiswa = collect();
-            $presensi = collect();
-            $reports = collect(); 
+        // ===== INISIALISASI (WAJIB) =====
+        $jumlahSiswa = 0;
+        $jumlahPresensiHadir = 0;
+        $jumlahLaporanBelumVerifikasi = 0;
+        $jumlahTugasBaru = 0;
+        $daftarSiswa = collect();
+        $presensi = collect();
+        $reports = collect();
+        $aktivitas = collect();
 
-        } else {
-            // Ambil semua bimbingan pegawai
-            $daftarSiswa = Pembimbing::with([
-                'pengajuan',
-                'pegawai'
-            ])
-            ->whereNull('deleted_date')
-            ->where('pegawai_id', $pegawai->id)
-            ->get();
+        if ($pegawai) {
 
-
+            // ================= DAFTAR SISWA =================
+            $daftarSiswa = Pembimbing::with(['pengajuan', 'pegawai'])
+                ->where('pegawai_id', $pegawai->id)
+                ->whereNull('deleted_date')
+                ->get();
 
             $jumlahSiswa = $daftarSiswa->count();
 
-             // Hitung presensi pending untuk pegawai ini
+            // ================= PRESENSI HADIR =================
             $jumlahPresensiHadir = Presensi::where('is_active', 1)
                 ->where('status', 'hadir')
-                ->whereHas('siswa', function($s) use ($pegawai) {
-            $s->whereHas('pengajuan', function($p) use ($pegawai) {
-                $p->whereHas('pembimbing', function($b) use ($pegawai) {
-                    $b->where('pegawai_id', $pegawai->id)
+                ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pegawai) {
+                    $q->where('pegawai_id', $pegawai->id)
                       ->whereNull('deleted_date');
-                });
-            });
-        })->count();
+                })
+                ->count();
 
-            // Jumlah tugas baru pembimbing
-            $pembimbing = Pembimbing::where('pegawai_id', $pegawai->id)
+            // ================= ID PEMBIMBING =================
+            $pembimbingIds = Pembimbing::where('pegawai_id', $pegawai->id)
                 ->whereNull('deleted_date')
-                ->first();
+                ->pluck('id');
 
-            if ($pembimbing) {
-                $jumlahTugasBaru = Tugas::where('pembimbing_id', $pembimbing->id)
+            // ================= TUGAS BARU =================
+            if ($pembimbingIds->isNotEmpty()) {
+                $jumlahTugasBaru = Tugas::whereIn('pembimbing_id', $pembimbingIds)
                     ->where('is_active', 1)
-                    ->where('status', 'pending') // tugas baru = pending
+                    ->where('status', 'pending')
                     ->count();
             }
 
-            // Jumlah laporan harian yang belum diverifikasi
+            // ================= LAPORAN BELUM VERIF =================
             $jumlahLaporanBelumVerifikasi = DailyReport::where('is_active', 1)
                 ->whereNull('status_verifikasi')
-                ->whereHas('siswa', function ($s) use ($pegawai) {
-                    $s->whereHas('pengajuan', function ($p) use ($pegawai) {
-                        $p->whereHas('pembimbing', function ($b) use ($pegawai) {
-                            $b->where('pegawai_id', $pegawai->id)
-                            ->whereNull('deleted_date');
-                        });
-                    });
-                })->count();
+                ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pegawai) {
+                    $q->where('pegawai_id', $pegawai->id)
+                      ->whereNull('deleted_date');
+                })
+                ->count();
 
+            // ================= LIST LAPORAN =================
             $reports = DailyReport::with('siswa')
                 ->where('is_active', 1)
-                ->whereHas('siswa', function ($s) use ($pegawai) {
-                    $s->whereHas('pengajuan', function ($p) use ($pegawai) {
-                        $p->whereHas('pembimbing', function ($b) use ($pegawai) {
-                            $b->where('pegawai_id', $pegawai->id)
-                            ->whereNull('deleted_date');
-                        });
-                    });
-                })->orderBy('tanggal', 'desc')
-                  ->paginate(10)
-                  ->withQueryString();
+                ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pegawai) {
+                    $q->where('pegawai_id', $pegawai->id)
+                      ->whereNull('deleted_date');
+                })
+                ->orderBy('tanggal', 'desc')
+                ->paginate(10)
+                ->withQueryString();
 
-            // Ambil semua presensi hari ini untuk modal
+            // ================= PRESENSI HARI INI =================
             $presensi = Presensi::with('siswa')
                 ->where('is_active', 1)
-                ->whereDate('tanggal', date('Y-m-d'))
-                ->whereHas('siswa', function($s) use ($pegawai) {
-                    $s->whereHas('pengajuan', function($p) use ($pegawai) {
-                        $p->whereHas('pembimbing', function($b) use ($pegawai) {
-                            $b->where('pegawai_id', $pegawai->id)
-                              ->whereNull('deleted_date');
-                        });
-                    });
-                })->paginate(10) 
-                  ->withQueryString();
+                ->whereDate('tanggal', now())
+                ->whereHas('siswa.pengajuan.pembimbing', function ($q) use ($pegawai) {
+                    $q->where('pegawai_id', $pegawai->id)
+                      ->whereNull('deleted_date');
+                })
+                ->paginate(10)
+                ->withQueryString();
 
-    
+            // ================= AKTIVITAS =================
             $aktivitas = Aktivitas::where('pegawai_id', $pegawai->id)
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
@@ -115,17 +102,17 @@ class PembimbingDashboardController extends Controller
                         'tanggal' => $item->created_at,
                     ];
                 });
-                    }
-                    return view('pembimbing.dashboard', compact(
-                        'jumlahSiswa', 
-                        'jumlahPresensiHadir',
-                        'jumlahLaporanBelumVerifikasi', 
-                        'jumlahTugasBaru', 
-                        'daftarSiswa',
-                        'reports',
-                        'presensi',
-                        'aktivitas'
-                    ));
-                }
+        }
 
+        return view('pembimbing.dashboard', compact(
+            'jumlahSiswa',
+            'jumlahPresensiHadir',
+            'jumlahLaporanBelumVerifikasi',
+            'jumlahTugasBaru',
+            'daftarSiswa',
+            'reports',
+            'presensi',
+            'aktivitas'
+        ));
+    }
 }

@@ -71,24 +71,32 @@ document.addEventListener('DOMContentLoaded', function () {
     // ======================
     // Nav link aktif scroll
     // ======================
-    const sections = document.querySelectorAll('div[id]');
+    const sections = document.querySelectorAll('[id]');
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
     function onScroll() {
-        let scrollPos = window.scrollY + 100;
+        let scrollPos = window.scrollY + 120;
+
         sections.forEach(section => {
-            if (scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
+            if (
+                scrollPos >= section.offsetTop &&
+                scrollPos < section.offsetTop + section.offsetHeight
+            ) {
                 navLinks.forEach(link => {
                     link.classList.remove('active');
-                    if (link.getAttribute('href') === '#' + section.id) {
+
+                    const href = link.getAttribute('href');
+                    if (href && href.includes('#' + section.id)) {
                         link.classList.add('active');
                     }
                 });
             }
         });
     }
+
     window.addEventListener('scroll', onScroll);
-    onScroll();
+    onScroll(); // initial load
+
 
     // ======================
     // Toggle Help Floating

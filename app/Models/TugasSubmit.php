@@ -16,6 +16,9 @@ class TugasSubmit extends Model
         'link_lampiran',
         'file',
         'submitted_at',
+        'is_late',
+        'late_days',
+        'late_penalty',
         'status',
         'skor',
         'feedback',
@@ -27,6 +30,11 @@ class TugasSubmit extends Model
         'deleted_id',
         'is_active',
     ];
+
+    protected $casts = [
+    'submitted_at' => 'datetime',
+];
+
 
     public function tugas() {
         return $this->belongsTo(Tugas::class, 'tugas_id');

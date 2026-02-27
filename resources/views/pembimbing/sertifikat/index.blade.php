@@ -15,7 +15,7 @@
         class="btn btn-primary btn-sm"
         data-bs-toggle="modal"
         data-bs-target="#modal-terbitkan-sertifikat">
- <i class="ti ti-plus"></i> Terbitkan Sertifikat
+ <i class="ti ti-certificate me-1"></i> Terbitkan Sertifikat
 </button>
 
      </div>

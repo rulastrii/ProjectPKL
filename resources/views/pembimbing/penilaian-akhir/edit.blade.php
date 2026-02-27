@@ -44,6 +44,7 @@
               class="form-control"
               min="0" max="100"
               value="{{ old('nilai_keaktifan', $item->nilai_keaktifan) }}"
+              placeholder="Masukkan nilai keaktifan (0–100)"
               required>
        <small class="text-muted">Rentang nilai 0 – 100</small>
       </div>
@@ -58,6 +59,7 @@
               class="form-control"
               min="0" max="100"
               value="{{ old('nilai_sikap', $item->nilai_sikap) }}"
+              placeholder="Masukkan nilai sikap (0–100)"
               required>
        <small class="text-muted">Rentang nilai 0 – 100</small>
       </div>

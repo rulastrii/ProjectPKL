@@ -55,18 +55,20 @@
 
               <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                 @php
-    $profileRoute = match(auth()->user()->role_id) {
-        3 => route('guru.profile.index'),
-        4 => route('siswa.profile.index'),
-        5 => route('magang.profile.index'),
-        default => '#',
-    };
-@endphp
-
-<a href="{{ $profileRoute }}" class="dropdown-item">Profile</a>
+                    $profileRoute = match(auth()->user()->role_id) {
+                        3 => route('guru.profile.index'),
+                        4 => route('siswa.profile.index'),
+                        5 => route('magang.profile.index'),
+                        default => '#',
+                    };
+                @endphp
+                <a href="{{ $profileRoute }}" class="dropdown-item">Profile</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="dropdown-item">Logout</button>
+                    <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+    Logout
+</button>
+
                 </form>
 
               </div>

@@ -93,6 +93,17 @@ Swal.fire({
 });
 @endif
 
+@if(session('error_code') === 'ACCOUNT_BLOCKED')
+Swal.fire({
+    icon: 'error',
+    title: 'Akun Diblokir',
+    html: `
+        Akun Anda diblokir karena 3x kesalahan login.<br>
+        <a href="{{ route('help-center.index') }}">Hubungi Pusat Bantuan</a>
+    `
+});
+@endif
+
 @if($errors->any())
 Swal.fire({
     icon: 'warning',

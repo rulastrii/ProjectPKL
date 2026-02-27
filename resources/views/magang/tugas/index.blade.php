@@ -78,16 +78,49 @@
     <td>{{ $t->judul }}</td>
     <td>{{ $t->tenggat_formatted }}</td>
 
-    {{-- STATUS --}}
-    <td>
-    @if(!$submit)
-        <span class="badge text-secondary">Belum submit</span>
-    @elseif($submit->status === 'pending')
-        <span class="badge text-warning">Sudah submit</span>
-    @elseif($submit->status === 'sudah dinilai')
-        <span class="badge text-success">Sudah dinilai</span>
+<td>
+@if(!$submit)
+    <span class="badge text-secondary">Belum submit</span>
+
+@elseif($submit->status === 'pending')
+    <span class="badge text-warning">Sudah submit</span>
+
+    @if($submit->is_late)
+        <div class="small text-danger mt-1">
+            ⚠ Terlambat
+            {{ $submit->late_days > 0
+                ? $submit->late_days . ' hari'
+                : ($submit->late_minutes >= 60
+                    ? floor($submit->late_minutes / 60) . ' jam'
+                    : $submit->late_minutes . ' menit')
+            }}
+
+            @if($submit->late_penalty > 0)
+                (Penalti {{ $submit->late_penalty }}%)
+            @else
+                (Tanpa penalti)
+            @endif
+        </div>
     @endif
+
+@elseif($submit->status === 'sudah dinilai')
+    <span class="badge text-success">Sudah dinilai</span>
+
+    @if($submit->is_late)
+        <div class="small text-danger mt-1">
+            ⚠ Terlambat {{ $submit->late_days }} hari
+            @if($submit->late_penalty > 0)
+                – Nilai dipotong {{ $submit->late_penalty }}%
+            @else
+                – Tidak ada penalti
+            @endif
+        </div>
+    @endif
+@endif
 </td>
+
+
+
 
 
     {{-- AKSI --}}
@@ -108,7 +141,7 @@
 
         @elseif($submit->status === 'sudah dinilai')
             <a href="{{ route('magang.tugas.show', $t->id) }}"
-               class="btn btn-sm btn-outline-success"
+               class="btn btn-sm btn-outline-primary"
                title="Lihat Submission">
                 <i class="ti ti-eye"></i>
             </a>

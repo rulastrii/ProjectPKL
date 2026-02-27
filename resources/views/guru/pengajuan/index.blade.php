@@ -10,7 +10,7 @@
 
      {{-- Header Card --}}
      <div class="card-header d-flex align-items-center">
-      <h3 class="card-title">Daftar Pengajuan PKL/Magang</h3>
+      <h3 class="card-title">Daftar Pengajuan PKL</h3>
       <a href="{{ route('guru.pengajuan.create') }}" class="btn btn-primary ms-auto">
         <i class="ti ti-plus me-1"></i> Buat Pengajuan Baru
       </a>

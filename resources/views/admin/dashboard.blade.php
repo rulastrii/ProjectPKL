@@ -93,20 +93,20 @@
             <div class="col-lg-6 mb-3">
                 <div class="card">
                     <div class="card-body">
-                        <h3 class="card-title">Jumlah Peserta PKL per Bulan</h3>
+                        <h3 class="card-title">Jumlah Peserta PKL & Magang per Bulan</h3>
                         <canvas id="chartPeserta" class="chart-lg"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-6">
+            <div class="col-lg-6 mb-3">
                 <div class="card">
                   <div class="card-body">
                     <h3 class="card-title">Jumlah Peserta Per Bidang</h3>
                     <div id="chart-mentions" class="chart-lg"></div>
                   </div>
                 </div>
-              </div>
+            </div>
 
             <!-- Pengajuan Terbaru -->
             <div class="col-12">
@@ -172,7 +172,7 @@
                                         </td>
                                         <td class="text-end">
                                             <a href="{{ $pengajuan['type'] == 'magang' 
-                                                ? route('admin.pengajuan.show', $pengajuan['id']) 
+                                                ? route('admin.pengajuan-magang.show', $pengajuan['id']) 
                                                 : route('admin.pengajuan.show', $pengajuan['id']) }}" 
                                                 class="btn btn-outline-primary btn-sm">
                                                 Detail
@@ -209,28 +209,140 @@
 <script>
     // Chart Peserta PKL per Bulan
     const ctx = document.getElementById('chartPeserta').getContext('2d');
-    const chartPeserta = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-            datasets: [{
-                label: 'Jumlah Peserta PKL',
-                data: @json($chartData),
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    precision:0
-                }
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+        datasets: [
+            {
+                label: 'PKL',
+                data: @json($chartDataPKL),
+                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            },
+            {
+                label: 'Magang',
+                data: @json($chartDataMagang),
+                backgroundColor: 'rgba(28, 200, 138, 0.7)'
             }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' },
+            title: {
+                display: true,
+                text: 'Jumlah Peserta PKL & Magang per Bulan'
+            }
+        },
+        scales: {
+            y: { beginAtZero: true }
         }
-    });
+    }
+});
+
 
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    var options = {
+        chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: { show: false }
+        },
+
+        series: [{
+            name: 'Jumlah Peserta',
+            data: @json($bidangTotals)
+        }],
+
+        colors: [
+            '#4e73df', '#1cc88a', '#36b9cc',
+            '#f6c23e', '#e74a3b', '#858796',
+            '#fd7e14', '#20c997', '#6f42c1'
+        ],
+
+        plotOptions: {
+            bar: {
+                distributed: true,
+                borderRadius: 4,
+                columnWidth: '20%'
+            }
+        },
+
+        xaxis: {
+            categories: @json($bidangLabels),
+            tickPlacement: 'on',
+            labels: {
+                rotate: -30,
+                style: {
+                    fontSize: '11px'
+                }
+            }
+        },
+
+        yaxis: {
+            min: 0,
+            forceNiceScale: true,
+            labels: {
+                formatter: function (val) {
+                    return Math.round(val);
+                }
+            }
+        },
+
+        dataLabels: {
+            enabled: false
+        },
+
+        grid: {
+            padding: {
+                bottom: 30,
+                left: 10,
+                right: 10
+            }
+        },
+
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val + ' peserta';
+                }
+            }
+        },
+
+        legend: {
+            show: false
+        }
+    };
+
+    new ApexCharts(
+        document.querySelector("#chart-mentions"),
+        options
+    ).render();
+
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[placeholder="Cari..."]');
+    const table = document.querySelector('table tbody');
+
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const rows = table.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+});
+</script>
+
 @endsection

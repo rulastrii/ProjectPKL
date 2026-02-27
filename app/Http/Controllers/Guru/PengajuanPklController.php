@@ -54,51 +54,58 @@ class PengajuanPklController extends Controller
      * Form create
      */
     public function create()
-    {
-        $sekolah = Sekolah::all();
-        return view('guru.pengajuan.create', compact('sekolah'));
-    }
+{
+    // ambil semua sekolah aktif, urut berdasarkan nama
+    $sekolah = Sekolah::where('is_active', 1)->orderBy('nama')->get();
+    return view('guru.pengajuan.create', compact('sekolah'));
+}
+
 
     /**
      * Simpan pengajuan (draft)
      */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'no_surat' => 'required|string',
-            'tgl_surat' => 'required|date',
-            'sekolah_id' => 'required|exists:sekolah,id',
-            'periode_mulai' => 'required|date',
-            'periode_selesai' => 'required|date|after_or_equal:periode_mulai',
-            'email_guru' => 'required|email',
-            'file_surat_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
-            'catatan' => 'nullable|string',
-        ]);
+   public function store(Request $request)
+{
+    $request->validate([
+        'no_surat' => 'required|string',
+        'tgl_surat' => 'required|date',
+        'sekolah_id' => 'required|exists:sekolah,id',
+        'periode_mulai' => 'required|date',
+        'periode_selesai' => 'required|date|after_or_equal:periode_mulai',
+        'email_guru' => 'required|email',
+        'file_surat_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
+        'catatan' => 'nullable|string',
+    ]);
 
-        $filePath = $request->file('file_surat_path')
-            ? $request->file('file_surat_path')->store('surat', 'public')
-            : null;
-
-        $pengajuan = PengajuanPklmagang::create([
-            'no_surat' => $request->no_surat,
-            'tgl_surat' => $request->tgl_surat,
-            'sekolah_id' => $request->sekolah_id,
-            'jumlah_siswa' => 0,
-            'periode_mulai' => $request->periode_mulai,
-            'periode_selesai' => $request->periode_selesai,
-            'status' => 'draft',
-            'file_surat_path' => $filePath,
-            'catatan' => $request->catatan,
-            'email_guru' => $request->email_guru,
-            'created_id' => Auth::id(),
-            'created_date' => now(),
-            'is_active' => 1,
-        ]);
-
-        return redirect()
-            ->route('guru.pengajuan.edit', $pengajuan->id)
-            ->with('success', 'Pengajuan draft berhasil dibuat.');
+    $filePath = null;
+    if ($request->hasFile('file_surat_path')) {
+        $file = $request->file('file_surat_path');
+        $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+        $file->move(public_path('uploads/surat'), $filename); // simpan di public/uploads/surat
+        $filePath = 'uploads/surat/' . $filename; // path relatif ke public
     }
+
+    $pengajuan = PengajuanPklmagang::create([
+        'no_surat' => $request->no_surat,
+        'tgl_surat' => $request->tgl_surat,
+        'sekolah_id' => $request->sekolah_id,
+        'jumlah_siswa' => 0,
+        'periode_mulai' => $request->periode_mulai,
+        'periode_selesai' => $request->periode_selesai,
+        'status' => 'draft',
+        'file_surat_path' => $filePath,
+        'catatan' => $request->catatan,
+        'email_guru' => $request->email_guru,
+        'created_id' => Auth::id(),
+        'created_date' => now(),
+        'is_active' => 1,
+    ]);
+
+    return redirect()
+        ->route('guru.pengajuan.edit', $pengajuan->id)
+        ->with('success', 'Pengajuan draft berhasil dibuat.');
+}
+
 
     /**
      * Form edit (tambah siswa)

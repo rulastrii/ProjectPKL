@@ -8,6 +8,8 @@ use App\Models\Pembimbing;
 use App\Models\PengajuanMagangMahasiswa;
 use App\Models\PengajuanPklmagang;
 use App\Models\SiswaProfile;
+use App\Models\Penempatan;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
@@ -32,18 +34,58 @@ class AdminDashboardController extends Controller
 
         // Data peserta PKL per bulan
         $currentYear = Carbon::now()->year;
-        $pesertaPerBulan = SiswaProfile::selectRaw('MONTH(created_date) as bulan, COUNT(*) as total')
-                                ->whereYear('created_date', $currentYear)
-                                ->where('is_active', true)
-                                ->groupBy('bulan')
-                                ->orderBy('bulan')
-                                ->pluck('total', 'bulan')
-                                ->toArray();
+        // --- Hitung PKL per bulan ---
+$pkls = DB::table('pengajuan_pkl_siswa')
+    ->join('pengajuan_pklmagang', 'pengajuan_pkl_siswa.pengajuan_id', '=', 'pengajuan_pklmagang.id')
+    ->whereYear('pengajuan_pklmagang.periode_mulai', $currentYear)
+    ->where('pengajuan_pkl_siswa.status', 'diterima')
+    ->select('pengajuan_pkl_siswa.nama_siswa', 'pengajuan_pklmagang.periode_mulai')
+    ->get();
 
-        $chartData = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $chartData[] = $pesertaPerBulan[$i] ?? 0;
-        }
+$pklsPerBulan = [];
+foreach ($pkls as $p) {
+    $bulan = Carbon::parse($p->periode_mulai)->month;
+    $pklsPerBulan[$bulan][] = $p->nama_siswa; // simpan nama siswa
+}
+
+// --- Hitung Magang per bulan ---
+$magangs = PengajuanMagangMahasiswa::where('is_active', true)
+    ->whereYear('periode_mulai', $currentYear)
+    ->where('status', 'diterima')
+    ->select('id','universitas','periode_mulai')
+    ->get();
+
+$magangPerBulan = [];
+foreach ($magangs as $m) {
+    $bulan = Carbon::parse($m->periode_mulai)->month;
+    $magangPerBulan[$bulan][] = $m->universitas ?? 'Mahasiswa';
+}
+
+// --- Siapkan data chart ---
+$chartDataPKL = [];
+$chartDataMagang = [];
+for ($i = 1; $i <= 12; $i++) {
+    $chartDataPKL[] = isset($pklsPerBulan[$i]) ? count($pklsPerBulan[$i]) : 0;
+    $chartDataMagang[] = isset($magangPerBulan[$i]) ? count($magangPerBulan[$i]) : 0;
+}
+
+        // =======================
+// Statistik Peserta Per Bidang
+// =======================
+$pesertaPerBidang = Penempatan::where('penempatan.is_active', true)
+    ->join('bidang', 'penempatan.bidang_id', '=', 'bidang.id')
+    ->where('bidang.is_active', true)
+    ->select(
+        'bidang.nama as bidang',
+        DB::raw('COUNT(penempatan.id) as total')
+    )
+    ->groupBy('bidang.nama')
+    ->orderBy('bidang.nama')
+    ->get();
+
+// Pisahkan label & value (buat chart)
+$bidangLabels = $pesertaPerBidang->pluck('bidang');
+$bidangTotals = $pesertaPerBidang->pluck('total');
 
         // --- Pengajuan Terbaru ---
         $pengajuanMagang = PengajuanMagangMahasiswa::where('is_active', true)
@@ -73,7 +115,7 @@ class AdminDashboardController extends Controller
                 return [
                     'id' => $item->id,
                     'no_surat' => $item->no_surat,
-                    'sekolah' => $item->sekolah?->nama_sekolah ?? '-',
+                    'sekolah' => $item->sekolah?->nama ?? '-',
                     'periode' => "$periodeMulai - $periodeSelesai",
                     'status' => $item->status,
                     'type' => 'pkl',
@@ -92,8 +134,11 @@ class AdminDashboardController extends Controller
             'totalPengajuan',
             'menungguVerifikasi',
             'totalPeserta',
-            'chartData',
-            'pengajuanTerbaru'
+            'chartDataPKL',
+            'chartDataMagang',
+            'pengajuanTerbaru',
+            'bidangLabels',
+    'bidangTotals'
         ));
     }
 

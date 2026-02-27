@@ -20,13 +20,19 @@
             <select name="pengajuan_key" class="form-select" required>
               <option value="">-- Pilih Pengajuan --</option>
 
-              <optgroup label="PKL / Magang Siswa">
-                @foreach($pkl as $p)
+              <optgroup label="PKL Siswa">
+                @foreach ($pkl as $p)
                   <option value="pkl:{{ $p->id }}">
-                    [PKL] {{ $p->no_surat }} - {{ $p->sekolah->nama ?? '-' }}
+                    [PKL]
+                    {{ $p->pengajuan->no_surat ?? '-' }}
+                    |
+                    {{ $p->nama_siswa ?? '-' }}
+                    -
+                    {{ $p->pengajuan->sekolah->nama ?? '-' }}
                   </option>
                 @endforeach
               </optgroup>
+
 
               <optgroup label="Magang Mahasiswa">
                 @foreach($mahasiswa as $m)

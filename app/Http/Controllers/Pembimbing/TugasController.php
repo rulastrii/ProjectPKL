@@ -263,32 +263,79 @@ class TugasController extends Controller
         return view('pembimbing.tugas.grade', compact('submit'));
     }
 
-    /**
-     * Simpan nilai tugas
-     */
-    public function grade(Request $request, $submit_id)
-    {
-        $request->validate([
-            'skor'     => 'required|numeric|min:0|max:100',
-            'feedback' => 'nullable|string',
-            'status'   => 'required|in:pending,sudah dinilai'
-        ]);
+   
+/**
+ * Simpan nilai tugas (penalti 5% per hari telat)
+ */
+public function grade(Request $request, $submit_id)
+{
+    $request->validate([
+        'skor'     => 'required|numeric|min:0|max:100',
+        'feedback' => 'nullable|string',
+    ]);
 
-        $submit = TugasSubmit::findOrFail($submit_id);
+    // ================== AMANKAN SUBMIT ==================
+    $submit = TugasSubmit::whereHas('tugas.pembimbing', function ($q) {
+            $q->where('user_id', Auth::id());
+        })
+        ->with('tugas')
+        ->findOrFail($submit_id);
 
-        $submit->update([
-            'skor'         => $request->skor,
-            'feedback'     => $request->feedback,
-            'status'       => $request->status,
-            'updated_id'   => Auth::id(),
-            'updated_date' => now()
-        ]);
+    $tugas = $submit->tugas;
 
-        $tugas = $submit->tugas;
-        if ($tugas->submits()->where('status', 'pending')->count() === 0) {
-            $tugas->update(['status' => 'sudah dinilai']);
+    // ================== HITUNG KETERLAMBATAN ==================
+    $isLate      = false;
+    $lateDays    = 0;
+    $latePenalty = 0; // persen
+
+    if ($submit->submitted_at && $tugas->tenggat) {
+        if ($submit->submitted_at->gt($tugas->tenggat)) {
+            $isLate   = true;
+            $lateDays = max(
+                1,
+                $tugas->tenggat->diffInDays($submit->submitted_at)
+            );
+
+            // 🔥 ATURAN: 5% PER HARI
+            $latePenalty = $lateDays * 5;
+
+            // (OPSIONAL) BATAS MAKSIMAL PENALTI
+            $latePenalty = min($latePenalty, 50); // max 50%
         }
-
-        return back()->with('success', 'Tugas berhasil dinilai.');
     }
+
+    // ================== HITUNG NILAI ==================
+    $skorAwal  = $request->skor;
+    $skorAkhir = $skorAwal;
+
+    if ($isLate && $latePenalty > 0) {
+        $skorAkhir -= ($skorAwal * $latePenalty / 100);
+    }
+
+    $skorAkhir = max(0, round($skorAkhir, 2));
+
+    // ================== UPDATE SUBMIT ==================
+    $submit->update([
+        'skor'         => $skorAkhir,
+        'feedback'     => $request->feedback,
+        'status'       => 'sudah dinilai',
+
+        // 🔄 SIMPAN DATA TELAT
+        'is_late'      => $isLate,
+        'late_days'    => $lateDays,
+        'late_penalty' => $latePenalty,
+
+        'updated_id'   => Auth::id(),
+        'updated_date' => now(),
+    ]);
+
+    // ================== UPDATE STATUS TUGAS ==================
+    if ($tugas->submits()->where('status', 'pending')->count() === 0) {
+        $tugas->update(['status' => 'sudah dinilai']);
+    }
+
+    return back()->with('success', 'Tugas berhasil dinilai.');
+}
+
+
 }

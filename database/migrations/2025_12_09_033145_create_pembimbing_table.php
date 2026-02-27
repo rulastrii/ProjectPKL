@@ -6,41 +6,37 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('pembimbing', function (Blueprint $table) {
             $table->id();
 
+            // polymorphic
             $table->unsignedBigInteger('pengajuan_id');
+            $table->string('pengajuan_type')->comment('App\Models\PengajuanPklSiswa | App\Models\PengajuanMagangMahasiswa');;
+
+            // relasi internal
             $table->unsignedBigInteger('pegawai_id');
+            $table->unsignedBigInteger('user_id')->nullable();
 
             $table->integer('tahun')->nullable();
+            $table->boolean('is_active')->default(true);
 
             $table->timestamp('created_date')->nullable();
             $table->unsignedBigInteger('created_id')->nullable();
-
             $table->timestamp('updated_date')->nullable();
             $table->unsignedBigInteger('updated_id')->nullable();
-
-            $table->unsignedBigInteger('deleted_id')->nullable();
             $table->timestamp('deleted_date')->nullable();
+            $table->unsignedBigInteger('deleted_id')->nullable();
 
-            $table->boolean('is_active')->default(true);
+            // FK YANG BOLEH
+            $table->foreign('pegawai_id')->references('id')->on('pegawai')->cascadeOnDelete();
 
-            // Foreign key
-            $table->foreign('pengajuan_id')->references('id')->on('pengajuan_pklmagang')->onDelete('cascade');
-            $table->foreign('pegawai_id')->references('id')->on('pegawai')->onDelete('cascade');
-
-            $table->index(['pengajuan_id','pegawai_id']);
+            $table->index(['pengajuan_id', 'pengajuan_type']);
+            $table->index(['pegawai_id', 'user_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('pembimbing');

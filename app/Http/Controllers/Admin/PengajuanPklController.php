@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SiswaApprovedMail;
 use App\Mail\SiswaRejectedMail;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class PengajuanPklController extends Controller
 {
@@ -64,30 +66,60 @@ class PengajuanPklController extends Controller
     $request->validate([
         'siswa_status' => 'required|array', 
         'siswa_status.*' => 'in:diterima,ditolak',
+        'catatan_admin' => 'sometimes|array',
     ]);
 
     $pengajuan = PengajuanPklmagang::with('siswa')->findOrFail($pengajuanId);
 
     DB::transaction(function() use ($pengajuan, $request) {
+
         foreach($request->siswa_status as $siswaId => $status){
             $pengajuanSiswa = PengajuanPklSiswa::findOrFail($siswaId);
             $pengajuanSiswa->status = $status;
             $pengajuanSiswa->catatan_admin = $request->catatan_admin[$siswaId] ?? null;
             $pengajuanSiswa->save();
 
-            // Kirim email
-            if($status == 'diterima'){
-                Mail::to($pengajuanSiswa->email_siswa)->send(new SiswaApprovedMail($pengajuanSiswa));
-            } else if($status == 'ditolak'){
-                Mail::to($pengajuanSiswa->email_siswa)->send(new SiswaRejectedMail($pengajuanSiswa));
+            // Hanya jika diterima/ditolak
+            if($status == 'diterima' || $status == 'ditolak'){
+
+                // 1. Nomor surat balasan otomatis
+                $no_surat = "B/400.14.5.4/".str_pad($pengajuan->id, 3, '0', STR_PAD_LEFT)."/SEKRE/".date('Y');
+
+                // 2. Nama Kepala Dinas
+                $ttd = "MA'RUF NURYASA, AP., M.M.";
+
+                // 3. Generate PDF surat balasan
+                $pdf = Pdf::loadView('admin.pengajuan.surat-balasan', [
+                    'pengajuan' => $pengajuan,
+                    'siswa'     => $pengajuanSiswa,
+                    'no_surat'  => $no_surat,
+                    'ttd'       => $ttd,
+                ]);
+
+
+                // 5. Kirim email/notification
+                if($status == 'diterima'){
+                    Mail::to($pengajuanSiswa->email_siswa)
+    ->send(new \App\Mail\SiswaApprovedMail(
+        $pengajuanSiswa, // data siswa
+        $pdf,             // PDF DomPDF
+        $no_surat,        // nomor surat
+        $ttd               // nama kepala dinas
+    ));
+
+
+                } else {
+                    Mail::to($pengajuanSiswa->email_siswa)
+                        ->send(new \App\Mail\SiswaRejectedMail($pengajuanSiswa, $pdf));
+                }
             }
         }
 
     });
 
-    return redirect()->route('admin.pengajuan.index')->with('success', 'Status siswa berhasil diperbarui.');
+    return redirect()->route('admin.pengajuan.index')
+        ->with('success', 'Status siswa dan surat balasan berhasil diperbarui.');
 }
-
 
     public function show($id)
 {

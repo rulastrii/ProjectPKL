@@ -44,16 +44,17 @@
                         <tr>
                             <th>Surat Pengantar</th>
                             <td>
-                                @if($pengajuan->file_surat_path)
-                                    <a href="{{ asset('storage/'.$pengajuan->file_surat_path) }}"
-                                       target="_blank"
-                                       class="btn btn-outline-primary btn-sm">
-                                        <i class="ti ti-file-text me-1"></i> Lihat Surat
-                                    </a>
-                                @else
-                                    <span class="text-muted">Tidak ada</span>
-                                @endif
-                            </td>
+    @if($pengajuan->file_surat_path)
+        <a href="{{ asset($pengajuan->file_surat_path) }}" 
+           target="_blank" 
+           class="btn btn-outline-primary btn-sm">
+            <i class="ti ti-file-text me-1"></i> Lihat Surat
+        </a>
+    @else
+        <span class="text-muted">Tidak ada</span>
+    @endif
+</td>
+
                         </tr>
                     </tbody>
                 </table>

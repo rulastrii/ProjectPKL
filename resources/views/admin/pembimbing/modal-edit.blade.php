@@ -28,7 +28,7 @@
             <select name="pengajuan_key" class="form-select" required>
               <option value="">-- Pilih Pengajuan --</option>
 
-              <optgroup label="PKL / Magang Siswa">
+              <optgroup label="PKL Siswa">
                 @foreach($pkl as $p)
                   <option value="pkl:{{ $p->id }}"
                     {{ $currentKey === 'pkl:'.$p->id ? 'selected' : '' }}>

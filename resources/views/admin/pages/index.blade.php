@@ -12,7 +12,7 @@
      <div class="card-header d-flex align-items-center">
       <h3 class="card-title">Pages</h3>
       <a href="{{ route('admin.pages.create') }}" class="btn btn-primary ms-auto">
-        <i class="ti ti-plus me-1"></i> Add Page
+        <i class="ti ti-plus me-1"></i> Tambah Page
       </a>
      </div>
 

@@ -68,28 +68,43 @@
 
          {{-- JENIS --}}
          <td>
-            @if($b->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                <span class="badge bg-info-soft text-info">PKL</span>
-            @else
-                <span class="badge bg-warning-soft text-warning">Magang</span>
-            @endif
-         </td>
+  @if($b->pengajuan_type === \App\Models\PengajuanPklSiswa::class)
+    <span class="badge bg-info-soft text-info">PKL</span>
+  @else
+    <span class="badge bg-warning-soft text-warning">Magang</span>
+  @endif
+</td>
+
 
          {{-- PENGAJUAN --}}
          <td>
-            <div class="fw-semibold">{{ $b->pengajuan->no_surat ?? '-' }}</div>
+  {{-- NO SURAT --}}
+  <div class="fw-semibold">
+    {{ $b->pengajuan->pengajuan->no_surat 
+        ?? $b->pengajuan->no_surat 
+        ?? '-' }}
+  </div>
 
-            @if($b->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                <small class="text-muted">
-                    {{ $b->pengajuan->sekolah->nama ?? '-' }}
-                </small>
-            @else
-                <small class="text-muted">
-                    {{ $b->pengajuan->nama_mahasiswa ?? '-' }} -
-                    {{ $b->pengajuan->universitas ?? '-' }}
-                </small>
-            @endif
-         </td>
+  {{-- DETAIL --}}
+  @if($b->pengajuan_type === \App\Models\PengajuanPklSiswa::class)
+    <small class="text-muted d-block">
+      {{ $b->pengajuan->siswaProfile?->nama 
+         ?? $b->pengajuan->nama_siswa 
+         ?? '-' }}
+    </small>
+    <small class="text-muted">
+      {{ $b->pengajuan->pengajuan?->sekolah?->nama ?? '-' }}
+    </small>
+
+  @elseif($b->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
+    <small class="text-muted">
+      {{ $b->pengajuan->nama_mahasiswa ?? '-' }}
+      -
+      {{ $b->pengajuan->universitas ?? '-' }}
+    </small>
+  @endif
+</td>
+
 
          {{-- PEMBIMBING --}}
          <td>{{ $b->pegawai->nama ?? '-' }}</td>

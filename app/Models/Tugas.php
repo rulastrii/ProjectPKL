@@ -24,6 +24,11 @@ class Tugas extends Model
         'is_active'
     ];
 
+    protected $casts = [
+    'tenggat' => 'datetime',
+];
+
+
     /**
      * Relasi ke pembimbing (many to one)
      */

@@ -52,16 +52,18 @@ class PenempatanController extends Controller
          */
 
         // PKL → ambil dari pengajuan_pkl_siswa
-        $pengajuanPkl = PengajuanPklSiswa::with(['siswaProfile'])
-            ->where('status', 'diterima')
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'id'    => $p->id,
-                    'nama'  => $p->siswaProfile->nama ?? $p->nama_siswa,
-                    'email' => $p->siswaProfile->email ?? $p->email_siswa,
-                ];
-            });
+        // PKL → ambil dari pengajuan_pkl_siswa
+$pengajuanPkl = PengajuanPklSiswa::with(['siswaProfile'])
+    ->where('status', 'diterima')
+    ->get()
+    ->map(function ($p) {
+        return [
+            'id'    => $p->id, // ID unik dari tabel pengajuan_pkl_siswa
+            'nama'  => $p->siswaProfile->nama ?? $p->nama_siswa,
+            'email' => $p->siswaProfile->email ?? $p->email_siswa,
+        ];
+    });
+
 
         // Mahasiswa
         $pengajuanMahasiswa = PengajuanMagangMahasiswa::where('status', 'diterima')
@@ -91,71 +93,82 @@ class PenempatanController extends Controller
     // ===============================
     // STORE
     // ===============================
-    public function store(Request $request)
-    {
-        $request->validate([
-    'pengajuan_id'   => ['required'],
-    'pengajuan_type' => [
-        'required',
-        Rule::in([
-            \App\Models\PengajuanPklSiswa::class,
-            \App\Models\PengajuanMagangMahasiswa::class,
-        ]),
-    ],
-    'bidang_id' => ['required', 'exists:bidang,id'],
-]);
+public function store(Request $request)
+{
+    $request->validate([
+        'pengajuan_id'   => ['required'],
+        'pengajuan_type' => [
+            'required',
+            Rule::in([
+                \App\Models\PengajuanPklSiswa::class,
+                \App\Models\PengajuanMagangMahasiswa::class,
+            ]),
+        ],
+        'bidang_id' => ['required', 'exists:bidang,id'],
+    ]);
 
+    $pengajuanModel = $request->pengajuan_type;
 
-        $pengajuanModel = $request->pengajuan_type;
-
-        $pengajuan = $pengajuanModel::findOrFail($request->pengajuan_id);
-
-        Penempatan::create([
-            'pengajuan_id'   => $pengajuan->id,
-            'pengajuan_type' => $pengajuanModel,
-            'bidang_id'      => $request->bidang_id,
-            'created_date'   => now(),
-            'created_id'     => Auth::id(),
-            'is_active'      => true,
-        ]);
-
-        return redirect()
-            ->route('admin.penempatan.index')
-            ->with('success', 'Penempatan berhasil ditambahkan');
+    if ($pengajuanModel === \App\Models\PengajuanPklSiswa::class) {
+        $pengajuan = PengajuanPklSiswa::findOrFail($request->pengajuan_id);
+    } else {
+        $pengajuan = PengajuanMagangMahasiswa::findOrFail($request->pengajuan_id);
     }
+
+    Penempatan::create([
+        'pengajuan_id'   => $pengajuan->id, // sekarang benar untuk PKL siswa
+        'pengajuan_type' => $pengajuanModel,
+        'bidang_id'      => $request->bidang_id,
+        'created_date'   => now(),
+        'created_id'     => Auth::id(),
+        'is_active'      => true,
+    ]);
+
+    return redirect()
+        ->route('admin.penempatan.index')
+        ->with('success', 'Penempatan berhasil ditambahkan');
+}
 
     // ===============================
     // UPDATE
     // ===============================
     public function update(Request $request, $id)
-    {
-        $penempatan = Penempatan::findOrFail($id);
+{
+    $request->validate([
+        'pengajuan_id'   => ['required'],
+        'pengajuan_type' => [
+            'required',
+            Rule::in([
+                \App\Models\PengajuanPklSiswa::class,
+                \App\Models\PengajuanMagangMahasiswa::class,
+            ]),
+        ],
+        'bidang_id' => ['required', 'exists:bidang,id'],
+        'is_active' => ['required', 'boolean'],
+    ]);
 
-        $request->validate([
-            'pengajuan_id'   => 'required',
-            'pengajuan_type' => 'required|in:
-                App\Models\PengajuanPklSiswa,
-                App\Models\PengajuanMagangMahasiswa',
-            'bidang_id'      => 'required|exists:bidang,id',
-            'is_active'      => 'required|boolean',
-        ]);
+    $pengajuanModel = $request->pengajuan_type;
 
-        $pengajuanModel = $request->pengajuan_type;
-        $pengajuan = $pengajuanModel::findOrFail($request->pengajuan_id);
-
-        $penempatan->update([
-            'pengajuan_id'   => $pengajuan->id,
-            'pengajuan_type' => $pengajuanModel,
-            'bidang_id'      => $request->bidang_id,
-            'is_active'      => $request->is_active,
-            'updated_date'   => now(),
-            'updated_id'     => Auth::id(),
-        ]);
-
-        return redirect()
-            ->route('admin.penempatan.index')
-            ->with('success', 'Penempatan berhasil diperbarui');
+    if ($pengajuanModel === \App\Models\PengajuanPklSiswa::class) {
+        $pengajuan = PengajuanPklSiswa::findOrFail($request->pengajuan_id);
+    } else {
+        $pengajuan = PengajuanMagangMahasiswa::findOrFail($request->pengajuan_id);
     }
+
+    $penempatan = Penempatan::findOrFail($id);
+    $penempatan->update([
+        'pengajuan_id'   => $pengajuan->id, // ID unik PKL siswa
+        'pengajuan_type' => $pengajuanModel,
+        'bidang_id'      => $request->bidang_id,
+        'is_active'      => $request->is_active,
+        'updated_date'   => now(),
+        'updated_id'     => Auth::id(),
+    ]);
+
+    return redirect()
+        ->route('admin.penempatan.index')
+        ->with('success', 'Penempatan berhasil diperbarui');
+}
 
     // ===============================
     // DELETE (SOFT)

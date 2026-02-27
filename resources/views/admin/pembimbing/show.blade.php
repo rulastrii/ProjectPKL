@@ -49,17 +49,25 @@
 
                                     {{-- PKL --}}
                                     @if($pembimbing->pengajuan_type === \App\Models\PengajuanPklmagang::class)
-                                        <strong>No Surat:</strong> {{ $pembimbing->pengajuan->no_surat }} <br>
+                                        <strong>No Surat:</strong> {{ $pembimbing->pengajuan->no_surat ?? '-' }} <br>
                                         <small class="text-muted">
-                                            Sekolah: {{ $pembimbing->pengajuan->sekolah->nama ?? '-' }}
+                                            Sekolah: {{ $pembimbing->pengajuan->sekolah?->nama ?? '-' }} <br>
+                                            Siswa:
+                                            <ul class="mb-0">
+                                                @forelse($pembimbing->pengajuan->siswa as $ps)
+                                                    <li>{{ $ps->siswaProfile?->nama ?? $ps->nama_siswa ?? '-' }}</li>
+                                                @empty
+                                                    <li>-</li>
+                                                @endforelse
+                                            </ul>
                                         </small>
 
                                     {{-- MAHASISWA --}}
                                     @elseif($pembimbing->pengajuan_type === \App\Models\PengajuanMagangMahasiswa::class)
-                                        <strong>No Surat:</strong> {{ $pembimbing->pengajuan->no_surat }} <br>
+                                        <strong>No Surat:</strong> {{ $pembimbing->pengajuan->no_surat ?? '-' }} <br>
                                         <small class="text-muted">
-                                            Mahasiswa: {{ $pembimbing->pengajuan->nama_mahasiswa }} <br>
-                                            Universitas: {{ $pembimbing->pengajuan->universitas }}
+                                            Mahasiswa: {{ $pembimbing->pengajuan->nama_mahasiswa ?? '-' }} <br>
+                                            Universitas: {{ $pembimbing->pengajuan->universitas ?? '-' }}
                                         </small>
                                     @endif
 
@@ -67,6 +75,7 @@
                                     -
                                 @endif
                             </td>
+
                         </tr>
 
                         <tr>

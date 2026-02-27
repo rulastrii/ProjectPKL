@@ -5,39 +5,43 @@
 <div class="page-body">
  <div class="container-xl">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
+ <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Feedback Saya</h3>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateFeedback">
-      <i class="ti ti-plus me-1"></i> Tambah Feedback
-    </button>
-  </div>
 
-  {{-- Feedback Cards --}}
-  <div class="row g-4">
-  @forelse($feedbacks as $fb)
+    {{-- Tombol hanya muncul jika user belum pernah menambahkan feedback --}}
+    @if($bolehFeedback && $feedbacks->count() === 0)
+    <button type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCreateFeedback"
+            title="Klik untuk menambahkan feedback">
+        <i class="ti ti-plus me-1"></i> Tambah Feedback
+    </button>
+    @endif
+</div>
+
+{{-- Opsional alert jika tidak boleh feedback --}}
+@if(!$bolehFeedback)
+<div class="alert alert-warning mt-2">
+    Feedback hanya dapat diisi setelah sertifikat diterbitkan.
+</div>
+@endif
+
+{{-- Feedback Cards --}}
+<div class="row g-4">
+@forelse($feedbacks as $fb)
     <div class="col-12 col-sm-6 col-lg-4">
-      <div class="card h-100 shadow-sm border-0 rounded-4 position-relative overflow-hidden"
-           style="transition: transform 0.2s; {{ $fb->status === 'non-aktif' ? 'opacity:0.5;' : '' }}">
+      <div class="card h-100 shadow-sm border-0 rounded-4 position-relative overflow-hidden">
         <div class="card-body d-flex flex-column">
 
-          {{-- Header: Foto, Nama, Role, Status --}}
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <div class="d-flex align-items-center">
+          {{-- Header: Foto, Nama, Role --}}
+          <div class="d-flex align-items-center mb-3">
               <img src="{{ $fb->foto ? asset('uploads/foto_siswa/'.$fb->foto) : asset('default-avatar.png') }}"
                    class="rounded-circle border border-2" width="50" height="50" alt="Avatar">
               <div class="ms-2">
                 <h6 class="mb-0 fw-bold">{{ $fb->nama_user }}</h6>
                 <small class="text-muted">{{ ucfirst($fb->role_name) }}</small>
               </div>
-            </div>
-
-            {{-- Toggle Status --}}
-            <div class="form-check form-switch">
-              <input class="form-check-input toggle-status" type="checkbox" data-id="{{ $fb->id }}" {{ $fb->status === 'aktif' ? 'checked' : '' }}>
-              <label class="form-check-label">
-                <span class="status-text">{{ $fb->status === 'aktif' ? 'Aktif' : 'Non-Aktif' }}</span>
-              </label>
-            </div>
           </div>
 
           {{-- Feedback Text --}}
@@ -70,62 +74,17 @@
         </div>
       </div>
     </div>
-  @empty
+@empty
     <div class="col-12">
       <div class="alert alert-info text-center">Belum ada feedback</div>
     </div>
-  @endforelse
+@endforelse
 </div>
-
 
  </div>
 </div>
 
 @include('magang.feedback.modal-create')
 @include('magang.feedback.modal-edit')
-
-{{-- JS Toggle Status --}}
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const toggles = document.querySelectorAll('.toggle-status');
-  toggles.forEach(toggle => {
-    const labelText = toggle.closest('.form-check').querySelector('.status-text');
-    const card = toggle.closest('.card');
-
-    toggle.addEventListener('change', function() {
-      const feedbackId = this.dataset.id;
-      const status = this.checked ? 'aktif' : 'non-aktif';
-
-      // Update label
-      labelText.innerText = status === 'aktif' ? 'Aktif' : 'Non-Aktif';
-
-      // Update card opacity
-      card.style.opacity = status === 'aktif' ? '1' : '0.5';
-
-      // Send update to server
-      fetch(`/magang/feedback/${feedbackId}/toggle-status`, {
-        method: 'PUT',
-        headers: {
-          'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: status })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if(!data.success){
-          alert('Gagal update status');
-          // rollback UI jika gagal
-          this.checked = !this.checked;
-          labelText.innerText = this.checked ? 'Aktif' : 'Non-Aktif';
-          card.style.opacity = this.checked ? '1' : '0.5';
-        }
-      });
-    });
-  });
-});
-</script>
-@endpush
 
 @endsection

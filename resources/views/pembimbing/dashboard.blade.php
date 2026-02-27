@@ -753,7 +753,7 @@
         <div class="card text-white bg-primary">
           <div class="card-body d-flex align-items-center">
             <i class="ti ti-chart-bar me-3" style="font-size: 2rem;"></i>
-            <h5 class="mb-0">Lihat Rekap Peserta</h5>
+            <h5 class="mb-0"><a href="{{ route('pembimbing.rekap.index') }}" class="text-white text-decoration-none">Lihat Rekap Peserta</a></h5>
           </div>
         </div>
       </div>

@@ -15,9 +15,9 @@
                         <h5 class="mb-0">
                             <i class="ti ti-send me-2"></i> Submit Tugas
                         </h5>
-                        <span class="badge bg-warning text-white">
+                        <span class="badge bg-warning text-dark">
                             <i class="ti ti-clock me-1"></i>
-                            {{ $tugas->tenggat_formatted }}
+                            Tenggat: {{ $tugas->tenggat_formatted }}
                         </span>
                     </div>
 
@@ -34,6 +34,40 @@
                                 </ul>
                             </div>
                         @endif
+@if(!$submit)
+    @php
+        $isLate = now()->gt($tugas->tenggat);
+
+        $lateDays = $isLate
+            ? max(1, $tugas->tenggat->diffInDays(now()))
+            : 0;
+
+        // aturan: 5% per hari
+        $penaltyPerDay = 5;
+        $estimatedPenalty = $lateDays * $penaltyPerDay;
+    @endphp
+
+    @if($isLate)
+        <div class="alert alert-danger">
+            <strong>⚠ Melewati Tenggat!</strong><br>
+            Tugas ini sudah melewati batas waktu pengumpulan
+            <b>{{ $lateDays }} hari</b>.
+
+            <div class="mt-1">
+                Nilai <b>akan dipotong {{ $estimatedPenalty }}%</b>
+                ({{ $penaltyPerDay }}% per hari)
+                jika tetap dikumpulkan.
+            </div>
+        </div>
+    @else
+        <div class="alert alert-success">
+            <strong>✔ Masih dalam waktu</strong><br>
+            Silakan kumpulkan tugas sebelum tenggat.
+        </div>
+    @endif
+@endif
+
+
 
                         {{-- INFO TUGAS --}}
                         <div class="mb-4">
@@ -50,14 +84,14 @@
                             <div class="mb-3">
                                 <label class="form-label">Catatan / Keterangan</label>
                                 <textarea name="catatan"
-                                        rows="4"
-                                        class="form-control"
-                                        placeholder="Tulis catatan atau keterangan tambahan di sini...">{{ old('catatan', $submit->catatan ?? '') }}</textarea>
+                                          rows="4"
+                                          class="form-control"
+                                          placeholder="Tulis catatan atau keterangan tambahan...">{{ old('catatan', $submit->catatan ?? '') }}</textarea>
                             </div>
 
                             {{-- FILE --}}
                             <div class="mb-3">
-                                <label class="form-label">Upload File</label>
+                                <label class="form-label">Upload File (PDF)</label>
 
                                 @if(!empty($submit?->file))
                                     <div class="mb-2">
@@ -89,7 +123,7 @@
 
                             {{-- LINK --}}
                             <div class="mb-3">
-                                <label class="form-label">Link Lampiran</label>
+                                <label class="form-label">Link Lampiran (opsional)</label>
                                 <input type="url"
                                        name="link_lampiran"
                                        value="{{ old('link_lampiran', $submit->link_lampiran ?? '') }}"
@@ -135,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             link.href = URL.createObjectURL(file);
             preview.classList.remove('d-none');
         } else {
-            alert('Hanya file PDF');
+            alert('Hanya file PDF yang diperbolehkan');
             input.value = '';
             preview.classList.add('d-none');
         }

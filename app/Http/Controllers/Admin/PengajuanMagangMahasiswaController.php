@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use App\Notifications\PengajuanMagangStatusNotification;
 use App\Models\PengajuanMagangMahasiswa;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
 
 class PengajuanMagangMahasiswaController extends Controller
 {
@@ -190,20 +192,40 @@ class PengajuanMagangMahasiswaController extends Controller
         return back()->with('success', 'Pengajuan berhasil dihapus.');
     }
 
-    public function approve(PengajuanMagangMahasiswa $pengajuan) {
-        $pengajuan->update([
-            'status'        => 'diterima',
-            'approved_id'   => auth()->id(),
-            'approved_date' => now(),
-        ]);
+    public function approve(PengajuanMagangMahasiswa $pengajuan)
+{
+    // 1. Update status
+    $pengajuan->update([
+        'status'        => 'diterima',
+        'approved_id'   => auth()->id(),
+        'approved_date' => now(),
+    ]);
 
-        // Email pemberitahuan SAJA
-        $pengajuan->notify(
-            new PengajuanMagangStatusNotification('diterima')
-        );
+    // 2. Nomor surat balasan otomatis
+    $no_surat = "B/400.14.5.4/".str_pad($pengajuan->id, 3, '0', STR_PAD_LEFT)."/SEKRE/".date('Y');
 
-        return back()->with('success', 'Pengajuan diterima. Silakan buat akun magang.');
-    }
+    // 3. Nama Kepala Dinas
+    $ttd = "MA'RUF NURYASA, AP., M.M.";
+
+    // 4. Generate PDF Surat Balasan
+    $pdf = Pdf::loadView('admin.pengajuan-magang.surat-balasan', [
+        'pengajuan' => $pengajuan,
+        'no_surat'  => $no_surat,
+        'ttd'       => $ttd,
+    ]);
+
+    // 5. Kirim Notification + PDF attachment
+    $pengajuan->notify(new PengajuanMagangStatusNotification(
+        'diterima',
+        null,
+        $pdf->output(),
+        $no_surat,
+        $ttd
+    ));
+
+    return back()->with('success', 'Pengajuan diterima dan surat balasan PDF telah dikirim ke email mahasiswa.');
+}
+
 
     public function reject(Request $request, PengajuanMagangMahasiswa $pengajuan) {
         $request->validate([

@@ -89,6 +89,9 @@
             Silakan menunggu email verifikasi akun magang untuk pembuatan password
             agar dapat login ke sistem.
         </p>
+        <p style="margin:8px 0 0; font-style:italic; color:#555;">
+            <strong>Catatan:</strong> Surat balasan Magang Anda terlampir dalam email ini.
+        </p>
     </div>
 
 {{-- DITOLAK --}}

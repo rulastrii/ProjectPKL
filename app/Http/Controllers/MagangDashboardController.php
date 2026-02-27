@@ -42,6 +42,9 @@ class MagangDashboardController extends Controller
                 'prosentasePresensi'  => 0,
                 'jumlahLaporanHariIni'=> 0,
                 'jumlahTugasPending'  => 0,
+                        
+                'totalLaporan'         => 0,   // ✅ TAMBAH
+                'prosentaseLaporan'    => 0,   // ✅ TAMBAH
                 'totalTugas'          => 0,
                 'tugasSelesai'        => 0,
                 'prosentaseTugas'     => 0,
@@ -99,23 +102,27 @@ class MagangDashboardController extends Controller
         }
 
         // Progress presensi
-        $tanggalMulai = optional($magang->pengajuan)->tanggal_mulai
-            ? Carbon::parse($magang->pengajuan->tanggal_mulai)
-            : Carbon::today();
+        $tanggalMulai = $magang->pengajuan?->tanggal_mulai 
+    ? Carbon::parse($magang->pengajuan->tanggal_mulai)
+    : Carbon::today()->subDay(); // default minimal 1 hari
+
 
         $tanggalSekarang = Carbon::today();
-        $totalHariMagang = 0;
-        for ($d = $tanggalMulai->copy(); $d->lte($tanggalSekarang); $d->addDay()) {
-            if (!$d->isWeekend()) $totalHariMagang++;
-        }
+       $totalHariMagang = 0;
+for ($d = $tanggalMulai->copy(); $d->lte($tanggalSekarang); $d->addDay()) {
+    if (!$d->isWeekend()) $totalHariMagang++;
+}
+
+// Pastikan minimal 1 untuk menghindari pembagian 0
+$totalHariMagang = $totalHariMagang ?: 1;
+
 
         $jumlahPresensi = Presensi::where('siswa_id', $magang->id)
             ->whereNotNull('jam_masuk')
             ->count();
 
-        $prosentasePresensi = $totalHariMagang > 0
-            ? round(($jumlahPresensi / $totalHariMagang) * 100)
-            : 0;
+        $prosentasePresensi = round(($jumlahPresensi / $totalHariMagang) * 100);
+
 
         // Total tugas & tugas selesai
         $totalTugas = Tugas::whereHas('tugasAssignees', function ($q) use ($magang) {
@@ -132,9 +139,19 @@ class MagangDashboardController extends Controller
             : 0;
 
         // Laporan hari ini
-        $jumlahLaporanHariIni = TugasSubmit::where('siswa_id', $magang->id)
-            ->whereDate('submitted_at', now('Asia/Jakarta')->toDateString())
-            ->count();
+        // Laporan hari ini (DailyReport, bukan TugasSubmit)
+$jumlahLaporanHariIni = $magang->laporan()
+    ->whereDate('tanggal', now('Asia/Jakarta')->toDateString())
+    ->count();
+
+// Total laporan
+$totalLaporan = $magang->laporan()->count();
+
+// Progress laporan
+$prosentaseLaporan = $totalLaporan > 0
+    ? round(($jumlahLaporanHariIni / $totalLaporan) * 100)
+    : 0;
+
 
         // Tugas pending
         $jumlahTugasPending = TugasSubmit::where('siswa_id', $magang->id)
@@ -158,6 +175,8 @@ class MagangDashboardController extends Controller
             'jumlahLaporanHariIni',
             'jumlahTugasPending',
             'totalTugas',
+            'prosentaseLaporan',
+            'totalLaporan',
             'tugasSelesai',
             'prosentaseTugas',
             'tugasTerbaru',

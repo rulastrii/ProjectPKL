@@ -1,7 +1,8 @@
 @foreach($tugas as $t)
 <!-- Modal Edit Tugas -->
 <div class="modal fade" id="modalEditTugas-{{ $t->id }}" tabindex="-1" aria-labelledby="modalEditTugasLabel-{{ $t->id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
         <div class="modal-content">
             <form action="{{ route('pembimbing.tugas.update', $t->id) }}" method="POST">
                 @csrf
@@ -13,7 +14,8 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body">
+                <div class="modal-body modal-body-scroll">
+
                     {{-- Judul --}}
                     <div class="mb-2">
                         <label class="form-label small fw-semibold">Judul</label>
@@ -151,4 +153,17 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 });
 </script>
+
+<style>
+.modal-body-scroll {
+    max-height: calc(100vh - 200px); /* aman semua layar */
+    overflow-y: auto;
+}
+
+/* biar editor quill ga nembus */
+.ql-editor {
+    min-height: 200px;
+}
+</style>
+
 @endforeach

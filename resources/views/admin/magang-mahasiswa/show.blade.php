@@ -8,7 +8,7 @@
 
         <div class="card-header bg-primary text-white">
             <h3 class="card-title mb-0">
-                <i class="ti ti-user me-2"></i> Detail Magang Mahasiswa
+                <i class="ti ti-user me-2"></i> Detail Mahasiswa Magang 
             </h3>
         </div>
 

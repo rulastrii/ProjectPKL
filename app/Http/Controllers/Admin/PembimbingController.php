@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Pembimbing;
 use App\Models\Pegawai;
 use App\Models\PengajuanPklmagang;
+use App\Models\PengajuanPklSiswa;
+
 use App\Models\PengajuanMagangMahasiswa;
 
 class PembimbingController extends Controller
@@ -26,7 +28,7 @@ class PembimbingController extends Controller
                 $q->whereHas('pegawai', fn($q)=>$q->where('nama','like',"%$search%"))
                   ->orWhereHasMorph(
                         'pengajuan',
-                        [PengajuanPklmagang::class, PengajuanMagangMahasiswa::class],
+                        [PengajuanPklSiswa::class, PengajuanMagangMahasiswa::class],
                         fn($q)=>$q->where('no_surat','like',"%$search%")
                   );
             })
@@ -43,7 +45,7 @@ class PembimbingController extends Controller
                                 ->groupBy('tahun')
                                 ->orderBy('tahun','desc')
                                 ->get(),
-            'pkl'        => PengajuanPklmagang::with('sekolah')->get(),
+            'pkl'        => PengajuanPklSiswa::with('pengajuan.sekolah')->get(),
             'mahasiswa'  => PengajuanMagangMahasiswa::all(),
         ]);
     }
@@ -54,7 +56,7 @@ class PembimbingController extends Controller
     public function create() {
         return view('admin.pembimbing.create', [
             'pegawai'    => Pegawai::whereNull('deleted_date')->get(),
-            'pkl'        => PengajuanPklmagang::with('sekolah')->get(),
+            'pkl'        => PengajuanPklSiswa::with('pengajuan.sekolah')->get(),
             'mahasiswa'  => PengajuanMagangMahasiswa::all(),
         ]);
     }
@@ -72,7 +74,8 @@ class PembimbingController extends Controller
         [$type, $id] = explode(':', $request->pengajuan_key);
 
         $map = [
-            'pkl' => PengajuanPklmagang::class,
+            'pkl' => PengajuanPklSiswa::class,
+
             'mhs' => PengajuanMagangMahasiswa::class,
         ];
 

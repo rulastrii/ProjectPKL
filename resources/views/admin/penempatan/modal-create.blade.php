@@ -64,6 +64,7 @@ function loadPengajuan(type) {
     let options = '<option value="">-- Pilih Pengajuan --</option>';
 
     if (type === 'pkl') {
+        // ID dari tabel pengajuan_pkl_siswa
         pengajuanTypeInput.value = 'App\\Models\\PengajuanPklSiswa';
 
         pengajuanPKL.forEach(p => {
@@ -73,6 +74,7 @@ function loadPengajuan(type) {
         });
 
     } else if (type === 'mahasiswa') {
+        // ID dari tabel pengajuan_mahasiswa
         pengajuanTypeInput.value = 'App\\Models\\PengajuanMagangMahasiswa';
 
         pengajuanMahasiswa.forEach(p => {
@@ -87,7 +89,7 @@ function loadPengajuan(type) {
     pengajuanSelect.innerHTML = options;
 }
 
-// Reset modal
+// Reset modal saat dibuka
 document.getElementById('modalCreatePenempatan')
     .addEventListener('show.bs.modal', function () {
         jenisSelect.value = '';
@@ -95,8 +97,8 @@ document.getElementById('modalCreatePenempatan')
         pengajuanTypeInput.value = '';
     });
 
+// Load pengajuan saat jenis dipilih
 jenisSelect.addEventListener('change', function () {
     loadPengajuan(this.value);
 });
 </script>
-

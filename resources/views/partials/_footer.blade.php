@@ -85,21 +85,39 @@
         <div class="help-floating">
 
             <div class="help-item">
-                <a href="https://wa.me/02318804620" target="_blank" class="child-btn bg-success">
+                <a href="{{ route('help-center.index') }}"
+                class="child-btn bg-primary"
+                title="Pusat Bantuan">
+                    <i class="fas fa-question-circle text-white"></i>
+                </a>
+            </div>
+
+            <div class="help-item">
+                <a href="https://wa.me/02318804620"
+                target="_blank"
+                class="child-btn bg-success"
+                title="Hubungi via WhatsApp">
                     <i class="fab fa-whatsapp text-white"></i>
                 </a>
             </div>
 
             <div class="help-item">
-                <a href="mailto:dkis@cirebonkota.go.id" class="child-btn bg-danger">
+                <a href="mailto:dkis@cirebonkota.go.id"
+                class="child-btn bg-danger"
+                title="Kirim Email ke Admin">
                     <i class="fas fa-envelope text-white"></i>
                 </a>
             </div>
 
             <div class="help-item">
-                <a href="https://instagram.com/dkiskotacirebon" target="_blank" class="child-btn" style="background:#d6249f;">
+                <a href="https://instagram.com/dkiskotacirebon"
+                target="_blank"
+                class="child-btn"
+                style="background:#d6249f;"
+                title="Instagram Resmi">
                     <i class="fab fa-instagram text-white"></i>
                 </a>
             </div>
+
 
         </div>
