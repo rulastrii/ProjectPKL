@@ -16,8 +16,8 @@ class AdminSeeder extends Seeder
 
         User::create([
             'name' => 'Administrator',
-            'email' => 'admin@example.com',
-            'password' => 'admin123', // otomatis di-hash karena setPasswordAttribute
+            'email' => 'ansera.test@gmail.com',
+            'password' => '@Sudarsono40', // otomatis di-hash karena setPasswordAttribute
             'role_id' => 1, // Admin
             'created_date' => $now,
             'updated_date' => $now,
