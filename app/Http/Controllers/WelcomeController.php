@@ -14,7 +14,7 @@ class WelcomeController extends Controller
         // FEEDBACK
         // =======================
         $feedbacks = Feedback::where('status', 'aktif')
-            ->orderByDesc('created_at')
+            ->latest()
             ->get();
 
         // =======================
@@ -24,143 +24,70 @@ class WelcomeController extends Controller
         $aboutPage        = Page::where('slug', 'about')->first();
         $faqPage          = Page::where('slug', 'faqs')->first();
 
-        // Default jika tidak ada
-        if (!$syaratMagangPage) $syaratMagangPage = (object)['title' => 'Syarat Magang', 'content' => ''];
-        if (!$aboutPage)        $aboutPage        = (object)['title' => 'About', 'content' => ''];
-        if (!$faqPage)          $faqPage          = (object)['title' => 'FAQs', 'content' => ''];
+        // default
+        $syaratMagangPage = $syaratMagangPage ?? (object)['content' => ''];
+        $aboutPage        = $aboutPage ?? (object)['content' => ''];
+        $faqPage          = $faqPage ?? (object)['content' => ''];
 
         // =======================
         // SYARAT MAGANG
         // =======================
-        $syaratMagangItems = [];
-
-        if ($syaratMagangPage->content) {
-            $decoded = json_decode($syaratMagangPage->content, true);
-
-            if (is_array($decoded)) {
-                $syaratMagangItems = $decoded;
-            } else {
-                $lines = preg_split('/\r\n|\r|\n/', $syaratMagangPage->content);
-                $items = [];
-
-                for ($i = 0; $i < count($lines); $i += 2) {
-                    if (!empty(trim($lines[$i]))) {
-                        $items[] = [
-                            'icon'  => 'fas fa-circle',
-                            'title' => trim($lines[$i]),
-                            'desc'  => $lines[$i + 1] ?? '',
-                            'link'  => '#'
-                        ];
-                    }
-                }
-
-                $syaratMagangItems = $items;
-            }
-        }
+        $syaratMagangItems = $this->parseContent($syaratMagangPage->content);
 
         // =======================
-        // ABOUT SECTION (FIX UTAMA)
+        // ABOUT
         // =======================
+        $aboutFeatures = $this->parseContent($aboutPage->content);
+
         $aboutSection = [
             'subtitle'    => 'About SIPEMANG',
             'title'       => 'Sistem Informasi Pengajuan PKL & Magang DKIS Kota Cirebon',
             'description' => 'Sistem informasi ini memudahkan siswa dan mahasiswa mengajukan PKL dan Magang secara online.',
-            'features'    => []
+            'features'    => $aboutFeatures
         ];
-
-        if ($aboutPage->content) {
-
-            // ✅ Jika JSON
-            if ($this->isJson($aboutPage->content)) {
-                $decoded = json_decode($aboutPage->content, true);
-
-                if (is_array($decoded)) {
-                    $aboutSection['features'] = $decoded;
-                }
-            }
-            // ✅ Jika TEXT BIASA
-            else {
-                $lines = preg_split('/\r\n|\r|\n/', $aboutPage->content);
-                $items = [];
-
-                for ($i = 0; $i < count($lines); $i += 2) {
-                    if (!empty(trim($lines[$i]))) {
-                        $items[] = [
-                            'icon'  => 'fas fa-check-circle',
-                            'title' => trim($lines[$i]),
-                            'desc'  => $lines[$i + 1] ?? ''
-                        ];
-                    }
-                }
-
-                $aboutSection['features'] = $items;
-            }
-        }
 
         // =======================
         // FAQ
         // =======================
-        $faqItems = json_decode($faqPage->content, true) ?? [];
+        $faqItems = $this->parseContent($faqPage->content);
 
         return view('welcome', compact(
             'feedbacks',
-            'syaratMagangPage',
             'syaratMagangItems',
-            'aboutPage',
-            'aboutSection', // ⬅️ PENTING
-            'faqPage',
+            'aboutSection',
             'faqItems'
         ));
     }
 
     // =======================
-    // SEARCH
+    // PARSER UNIVERSAL (AMAN)
     // =======================
-    public function search(Request $request)
+    private function parseContent($content)
     {
-        $query = $request->input('q');
+        if (!$content) return [];
 
-        if (!$query || strlen($query) < 2) {
-            return response()->json([]);
+        // jika JSON
+        $json = json_decode($content);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return collect($json)->toArray(); // aman (array/object OK)
         }
 
-        $pages = Page::where('title', 'like', "%{$query}%")
-            ->orWhere('content', 'like', "%{$query}%")
-            ->get();
+        // fallback teks biasa
+        $lines = preg_split('/\r\n|\r|\n/', $content);
+        $items = [];
 
-        $results = $pages->map(function ($page) {
-
-            $excerpt = '';
-
-            if ($this->isJson($page->content)) {
-                $json = json_decode($page->content, true);
-
-                if (is_array($json)) {
-                    $excerpt = collect($json)
-                        ->pluck('title')
-                        ->filter()
-                        ->implode(', ');
-                }
-            } else {
-                $excerpt = strip_tags($page->content);
+        for ($i = 0; $i < count($lines); $i += 2) {
+            if (!empty(trim($lines[$i]))) {
+                $items[] = [
+                    'icon'  => 'fas fa-circle',
+                    'title' => trim($lines[$i]),
+                    'desc'  => $lines[$i + 1] ?? '',
+                    'link'  => '#'
+                ];
             }
+        }
 
-            return [
-                'title'   => $page->title,
-                'excerpt' => substr($excerpt, 0, 80),
-                'link'    => url('/#' . $page->slug),
-            ];
-        });
-
-        return response()->json($results);
-    }
-
-    // =======================
-    // HELPER JSON
-    // =======================
-    private function isJson($string)
-    {
-        json_decode($string);
-        return json_last_error() === JSON_ERROR_NONE;
+        return $items;
     }
 }
